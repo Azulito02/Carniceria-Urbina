@@ -1,0 +1,128 @@
+/* TABLA PRODUCTOS - SIMPLE Y FUNCIONAL */
+.loading-spinner {
+  text-align: center;
+  padding: 40px;
+  color: #7a7a7a;
+}
+
+.loading-spinner i {
+  font-size: 24px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.tabla-productos {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+  flex: 1;
+}
+
+.tabla-productos table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 500px;
+}
+
+.tabla-productos thead tr {
+  border-bottom: 2px solid #f0ece9;
+}
+
+.tabla-productos th {
+  padding: 10px 8px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #555;
+  text-align: left;
+}
+
+.tabla-productos th.acciones-header {
+  text-align: center;
+}
+
+.tabla-productos tbody tr {
+  border-bottom: 1px solid #f0ece9;
+  transition: background 0.15s;
+}
+
+.tabla-productos tbody tr:hover {
+  background: #faf8f6;
+}
+
+.tabla-productos td {
+  padding: 10px 8px;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.tabla-productos .nombre {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.tabla-productos .categoria,
+.tabla-productos .marca,
+.tabla-productos .unidad {
+  color: #555;
+  font-size: 13px;
+}
+
+.tabla-productos .acciones {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.sin-productos {
+  text-align: center;
+  padding: 30px;
+  color: #aaa;
+  font-size: 14px;
+}
+
+/* BOTONES DE ACCIÓN */
+.btn-editar {
+  background: none;
+  border: none;
+  color: #2c6b9e;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 17px;
+  transition: color 0.2s;
+}
+
+.btn-editar:hover {
+  color: #1a4a6e;
+}
+
+.btn-eliminar {
+  background: none;
+  border: none;
+  color: #c0392b;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 17px;
+  transition: color 0.2s;
+}
+
+.btn-eliminar:hover {
+  color: #8a1a1a;
+}
+
+/* RESPONSIVE */
+@media (max-width: 480px) {
+  .tabla-productos {
+    padding: 10px;
+  }
+  
+  .tabla-productos table {
+    min-width: 400px;
+  }
+  
+  .tabla-productos td,
+  .tabla-productos th {
+    padding: 6px 4px;
+    font-size: 12px;
+  }
+}

@@ -1,0 +1,149 @@
+/* MODAL AGREGAR PRODUCTO - SIMPLE Y FUNCIONAL */
+.modal-agregar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-agregar-content {
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-agregar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-agregar-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.modal-agregar-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #999;
+  padding: 0 4px;
+}
+
+.modal-agregar-close:hover {
+  color: #333;
+}
+
+/* CAMPOS DEL FORMULARIO */
+.modal-agregar-field {
+  margin-bottom: 16px;
+}
+
+.modal-agregar-field label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.modal-agregar-field input,
+.modal-agregar-field select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  background: white;
+  color: #1a1a1a;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.modal-agregar-field input:focus,
+.modal-agregar-field select:focus {
+  border-color: #b22222;
+}
+
+.modal-agregar-field input::placeholder {
+  color: #aaa;
+}
+
+/* BOTONES */
+.modal-agregar-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-agregar-cancelar {
+  flex: 1;
+  padding: 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  color: #555;
+  transition: background 0.2s;
+}
+
+.btn-agregar-cancelar:hover {
+  background: #f5f5f5;
+}
+
+.btn-agregar-guardar {
+  flex: 2;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #b22222;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  transition: background 0.2s;
+}
+
+.btn-agregar-guardar:hover {
+  background: #8f1a1a;
+}
+
+.btn-agregar-guardar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* RESPONSIVE */
+@media (max-width: 480px) {
+  .modal-agregar-content {
+    padding: 20px;
+  }
+  
+  .modal-agregar-header h2 {
+    font-size: 18px;
+  }
+  
+  .modal-agregar-buttons {
+    flex-direction: column;
+  }
+}

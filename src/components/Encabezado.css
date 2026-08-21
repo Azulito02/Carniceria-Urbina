@@ -1,0 +1,85 @@
+.encabezado {
+  background: #b22222;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.encabezado-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.encabezado-logo {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.encabezado-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.encabezado-brand-icon {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  opacity: 0.7;
+}
+
+.encabezado-brand-text {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.encabezado-brand-text span {
+  font-weight: 300;
+  opacity: 0.7;
+}
+
+.encabezado-admin {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.encabezado-admin i {
+  font-size: 16px;
+}
+
+@media (min-width: 768px) {
+  .encabezado {
+    padding: 20px 40px;
+  }
+  .encabezado-brand-text {
+    font-size: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .encabezado {
+    padding: 24px 60px;
+  }
+  .encabezado-logo {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+  .encabezado-brand-text {
+    font-size: 28px;
+  }
+}

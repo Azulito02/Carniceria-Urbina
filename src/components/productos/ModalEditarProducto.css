@@ -1,0 +1,149 @@
+/* MODAL EDITAR PRODUCTO - SIMPLE Y FUNCIONAL */
+.modal-editar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-editar-content {
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-editar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-editar-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.modal-editar-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #999;
+  padding: 0 4px;
+}
+
+.modal-editar-close:hover {
+  color: #333;
+}
+
+/* CAMPOS DEL FORMULARIO */
+.modal-editar-field {
+  margin-bottom: 16px;
+}
+
+.modal-editar-field label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.modal-editar-field input,
+.modal-editar-field select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  background: white;
+  color: #1a1a1a;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.modal-editar-field input:focus,
+.modal-editar-field select:focus {
+  border-color: #b22222;
+}
+
+.modal-editar-field input::placeholder {
+  color: #aaa;
+}
+
+/* BOTONES */
+.modal-editar-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-editar-cancelar {
+  flex: 1;
+  padding: 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  color: #555;
+  transition: background 0.2s;
+}
+
+.btn-editar-cancelar:hover {
+  background: #f5f5f5;
+}
+
+.btn-editar-guardar {
+  flex: 2;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #2c6b9e;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  transition: background 0.2s;
+}
+
+.btn-editar-guardar:hover {
+  background: #1a4a6e;
+}
+
+.btn-editar-guardar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* RESPONSIVE */
+@media (max-width: 480px) {
+  .modal-editar-content {
+    padding: 20px;
+  }
+  
+  .modal-editar-header h2 {
+    font-size: 18px;
+  }
+  
+  .modal-editar-buttons {
+    flex-direction: column;
+  }
+}
