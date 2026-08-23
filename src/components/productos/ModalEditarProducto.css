@@ -1,149 +1,183 @@
-/* MODAL EDITAR PRODUCTO - SIMPLE Y FUNCIONAL */
+/* ModalEditarProducto.css */
+
 .modal-editar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.7) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 99999 !important;
+  animation: fadeIn 0.3s ease !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-editar-content {
-  background: white;
-  border-radius: 16px;
-  padding: 28px;
-  max-width: 480px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  background: white !important;
+  border-radius: 12px !important;
+  max-width: 500px !important;
+  width: 90% !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  animation: slideUp 0.3s ease !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .modal-editar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 20px 24px !important;
+  border-bottom: 1px solid #e9ecef !important;
 }
 
 .modal-editar-header h2 {
-  font-size: 22px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0;
+  margin: 0 !important;
+  font-size: 20px !important;
+  color: #2c3e50 !important;
 }
 
 .modal-editar-close {
-  background: none;
-  border: none;
-  font-size: 28px;
-  cursor: pointer;
-  color: #999;
-  padding: 0 4px;
+  background: none !important;
+  border: none !important;
+  font-size: 28px !important;
+  color: #6c757d !important;
+  cursor: pointer !important;
+  padding: 0 8px !important;
+  transition: color 0.2s !important;
 }
 
 .modal-editar-close:hover {
-  color: #333;
+  color: #dc3545 !important;
 }
 
-/* CAMPOS DEL FORMULARIO */
+.modal-editar-content form {
+  padding: 24px !important;
+}
+
 .modal-editar-field {
-  margin-bottom: 16px;
+  margin-bottom: 16px !important;
 }
 
 .modal-editar-field label {
-  display: block;
-  font-weight: 600;
-  font-size: 14px;
-  color: #333;
-  margin-bottom: 5px;
+  display: block !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  color: #495057 !important;
+  margin-bottom: 6px !important;
 }
 
 .modal-editar-field input,
 .modal-editar-field select {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid #ddd;
-  border-radius: 8px;
-  font-size: 15px;
-  background: white;
-  color: #1a1a1a;
-  outline: none;
-  transition: border-color 0.2s;
-  font-family: inherit;
+  width: 100% !important;
+  padding: 10px 12px !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.2s !important;
 }
 
 .modal-editar-field input:focus,
 .modal-editar-field select:focus {
-  border-color: #b22222;
+  outline: none !important;
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1) !important;
 }
 
-.modal-editar-field input::placeholder {
-  color: #aaa;
-}
-
-/* BOTONES */
 .modal-editar-buttons {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
+  display: flex !important;
+  gap: 12px !important;
+  margin-top: 24px !important;
+  justify-content: flex-end !important;
 }
 
 .btn-editar-cancelar {
-  flex: 1;
-  padding: 12px;
-  border: 1.5px solid #ddd;
-  border-radius: 8px;
-  background: white;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 15px;
-  color: #555;
-  transition: background 0.2s;
+  padding: 10px 24px !important;
+  background: #f8f9fa !important;
+  color: #495057 !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
 }
 
 .btn-editar-cancelar:hover {
-  background: #f5f5f5;
+  background: #e9ecef !important;
 }
 
 .btn-editar-guardar {
-  flex: 2;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: #2c6b9e;
-  color: white;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 15px;
-  transition: background 0.2s;
+  padding: 10px 24px !important;
+  background: #007bff !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
 }
 
-.btn-editar-guardar:hover {
-  background: #1a4a6e;
+.btn-editar-guardar:hover:not(:disabled) {
+  background: #0069d9 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3) !important;
 }
 
 .btn-editar-guardar:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
 }
 
-/* RESPONSIVE */
-@media (max-width: 480px) {
+/* Responsive */
+@media (max-width: 768px) {
   .modal-editar-content {
-    padding: 20px;
+    width: 95% !important;
+    margin: 10px !important;
   }
-  
+
+  .modal-editar-header {
+    padding: 16px 20px !important;
+  }
+
   .modal-editar-header h2 {
-    font-size: 18px;
+    font-size: 18px !important;
   }
-  
+
+  .modal-editar-content form {
+    padding: 20px !important;
+  }
+
   .modal-editar-buttons {
-    flex-direction: column;
+    flex-direction: column !important;
+  }
+
+  .btn-editar-cancelar,
+  .btn-editar-guardar {
+    width: 100% !important;
+    justify-content: center !important;
   }
 }

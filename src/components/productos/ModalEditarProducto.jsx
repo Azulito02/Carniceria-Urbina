@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import './ModalEditarProducto.css';
 
-
-function ModalEditarProducto({ isOpen, onClose, onSave, producto, categorias, unidades, loading }) {
+function ModalEditarProducto({ 
+  isOpen, 
+  onClose, 
+  onSave, 
+  producto, 
+  categorias, 
+  unidades, 
+  loading 
+}) {
   const [formData, setFormData] = useState({
     nombre: '',
     categoria: 'carnes_res',
     marca: '',
     unidad_medida: 'libra',
-    codigo_barras: '',
   });
 
   useEffect(() => {
@@ -17,7 +24,6 @@ function ModalEditarProducto({ isOpen, onClose, onSave, producto, categorias, un
         categoria: producto.categoria || 'carnes_res',
         marca: producto.marca || '',
         unidad_medida: producto.unidad_medida || 'libra',
-        codigo_barras: producto.codigo_barras || '',
       });
     }
   }, [producto]);
@@ -30,12 +36,23 @@ function ModalEditarProducto({ isOpen, onClose, onSave, producto, categorias, un
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!producto || !producto.id) {
+      alert('Error: No hay producto seleccionado');
+      return;
+    }
+
+    if (!formData.nombre || formData.nombre.trim() === '') {
+      alert('El nombre del producto es obligatorio');
+      return;
+    }
+
     await onSave(producto.id, formData);
   };
 
   return (
-    <div className="modal-editar-overlay">
-      <div className="modal-editar-content">
+    <div className="modal-editar-overlay" onClick={onClose}>
+      <div className="modal-editar-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-editar-header">
           <h2>✏️ Editar Producto</h2>
           <button className="modal-editar-close" onClick={onClose}>×</button>
@@ -61,7 +78,7 @@ function ModalEditarProducto({ isOpen, onClose, onSave, producto, categorias, un
               onChange={handleChange}
               required
             >
-              {categorias.map(c => (
+              {categorias && categorias.map(c => (
                 <option key={c.value} value={c.value}>{c.label}</option>
               ))}
             </select>
@@ -85,20 +102,10 @@ function ModalEditarProducto({ isOpen, onClose, onSave, producto, categorias, un
               onChange={handleChange}
               required
             >
-              {unidades.map(u => (
+              {unidades && unidades.map(u => (
                 <option key={u.value} value={u.value}>{u.label}</option>
               ))}
             </select>
-          </div>
-
-          <div className="modal-editar-field">
-            <label>Código de barras</label>
-            <input
-              type="text"
-              name="codigo_barras"
-              value={formData.codigo_barras}
-              onChange={handleChange}
-            />
           </div>
 
           <div className="modal-editar-buttons">
@@ -115,5 +122,4 @@ function ModalEditarProducto({ isOpen, onClose, onSave, producto, categorias, un
   );
 }
 
-// ✅ ESTO ES LO QUE ESTABA FALTANDO
 export default ModalEditarProducto;

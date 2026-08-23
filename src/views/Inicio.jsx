@@ -1,102 +1,245 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../database/supabase';
+import './Inicio.css';
 
 function Inicio() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [resumen, setResumen] = useState({
+    ventasHoy: 0,
+    ventasRealizadas: 0,
+    pendientes: 0
+  });
 
-  const modules = [
-    { name: 'Productos', icon: 'fa-box', color: 'icon-productos', path: '/productos' },
-    { name: 'Inventario', icon: 'fa-warehouse', color: 'icon-inventario', path: '/inventario' },
-    { name: 'Ventas', icon: 'fa-cash-register', color: 'icon-ventas', path: '/ventas' },
-    { name: 'Créditos', icon: 'fa-credit-card', color: 'icon-creditos', path: '/creditos' },
-    { name: 'Abonos', icon: 'fa-hand-holding-usd', color: 'icon-abonos', path: '/abonos' },
-    { name: 'Gastos', icon: 'fa-receipt', color: 'icon-gastos', path: '/gastos' },
-    { name: 'Arqueos', icon: 'fa-calculator', color: 'icon-arqueos', path: '/arqueos' },
-    { name: 'Reportes', icon: 'fa-chart-pie', color: 'icon-reportes', path: '/reportes' },
-    { name: 'Servicios', icon: 'fa-concierge-bell', color: 'icon-servicios', path: '/servicios' },
-    { name: 'Inversiones', icon: 'fa-chart-line', color: 'icon-inversiones', path: '/inversiones' },
-  ];
+  // ===== CARGAR DATOS DEL DASHBOARD =====
+  useEffect(() => {
+    cargarDatosDashboard();
+  }, []);
 
-  const irA = (path) => {
-    console.log('Navegando a:', path);
-    navigate(path);
+  const cargarDatosDashboard = async () => {
+    try {
+      setLoading(true);
+      
+      // Obtener fecha actual
+      const hoy = new Date().toISOString().split('T')[0];
+
+      // Ventas del día
+      const { data: ventasData, error: ventasError } = await supabase
+        .from('ventas')
+        .select('total, estado')
+        .eq('fecha', hoy);
+
+      if (ventasError) throw ventasError;
+
+      // Calcular total de ventas del día
+      const totalVentas = ventasData?.reduce((sum, v) => sum + (v.total || 0), 0) || 0;
+      const ventasRealizadas = ventasData?.filter(v => v.estado === 'completada').length || 0;
+      const pendientes = ventasData?.filter(v => v.estado === 'pendiente').length || 0;
+
+      setResumen({
+        ventasHoy: totalVentas,
+        ventasRealizadas: ventasRealizadas,
+        pendientes: pendientes
+      });
+
+    } catch (err) {
+      console.error('Error cargando datos:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Módulos del menú
+  const modulos = [
+    { 
+      id: 'productos', 
+      nombre: 'Productos', 
+      icono: 'fa-box', 
+      color: '#e74c3c',
+      ruta: '/productos'
+    },
+    { 
+      id: 'inventario', 
+      nombre: 'Inventario', 
+      icono: 'fa-warehouse', 
+      color: '#f39c12',
+      ruta: '/inventario'
+    },
+    { 
+      id: 'ventas', 
+      nombre: 'Ventas', 
+      icono: 'fa-cash-register', 
+      color: '#2ecc71',
+      ruta: '/ventas'
+    },
+    { 
+      id: 'creditos', 
+      nombre: 'Créditos', 
+      icono: 'fa-hand-holding-usd', 
+      color: '#3498db',
+      ruta: '/creditos'
+    },
+    { 
+      id: 'abonos', 
+      nombre: 'Abonos', 
+      icono: 'fa-coins', 
+      color: '#1abc9c',
+      ruta: '/abonos'
+    },
+    { 
+      id: 'gastos', 
+      nombre: 'Gastos', 
+      icono: 'fa-receipt', 
+      color: '#e74c3c',
+      ruta: '/gastos'
+    },
+    { 
+      id: 'arqueos', 
+      nombre: 'Arqueos', 
+      icono: 'fa-calculator', 
+      color: '#9b59b6',
+      ruta: '/arqueos'
+    },
+    { 
+      id: 'reportes', 
+      nombre: 'Reportes', 
+      icono: 'fa-chart-bar', 
+      color: '#34495e',
+      ruta: '/reportes'
+    },
+    { 
+      id: 'servicios', 
+      nombre: 'Servicios', 
+      icono: 'fa-concierge-bell', 
+      color: '#e67e22',
+      ruta: '/servicios'
+    },
+    { 
+      id: 'inversiones', 
+      nombre: 'Inversiones', 
+      icono: 'fa-chart-line', 
+      color: '#2c3e50',
+      ruta: '/inversiones'
+    }
+  ];
+
   return (
-    <>
-      <div className="header">
-        <div className="header-left">
-          <div className="header-logo">🥩</div>
-          <div className="header-text">
-            <span className="brand-icon">CARNICERÍA</span>
-            <span className="brand-text">URBINA <span>· Admin</span></span>
+    <div className="inicio-container">
+      {/* Encabezado */}
+      <header className="inicio-header">
+        <div className="header-content">
+          <div className="logo-section">
+            <div className="logo-icon">🥩</div>
+            <div className="logo-text">
+              <h1>CARNICERÍA</h1>
+              <span>URBINA</span>
+            </div>
+          </div>
+          <div className="user-section">
+            <i className="fas fa-user-circle"></i>
+            <span>Administrador</span>
           </div>
         </div>
-        <div className="admin-badge">
-          <i className="fas fa-user-circle"></i> Administrador
-        </div>
-      </div>
+      </header>
 
-      <div className="welcome">
-        <span className="logo-emoji">🥩</span>
-        <h1>¡Bienvenido!</h1>
-        <p>Carnicería Urbina · Sistema de gestión de inventario y ventas</p>
-      </div>
-
-      <div className="modules-grid">
-        {modules.map((mod, i) => (
-          <div className="module-card" key={i} onClick={() => irA(mod.path)}>
-            <div className={`icon ${mod.color}`}>
-              <i className={`fas ${mod.icon}`}></i>
-            </div>
-            <div className="info">
-              <span className="label">{mod.name}</span>
-              <span className="action">Gestionar</span>
-            </div>
-            <i className="fas fa-chevron-right arrow"></i>
+      {/* Contenido principal */}
+      <div className="inicio-content">
+        {/* Bienvenida */}
+        <div className="welcome-section">
+          <div className="welcome-text">
+            <h2>¡Bienvenido!</h2>
+            <p>Carnicería Urbina</p>
+            <span>Sistema de gestión de inventario y ventas</span>
           </div>
-        ))}
-      </div>
+        </div>
 
-      <div className="summary">
-        <div className="summary-header">
+        {/* Módulos */}
+        <div className="modulos-grid">
+          {modulos.map((modulo) => (
+            <div 
+              key={modulo.id}
+              className="modulo-card"
+              onClick={() => navigate(modulo.ruta)}
+              style={{ borderLeftColor: modulo.color }}
+            >
+              <div className="modulo-icon" style={{ background: modulo.color }}>
+                <i className={`fas ${modulo.icono}`}></i>
+              </div>
+              <div className="modulo-info">
+                <h3>{modulo.nombre}</h3>
+                <span>Gestionar</span>
+              </div>
+              <div className="modulo-arrow">
+                <i className="fas fa-chevron-right"></i>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Resumen general */}
+        <div className="resumen-section">
           <h3>Resumen general</h3>
-          <span><i className="far fa-calendar-alt"></i> Hoy</span>
-        </div>
-        <div className="summary-cards">
-          <div className="summary-item">
-            <div className="icon-circle resumen-ventas"><i className="fas fa-dollar-sign"></i></div>
-            <span className="number valor-rojo">C$ 3,771</span>
-            <span className="desc">Ventas del día</span>
-          </div>
-          <div className="summary-item">
-            <div className="icon-circle resumen-realizadas"><i className="fas fa-check"></i></div>
-            <span className="number valor-verde">24</span>
-            <span className="desc">Ventas realizadas</span>
-          </div>
-          <div className="summary-item">
-            <div className="icon-circle resumen-pendientes"><i className="fas fa-clock"></i></div>
-            <span className="number valor-naranja">5</span>
-            <span className="desc">Pendientes</span>
+          <div className="resumen-cards">
+            <div className="resumen-card">
+              <div className="resumen-icon" style={{ background: '#2ecc71' }}>
+                <i className="fas fa-dollar-sign"></i>
+              </div>
+              <div className="resumen-info">
+                <span className="resumen-label">Ventas del día</span>
+                <span className="resumen-valor">
+                  {loading ? 'Cargando...' : `C$ ${resumen.ventasHoy.toFixed(2)}`}
+                </span>
+              </div>
+            </div>
+
+            <div className="resumen-card">
+              <div className="resumen-icon" style={{ background: '#3498db' }}>
+                <i className="fas fa-shopping-cart"></i>
+              </div>
+              <div className="resumen-info">
+                <span className="resumen-label">Ventas realizadas</span>
+                <span className="resumen-valor">
+                  {loading ? 'Cargando...' : resumen.ventasRealizadas}
+                </span>
+              </div>
+            </div>
+
+            <div className="resumen-card">
+              <div className="resumen-icon" style={{ background: '#e74c3c' }}>
+                <i className="fas fa-clock"></i>
+              </div>
+              <div className="resumen-info">
+                <span className="resumen-label">Pendientes</span>
+                <span className="resumen-valor">
+                  {loading ? 'Cargando...' : resumen.pendientes}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Navegación inferior */}
       <div className="bottom-nav">
-        <button className="nav-item active" onClick={() => irA('/')}>
-          <i className="fas fa-home"></i><span>Inicio</span>
+        <button className="nav-item active">
+          <i className="fas fa-home"></i>
+          <span>Inicio</span>
         </button>
-        <button className="nav-item" onClick={() => irA('/productos')}>
-          <i className="fas fa-box"></i><span>Productos</span>
+        <button className="nav-item" onClick={() => navigate('/productos')}>
+          <i className="fas fa-box"></i>
+          <span>Productos</span>
         </button>
-        <button className="nav-item" onClick={() => irA('/ventas')}>
-          <i className="fas fa-cash-register"></i><span>Ventas</span>
+        <button className="nav-item" onClick={() => navigate('/ventas')}>
+          <i className="fas fa-cash-register"></i>
+          <span>Ventas</span>
         </button>
         <button className="nav-item">
-          <i className="fas fa-ellipsis-h"></i><span>Más</span>
+          <i className="fas fa-ellipsis-h"></i>
+          <span>Más</span>
         </button>
       </div>
-    </>
+    </div>
   );
 }
 

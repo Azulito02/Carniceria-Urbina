@@ -7,7 +7,6 @@ function ModalAgregarProducto({ isOpen, onClose, onSave, categorias, unidades, l
     categoria: 'carnes_res',
     marca: '',
     unidad_medida: 'libra',
-    codigo_barras: '',
   });
 
   if (!isOpen) return null;
@@ -18,21 +17,24 @@ function ModalAgregarProducto({ isOpen, onClose, onSave, categorias, unidades, l
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await onSave(formData);
-    if (!loading) {
-      setFormData({
-        nombre: '',
-        categoria: 'carnes_res',
-        marca: '',
-        unidad_medida: 'libra',
-        codigo_barras: '',
-      });
+    
+    if (!formData.nombre || formData.nombre.trim() === '') {
+      alert('El nombre del producto es obligatorio');
+      return;
     }
+
+    await onSave(formData);
+    setFormData({
+      nombre: '',
+      categoria: 'carnes_res',
+      marca: '',
+      unidad_medida: 'libra',
+    });
   };
 
   return (
-    <div className="modal-agregar-overlay">
-      <div className="modal-agregar-content">
+    <div className="modal-agregar-overlay" onClick={onClose}>
+      <div className="modal-agregar-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-agregar-header">
           <h2>➕ Agregar Producto</h2>
           <button className="modal-agregar-close" onClick={onClose}>×</button>
@@ -47,7 +49,6 @@ function ModalAgregarProducto({ isOpen, onClose, onSave, categorias, unidades, l
               value={formData.nombre}
               onChange={handleChange}
               required
-              placeholder="Ej: Lomo de Res"
             />
           </div>
 
@@ -59,7 +60,7 @@ function ModalAgregarProducto({ isOpen, onClose, onSave, categorias, unidades, l
               onChange={handleChange}
               required
             >
-              {categorias.map(c => (
+              {categorias && categorias.map(c => (
                 <option key={c.value} value={c.value}>{c.label}</option>
               ))}
             </select>
@@ -72,7 +73,6 @@ function ModalAgregarProducto({ isOpen, onClose, onSave, categorias, unidades, l
               name="marca"
               value={formData.marca}
               onChange={handleChange}
-              placeholder="Ej: Carnes Don Juan"
             />
           </div>
 
@@ -84,21 +84,10 @@ function ModalAgregarProducto({ isOpen, onClose, onSave, categorias, unidades, l
               onChange={handleChange}
               required
             >
-              {unidades.map(u => (
+              {unidades && unidades.map(u => (
                 <option key={u.value} value={u.value}>{u.label}</option>
               ))}
             </select>
-          </div>
-
-          <div className="modal-agregar-field">
-            <label>Código de barras</label>
-            <input
-              type="text"
-              name="codigo_barras"
-              value={formData.codigo_barras}
-              onChange={handleChange}
-              placeholder="Ej: 7501234567890"
-            />
           </div>
 
           <div className="modal-agregar-buttons">
@@ -106,7 +95,7 @@ function ModalAgregarProducto({ isOpen, onClose, onSave, categorias, unidades, l
               Cancelar
             </button>
             <button type="submit" className="btn-agregar-guardar" disabled={loading}>
-              {loading ? 'Guardando...' : 'Crear Producto'}
+              {loading ? 'Guardando...' : 'Agregar Producto'}
             </button>
           </div>
         </form>
@@ -115,5 +104,4 @@ function ModalAgregarProducto({ isOpen, onClose, onSave, categorias, unidades, l
   );
 }
 
-// ✅ ESTO ES LO QUE ESTABA FALTANDO
 export default ModalAgregarProducto;
