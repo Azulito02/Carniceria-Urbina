@@ -1,4 +1,4 @@
-/* Inicio.css */
+/* Inicio.css - Con colores de marca */
 
 * {
   margin: 0;
@@ -8,78 +8,14 @@
 
 .inicio-container {
   min-height: 100vh;
-  background: #f5f6fa;
+  background: #f5f0ef;
   display: flex;
   flex-direction: column;
 }
 
-/* ===== HEADER ===== */
-.inicio-header {
-  background: linear-gradient(135deg, #c0392b, #e74c3c);
-  color: white;
-  padding: 0 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-.header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 60px;
-}
-
-.logo-section {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.logo-icon {
-  font-size: 32px;
-  line-height: 1;
-}
-
-.logo-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.1;
-}
-
-.logo-text h1 {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  margin: 0;
-}
-
-.logo-text span {
-  font-size: 11px;
-  font-weight: 300;
-  opacity: 0.9;
-  letter-spacing: 2px;
-}
-
-.user-section {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  opacity: 0.95;
-}
-
-.user-section i {
-  font-size: 24px;
-}
-
-/* ===== CONTENIDO ===== */
 .inicio-content {
   flex: 1;
-  padding: 16px 16px 80px;
+  padding: 16px 20px 80px;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
@@ -87,12 +23,12 @@
 
 /* ===== BIENVENIDA ===== */
 .welcome-section {
-  background: linear-gradient(135deg, #2c3e50, #34495e);
+  background: linear-gradient(135deg, #8B1E1E, #6b1515);
   color: white;
   padding: 20px 24px;
   border-radius: 12px;
   margin-bottom: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(139, 30, 30, 0.25);
 }
 
 .welcome-text h2 {
@@ -105,7 +41,7 @@
   font-size: 16px;
   font-weight: 500;
   margin: 0;
-  color: #f1c40f;
+  color: #FBAC3E;
 }
 
 .welcome-text span {
@@ -118,7 +54,7 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .modulo-card {
@@ -129,14 +65,14 @@
   align-items: center;
   gap: 14px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border-left: 4px solid #3498db;
+  border-left: 4px solid #8B1E1E;
 }
 
 .modulo-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
 .modulo-card:active {
@@ -144,8 +80,8 @@
 }
 
 .modulo-icon {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -168,11 +104,11 @@
 
 .modulo-info span {
   font-size: 11px;
-  color: #95a5a6;
+  color: #B1B3B6;
 }
 
 .modulo-arrow {
-  color: #bdc3c7;
+  color: #D8A9A0;
   font-size: 14px;
 }
 
@@ -186,7 +122,7 @@
 
 .resumen-section h3 {
   font-size: 16px;
-  color: #2c3e50;
+  color: #8B1E1E;
   margin: 0 0 16px 0;
   font-weight: 600;
 }
@@ -201,20 +137,21 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  background: #f8f9fa;
+  padding: 12px 14px;
+  background: #faf7f6;
   border-radius: 10px;
+  border-left: 3px solid #8B1E1E;
 }
 
 .resumen-icon {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 18px;
+  font-size: 17px;
   flex-shrink: 0;
 }
 
@@ -225,12 +162,12 @@
 
 .resumen-label {
   font-size: 11px;
-  color: #7f8c8d;
+  color: #B1B3B6;
   font-weight: 500;
 }
 
 .resumen-valor {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: #2c3e50;
 }
@@ -244,9 +181,9 @@
   background: white;
   display: flex;
   justify-content: space-around;
-  padding: 8px 0 12px 0;
-  border-top: 1px solid #e9ecef;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  padding: 8px 0 14px 0;
+  border-top: 2px solid #f0e8e6;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
   z-index: 1000;
 }
 
@@ -254,67 +191,54 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   background: none;
   border: none;
-  color: #95a5a6;
+  color: #B1B3B6;
   font-size: 10px;
   cursor: pointer;
-  padding: 2px 16px;
-  transition: color 0.2s;
+  padding: 4px 16px;
+  transition: all 0.3s ease;
   position: relative;
 }
 
 .nav-item i {
   font-size: 20px;
+  transition: all 0.3s ease;
 }
 
 .nav-item:hover {
-  color: #e74c3c;
+  color: #8B1E1E;
+}
+
+.nav-item:hover i {
+  transform: translateY(-2px);
 }
 
 .nav-item.active {
-  color: #e74c3c;
+  color: #8B1E1E;
 }
 
 .nav-item.active::after {
   content: '';
   position: absolute;
-  top: -1px;
+  top: -2px;
   left: 50%;
   transform: translateX(-50%);
-  width: 24px;
+  width: 28px;
   height: 3px;
-  background: #e74c3c;
+  background: #8B1E1E;
   border-radius: 0 0 3px 3px;
 }
 
+.nav-item.active i {
+  color: #FBAC3E;
+}
+
 /* ===== RESPONSIVE ===== */
-
-/* Tablets */
 @media (max-width: 768px) {
-  .header-content {
-    height: 55px;
-  }
-
-  .logo-icon {
-    font-size: 28px;
-  }
-
-  .logo-text h1 {
-    font-size: 16px;
-  }
-
-  .logo-text span {
-    font-size: 10px;
-  }
-
-  .user-section span {
-    display: none;
-  }
-
   .inicio-content {
-    padding: 12px 12px 75px;
+    padding: 12px 14px 75px;
   }
 
   .welcome-text h2 {
@@ -354,30 +278,22 @@
   .resumen-valor {
     font-size: 16px;
   }
+
+  .bottom-nav {
+    padding: 6px 0 12px 0;
+  }
+
+  .nav-item {
+    font-size: 9px;
+    padding: 2px 10px;
+  }
+
+  .nav-item i {
+    font-size: 18px;
+  }
 }
 
-/* Móviles */
 @media (max-width: 480px) {
-  .header-content {
-    height: 50px;
-  }
-
-  .logo-icon {
-    font-size: 24px;
-  }
-
-  .logo-text h1 {
-    font-size: 14px;
-  }
-
-  .logo-text span {
-    font-size: 9px;
-  }
-
-  .user-section i {
-    font-size: 20px;
-  }
-
   .inicio-content {
     padding: 10px 10px 70px;
   }
@@ -440,9 +356,9 @@
   }
 
   .resumen-icon {
-    width: 36px;
-    height: 36px;
-    font-size: 16px;
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
   }
 
   .resumen-label {
@@ -454,20 +370,20 @@
   }
 
   .bottom-nav {
-    padding: 6px 0 10px 0;
+    padding: 4px 0 10px 0;
   }
 
   .nav-item {
-    font-size: 9px;
-    padding: 0 10px;
+    font-size: 8px;
+    padding: 2px 8px;
   }
 
   .nav-item i {
-    font-size: 18px;
+    font-size: 16px;
   }
 }
 
-/* Animaciones */
+/* ===== ANIMACIONES ===== */
 @keyframes fadeInUp {
   from {
     opacity: 0;

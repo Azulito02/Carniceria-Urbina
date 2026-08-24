@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../database/supabase';
 import Encabezado from '../components/Encabezado';
+import PDFInventario from '../components/PDFInventario';
 import './Inventario.css';
 
 function Inventario() {
@@ -16,8 +17,13 @@ function Inventario() {
   const [error, setError] = useState(null);
   const [exito, setExito] = useState(null);
   const [cargandoInventario, setCargandoInventario] = useState(false);
+  const [generandoPDF, setGenerandoPDF] = useState(false);
+  
+  const [editandoId, setEditandoId] = useState(null);
+  const [editandoProducto, setEditandoProducto] = useState('');
+  const [editandoCantidad, setEditandoCantidad] = useState('');
+  const [editandoFecha, setEditandoFecha] = useState('');
 
-  // ===== CARGAR PRODUCTOS =====
   useEffect(() => {
     cargarProductos();
   }, []);
@@ -37,7 +43,6 @@ function Inventario() {
     }
   };
 
-  // ===== CARGAR INVENTARIO POR FECHA =====
   const cargarInventarioPorFecha = async (fecha) => {
     if (!fecha) {
       setInventarioActual([]);
@@ -48,6 +53,7 @@ function Inventario() {
       setCargandoInventario(true);
       setError(null);
       setExito(null);
+      setEditandoId(null);
 
       const { data, error } = await supabase
         .from('inventario')
@@ -94,8 +100,7 @@ function Inventario() {
     }
   };
 
-  // ===== AGREGAR PRODUCTO AL INVENTARIO =====
-  const agregarProducto = () => {
+  const agregarProducto = async () => {
     if (!productoSeleccionado) {
       setError('Selecciona un producto');
       return;
@@ -106,25 +111,23 @@ function Inventario() {
       return;
     }
 
-    const producto = productos.find(p => p.id === parseInt(productoSeleccionado));
-    
-    // Verificar si el producto ya está en el inventario actual
-    const existe = inventarioActual.find(item => item.producto_id === parseInt(productoSeleccionado));
-    
-    if (existe) {
-      // Actualizar cantidad
-      const nuevosItems = inventarioActual.map(item =>
-        item.producto_id === parseInt(productoSeleccionado)
-          ? { ...item, cantidad: parseFloat(cantidad) }
-          : item
-      );
-      setInventarioActual(nuevosItems);
-      setExito(`✅ Cantidad actualizada para "${producto.nombre}"`);
-    } else {
-      // Agregar nuevo producto
-      setInventarioActual([
-        ...inventarioActual,
-        {
+    try {
+      setLoading(true);
+      const producto = productos.find(p => p.id === parseInt(productoSeleccionado));
+      
+      const existe = inventarioActual.find(item => item.producto_id === parseInt(productoSeleccionado));
+      
+      if (existe) {
+        const nuevosItems = inventarioActual.map(item =>
+          item.producto_id === parseInt(productoSeleccionado)
+            ? { ...item, cantidad: parseFloat(cantidad) }
+            : item
+        );
+        setInventarioActual(nuevosItems);
+        setExito(`✅ Cantidad actualizada para "${producto.nombre}"`);
+      } else {
+        const nuevoItem = {
+          id: `temp_${Date.now()}_${inventarioActual.length}`,
           producto_id: producto.id,
           nombre: producto.nombre,
           categoria: producto.categoria,
@@ -132,18 +135,115 @@ function Inventario() {
           unidad_medida: producto.unidad_medida,
           cantidad: parseFloat(cantidad),
           fecha: fecha
-        }
-      ]);
-      setExito(`✅ "${producto.nombre}" agregado al inventario`);
-    }
+        };
+        setInventarioActual([...inventarioActual, nuevoItem]);
+        setExito(`✅ "${producto.nombre}" agregado al inventario`);
+      }
 
-    // Limpiar campos
-    setProductoSeleccionado('');
-    setCantidad('');
-    setError(null);
+      setProductoSeleccionado('');
+      setCantidad('');
+      setError(null);
+    } catch (err) {
+      console.error('Error agregando producto:', err);
+      setError('Error al agregar producto');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // ===== ELIMINAR PRODUCTO DEL INVENTARIO =====
+  const iniciarEdicion = (item) => {
+    if (!item || !item.id) {
+      setError('Error: No se puede editar este registro');
+      return;
+    }
+    
+    setEditandoId(item.id);
+    setEditandoProducto(item.producto_id ? item.producto_id.toString() : '');
+    setEditandoCantidad(item.cantidad ? item.cantidad.toString() : '');
+    setEditandoFecha(item.fecha || '');
+  };
+
+  const cancelarEdicion = () => {
+    setEditandoId(null);
+    setEditandoProducto('');
+    setEditandoCantidad('');
+    setEditandoFecha('');
+  };
+
+  const actualizarRegistro = async () => {
+    if (!editandoId) {
+      setError('Error: No se puede actualizar sin un ID');
+      return;
+    }
+
+    if (!editandoProducto || editandoProducto === '') {
+      setError('Selecciona un producto');
+      return;
+    }
+
+    const productoId = parseInt(editandoProducto);
+    if (isNaN(productoId) || productoId <= 0) {
+      setError('Producto no válido');
+      return;
+    }
+
+    const cantidadNum = parseFloat(editandoCantidad);
+    if (isNaN(cantidadNum) || cantidadNum <= 0) {
+      setError('La cantidad debe ser mayor a 0');
+      return;
+    }
+
+    if (!editandoFecha) {
+      setError('Selecciona una fecha');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const producto = productos.find(p => p.id === productoId);
+      if (!producto) {
+        setError('Producto no encontrado');
+        setLoading(false);
+        return;
+      }
+
+      const nuevosItems = inventarioActual.map(item => {
+        if (item.id === editandoId) {
+          return {
+            ...item,
+            producto_id: productoId,
+            nombre: producto.nombre,
+            categoria: producto.categoria,
+            marca: producto.marca || '-',
+            unidad_medida: producto.unidad_medida,
+            cantidad: cantidadNum,
+            fecha: editandoFecha
+          };
+        }
+        return item;
+      });
+      
+      setInventarioActual(nuevosItems);
+      
+      setEditandoId(null);
+      setEditandoProducto('');
+      setEditandoCantidad('');
+      setEditandoFecha('');
+      setExito(`✅ Registro actualizado correctamente`);
+      
+      if (filtroFecha) {
+        cargarInventarioPorFecha(filtroFecha);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      setError('Error al actualizar: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const eliminarDelInventario = (index) => {
     const producto = inventarioActual[index];
     const nuevosItems = inventarioActual.filter((_, i) => i !== index);
@@ -151,7 +251,37 @@ function Inventario() {
     setExito(`🗑️ "${producto.nombre}" eliminado del inventario`);
   };
 
-  // ===== GUARDAR INVENTARIO =====
+  const eliminarDeBD = async (id, nombre) => {
+    if (!window.confirm(`¿Estás seguro de eliminar "${nombre}" del inventario?`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { error } = await supabase
+        .from('inventario')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      const nuevosItems = inventarioActual.filter(item => item.id !== id);
+      setInventarioActual(nuevosItems);
+      setExito(`🗑️ "${nombre}" eliminado del inventario permanentemente`);
+      
+      if (filtroFecha) {
+        cargarInventarioPorFecha(filtroFecha);
+      }
+    } catch (err) {
+      console.error('Error eliminando:', err);
+      setError('Error al eliminar el producto del inventario: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const guardarInventario = async () => {
     if (inventarioActual.length === 0) {
       setError('Agrega al menos un producto al inventario');
@@ -162,7 +292,6 @@ function Inventario() {
       setLoading(true);
       setError(null);
 
-      // Primero, eliminar todos los registros existentes para esta fecha
       const { error: deleteError } = await supabase
         .from('inventario')
         .delete()
@@ -170,14 +299,12 @@ function Inventario() {
 
       if (deleteError) throw deleteError;
 
-      // Preparar datos para insertar
       const datosInventario = inventarioActual.map(item => ({
         producto_id: item.producto_id,
         cantidad: item.cantidad,
         fecha: fecha
       }));
 
-      // Insertar nuevo inventario
       const { data, error } = await supabase
         .from('inventario')
         .insert(datosInventario)
@@ -185,10 +312,7 @@ function Inventario() {
 
       if (error) throw error;
 
-      setExito(`✅ Inventario guardado exitosamente - ${data.length} productos`);
-      
-      // Actualizar los IDs
-      if (data) {
+      if (data && data.length > 0) {
         const itemsActualizados = inventarioActual.map((item, index) => ({
           ...item,
           id: data[index]?.id || item.id
@@ -196,6 +320,13 @@ function Inventario() {
         setInventarioActual(itemsActualizados);
       }
 
+      setExito(`✅ Inventario guardado exitosamente - ${data.length} productos`);
+      
+      if (filtroFecha) {
+        cargarInventarioPorFecha(filtroFecha);
+      } else {
+        cargarInventarioPorFecha(fecha);
+      }
     } catch (err) {
       console.error('Error guardando inventario:', err);
       setError('Error al guardar el inventario: ' + err.message);
@@ -204,7 +335,6 @@ function Inventario() {
     }
   };
 
-  // ===== NUEVO INVENTARIO =====
   const nuevoInventario = () => {
     setInventarioActual([]);
     setFecha(new Date().toISOString().split('T')[0]);
@@ -213,9 +343,36 @@ function Inventario() {
     setExito('📝 Nuevo inventario creado');
     setProductoSeleccionado('');
     setCantidad('');
+    setEditandoId(null);
+    setEditandoProducto('');
+    setEditandoCantidad('');
+    setEditandoFecha('');
   };
 
-  // ===== CALCULAR TOTAL DE PRODUCTOS =====
+  // ===== EXPORTAR A PDF =====
+  const exportarPDF = async () => {
+    if (inventarioActual.length === 0) {
+      setError('No hay productos para exportar');
+      return;
+    }
+
+    try {
+      setGenerandoPDF(true);
+      const fechaMostrar = filtroFecha || fecha;
+      const total = inventarioActual.length;
+      const totalCant = inventarioActual.reduce((sum, item) => sum + item.cantidad, 0);
+      
+      await PDFInventario(inventarioActual, fechaMostrar, total, totalCant);
+      setExito(`📄 PDF generado exitosamente`);
+      setTimeout(() => setExito(null), 3000);
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+      setError('Error al generar el PDF: ' + err.message);
+    } finally {
+      setGenerandoPDF(false);
+    }
+  };
+
   const totalProductos = inventarioActual.length;
   const totalCantidad = inventarioActual.reduce((sum, item) => sum + item.cantidad, 0);
 
@@ -226,18 +383,30 @@ function Inventario() {
       <div className="inventario-content">
         <div className="inventario-header">
           <div className="inventario-titulo">
-            <h1>📊 Inventario</h1>
-            <p>Gestión de inventario de productos</p>
+            <h1>📦 Gestión de Inventario</h1>
+            <p>Control y seguimiento de productos en stock</p>
           </div>
-          <button className="btn-nuevo" onClick={nuevoInventario}>
-            <i className="fas fa-plus"></i> Nuevo Inventario
-          </button>
+          <div className="header-buttons">
+            <button className="btn-pdf" onClick={exportarPDF} disabled={generandoPDF || inventarioActual.length === 0}>
+              {generandoPDF ? (
+                <>
+                  <i className="fas fa-spinner fa-spin"></i> Generando...
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-file-pdf"></i> Exportar PDF
+                </>
+              )}
+            </button>
+            <button className="btn-nuevo" onClick={nuevoInventario}>
+              <i className="fas fa-plus-circle"></i> Nuevo Inventario
+            </button>
+          </div>
         </div>
 
-        {/* Mensajes de error y éxito */}
         {error && (
           <div className="inventario-error">
-            <i className="fas fa-exclamation-circle"></i>
+            <i className="fas fa-exclamation-triangle"></i>
             <span>{error}</span>
             <button onClick={() => setError(null)} className="error-close">
               <i className="fas fa-times"></i>
@@ -255,11 +424,10 @@ function Inventario() {
           </div>
         )}
 
-        {/* Filtro de fecha */}
         <div className="filtro-fecha-container">
           <div className="filtro-fecha">
             <label>
-              <i className="fas fa-calendar"></i>
+              <i className="fas fa-calendar-alt"></i>
               Buscar inventario por fecha:
             </label>
             <input
@@ -278,15 +446,18 @@ function Inventario() {
                   setFiltroFecha('');
                   setInventarioActual([]);
                   setExito(null);
+                  setEditandoId(null);
                 }}
               >
-                <i className="fas fa-times"></i> Limpiar
+                <i className="fas fa-times-circle"></i> Limpiar
               </button>
             )}
           </div>
 
           <div className="fecha-actual">
-            <span className="fecha-label">Fecha del inventario:</span>
+            <span className="fecha-label">
+              <i className="fas fa-calendar-day"></i> Fecha del inventario:
+            </span>
             <input
               type="date"
               value={fecha}
@@ -297,11 +468,10 @@ function Inventario() {
           </div>
         </div>
 
-        {/* Formulario para agregar productos */}
         <div className="agregar-producto-container">
           <div className="agregar-producto-form">
             <div className="form-group">
-              <label>Producto *</label>
+              <label><i className="fas fa-box"></i> Producto *</label>
               <select
                 value={productoSeleccionado}
                 onChange={(e) => setProductoSeleccionado(e.target.value)}
@@ -318,7 +488,7 @@ function Inventario() {
             </div>
 
             <div className="form-group">
-              <label>Cantidad *</label>
+              <label><i className="fas fa-weight-hanging"></i> Cantidad *</label>
               <input
                 type="number"
                 value={cantidad}
@@ -336,21 +506,20 @@ function Inventario() {
               <button 
                 className="btn-agregar" 
                 onClick={agregarProducto}
-                disabled={filtroFecha !== ''}
+                disabled={loading || filtroFecha !== ''}
               >
-                <i className="fas fa-plus"></i> Agregar
+                <i className="fas fa-plus-circle"></i> Agregar
               </button>
             </div>
           </div>
         </div>
 
-        {/* Tabla de inventario actual */}
         <div className="inventario-tabla-container">
           <div className="inventario-tabla-header">
-            <h3>📋 Inventario Actual</h3>
+            <h3><i className="fas fa-clipboard-list"></i> Inventario Actual</h3>
             <div className="inventario-resumen">
-              <span>Productos: <strong>{totalProductos}</strong></span>
-              <span>Total unidades: <strong>{totalCantidad.toFixed(2)}</strong></span>
+              <span><i className="fas fa-cubes"></i> Productos: <strong>{totalProductos}</strong></span>
+              <span><i className="fas fa-weight"></i> Total: <strong>{totalCantidad.toFixed(2)}</strong></span>
             </div>
           </div>
 
@@ -370,13 +539,14 @@ function Inventario() {
                     <th>Marca</th>
                     <th>Unidad</th>
                     <th>Cantidad</th>
+                    <th>Fecha</th>
                     <th className="acciones-header">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {inventarioActual.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="sin-productos">
+                      <td colSpan="8" className="sin-productos">
                         <i className="fas fa-box-open"></i>
                         <p>No hay productos en el inventario</p>
                         <span className="sin-productos-sub">
@@ -388,9 +558,27 @@ function Inventario() {
                     </tr>
                   ) : (
                     inventarioActual.map((item, index) => (
-                      <tr key={item.id || index}>
+                      <tr key={item.id || index} className="inventario-fila">
                         <td className="numero">{index + 1}</td>
-                        <td className="producto-nombre">{item.nombre}</td>
+                        <td className="producto-nombre">
+                          {editandoId === item.id ? (
+                            <select
+                              value={editandoProducto}
+                              onChange={(e) => setEditandoProducto(e.target.value)}
+                              className="form-select"
+                              style={{ padding: '4px 8px', fontSize: '13px' }}
+                            >
+                              <option value="">Seleccionar producto...</option>
+                              {productos.map(p => (
+                                <option key={p.id} value={p.id}>
+                                  {p.nombre} {p.marca ? `(${p.marca})` : ''}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            item.nombre
+                          )}
+                        </td>
                         <td className="categoria">
                           <span className="categoria-badge">{item.categoria}</span>
                         </td>
@@ -399,17 +587,83 @@ function Inventario() {
                           <span className="unidad-badge">{item.unidad_medida}</span>
                         </td>
                         <td className="cantidad">
-                          <strong>{item.cantidad.toFixed(2)}</strong>
+                          {editandoId === item.id ? (
+                            <input
+                              type="number"
+                              value={editandoCantidad}
+                              onChange={(e) => setEditandoCantidad(e.target.value)}
+                              className="form-input"
+                              style={{ width: '80px', padding: '4px 8px', textAlign: 'center' }}
+                              step="0.01"
+                              min="0"
+                              autoFocus
+                            />
+                          ) : (
+                            <strong>{item.cantidad.toFixed(2)}</strong>
+                          )}
+                        </td>
+                        <td className="fecha">
+                          {editandoId === item.id ? (
+                            <input
+                              type="date"
+                              value={editandoFecha}
+                              onChange={(e) => setEditandoFecha(e.target.value)}
+                              className="form-input"
+                              style={{ padding: '4px 8px', fontSize: '13px' }}
+                            />
+                          ) : (
+                            item.fecha
+                          )}
                         </td>
                         <td className="acciones">
-                          <button 
-                            className="btn-eliminar-item" 
-                            onClick={() => eliminarDelInventario(index)}
-                            disabled={filtroFecha !== ''}
-                            title="Eliminar del inventario"
-                          >
-                            <i className="fas fa-trash"></i>
-                          </button>
+                          {editandoId === item.id ? (
+                            <div className="acciones-botones">
+                              <button 
+                                className="btn-guardar-edicion" 
+                                onClick={actualizarRegistro}
+                                disabled={loading}
+                                title="Guardar cambios"
+                              >
+                                <i className="fas fa-save"></i>
+                                <span>Guardar</span>
+                              </button>
+                              <button 
+                                className="btn-cancelar-edicion" 
+                                onClick={cancelarEdicion}
+                                title="Cancelar edición"
+                              >
+                                <i className="fas fa-times"></i>
+                                <span>Cancelar</span>
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="acciones-botones">
+                              <button 
+                                className="btn-editar" 
+                                onClick={() => iniciarEdicion(item)}
+                                title="Editar registro"
+                                disabled={filtroFecha !== ''}
+                              >
+                                <i className="fas fa-edit"></i>
+                                <span>Editar</span>
+                              </button>
+                              <button 
+                                className="btn-eliminar" 
+                                onClick={() => {
+                                  if (typeof item.id === 'string' && item.id.startsWith('temp_')) {
+                                    eliminarDelInventario(index);
+                                  } else {
+                                    eliminarDeBD(item.id, item.nombre);
+                                  }
+                                }}
+                                title="Eliminar del inventario"
+                                disabled={filtroFecha !== ''}
+                              >
+                                <i className="fas fa-trash-alt"></i>
+                                <span>Eliminar</span>
+                              </button>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))
@@ -420,7 +674,6 @@ function Inventario() {
           )}
         </div>
 
-        {/* Botones de acción */}
         <div className="inventario-acciones">
           <button 
             className="btn-guardar" 
@@ -443,12 +696,11 @@ function Inventario() {
             onClick={nuevoInventario}
             disabled={loading}
           >
-            <i className="fas fa-undo"></i> Nuevo Inventario
+            <i className="fas fa-undo-alt"></i> Nuevo Inventario
           </button>
         </div>
       </div>
 
-      {/* Navegación inferior */}
       <div className="bottom-nav">
         <button className="nav-item" onClick={() => navigate('/')}>
           <i className="fas fa-home"></i>

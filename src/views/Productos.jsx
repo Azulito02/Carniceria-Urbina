@@ -218,40 +218,48 @@ function Productos() {
     }
   };
 
-  // ===== ELIMINAR PRODUCTO =====
-  const eliminarProducto = async (id) => {
-    try {
-      setLoading(true);
-      setError(null);
+ // ===== ELIMINAR PRODUCTO =====
+const eliminarProducto = async (id) => {
+  console.log('🗑️ Eliminando producto con ID:', id);
+  
+  if (!id) {
+    console.error('❌ Error: ID no proporcionado');
+    alert('Error: No se puede eliminar el producto');
+    return false;
+  }
 
-      const { error } = await supabase
-        .from('productos')
-        .delete()
-        .eq('id', id);
+  try {
+    setLoading(true);
+    setError(null);
 
-      if (error) {
-        console.error('Error eliminando producto:', error);
-        setError('Error al eliminar producto: ' + error.message);
-        setLoading(false);
-        return false;
-      }
+    const { error } = await supabase
+      .from('productos')
+      .delete()
+      .eq('id', id);
 
-      const productosRestantes = productos.filter(p => p.id !== id);
-      setProductos(productosRestantes);
-      setProductosFiltrados(productosRestantes);
-      setModalEliminar(false);
-      setProductoSeleccionado(null);
-      setError(null);
-      setLoading(false);
-      alert('✅ Producto eliminado');
-      return true;
-    } catch (err) {
-      console.error('Error inesperado:', err);
-      setError('Error inesperado al eliminar producto');
+    if (error) {
+      console.error('Error eliminando producto:', error);
+      setError('Error al eliminar producto: ' + error.message);
       setLoading(false);
       return false;
     }
-  };
+
+    const productosRestantes = productos.filter(p => p.id !== id);
+    setProductos(productosRestantes);
+    setProductosFiltrados(productosRestantes);
+    setModalEliminar(false);
+    setProductoSeleccionado(null);
+    setError(null);
+    setLoading(false);
+    alert('✅ Producto eliminado exitosamente');
+    return true;
+  } catch (err) {
+    console.error('Error inesperado:', err);
+    setError('Error inesperado al eliminar producto');
+    setLoading(false);
+    return false;
+  }
+};
 
   // ===== ABRIR MODALES =====
   const abrirAgregar = () => {

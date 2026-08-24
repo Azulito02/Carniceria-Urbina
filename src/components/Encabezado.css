@@ -1,85 +1,283 @@
+/* Encabezado.css - Logo PNG grande y sin fondo */
+
 .encabezado {
   background: #b22222;
-  padding: 16px 20px;
+  padding: 4px 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
   color: white;
   flex-shrink: 0;
+  height: 72px;
+  min-height: 72px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.encabezado-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 24px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .encabezado-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
 }
 
-.encabezado-logo {
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
+/* ===== LOGO PNG - GRANDE Y SIN FONDO ===== */
+.encabezado-logo-img {
+  height: 55px; /* ← Tamaño grande */
+  width: auto;
+  background: transparent; /* ← Sin fondo */
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+  display: block;
 }
 
+.encabezado-logo-img:hover {
+  transform: scale(1.05);
+}
+
+/* ===== TEXTO ===== */
 .encabezado-text {
   display: flex;
   flex-direction: column;
-  line-height: 1.1;
+  line-height: 1;
 }
 
 .encabezado-brand-icon {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 2px;
-  opacity: 0.7;
+  opacity: 0.8;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .encabezado-brand-text {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.5px;
+  color: white;
 }
 
 .encabezado-brand-text span {
   font-weight: 300;
   opacity: 0.7;
+  font-size: 15px;
 }
 
+/* ===== ADMIN ===== */
 .encabezado-admin {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 8px;
+  font-size: 14px;
   font-weight: 500;
   opacity: 0.9;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .encabezado-admin i {
-  font-size: 16px;
+  font-size: 20px;
+  color: #FBAC3E;
 }
 
-@media (min-width: 768px) {
+/* ===== RESPONSIVE ===== */
+@media (max-width: 992px) {
   .encabezado {
-    padding: 20px 40px;
+    height: 64px;
+    min-height: 64px;
   }
+
+  .encabezado-logo-img {
+    height: 46px;
+  }
+
   .encabezado-brand-text {
-    font-size: 24px;
+    font-size: 20px;
+  }
+
+  .encabezado-brand-icon {
+    font-size: 11px;
+  }
+
+  .encabezado-brand-text span {
+    font-size: 13px;
+  }
+
+  .encabezado-admin {
+    font-size: 13px;
+    padding: 5px 14px;
+  }
+
+  .encabezado-admin i {
+    font-size: 18px;
   }
 }
 
-@media (min-width: 1024px) {
+@media (max-width: 768px) {
   .encabezado {
-    padding: 24px 60px;
+    height: 58px;
+    min-height: 58px;
+    padding: 3px 0;
   }
-  .encabezado-logo {
-    width: 48px;
-    height: 48px;
-    font-size: 24px;
+
+  .encabezado-inner {
+    padding: 0 16px;
   }
+
+  .encabezado-left {
+    gap: 10px;
+  }
+
+  .encabezado-logo-img {
+    height: 38px;
+  }
+
+  .encabezado-brand-text {
+    font-size: 17px;
+  }
+
+  .encabezado-brand-icon {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+  }
+
+  .encabezado-brand-text span {
+    font-size: 11px;
+  }
+
+  .encabezado-admin {
+    font-size: 11px;
+    padding: 4px 12px;
+    gap: 6px;
+  }
+
+  .encabezado-admin i {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .encabezado {
+    height: 50px;
+    min-height: 50px;
+    padding: 3px 0;
+  }
+
+  .encabezado-inner {
+    padding: 0 10px;
+  }
+
+  .encabezado-left {
+    gap: 8px;
+  }
+
+  .encabezado-logo-img {
+    height: 32px;
+  }
+
+  .encabezado-brand-text {
+    font-size: 14px;
+  }
+
+  .encabezado-brand-icon {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+
+  .encabezado-brand-text span {
+    font-size: 10px;
+  }
+
+  .encabezado-admin {
+    font-size: 9px;
+    padding: 3px 10px;
+    gap: 4px;
+    border-radius: 18px;
+  }
+
+  .encabezado-admin i {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 380px) {
+  .encabezado {
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .encabezado-logo-img {
+    height: 28px;
+  }
+
+  .encabezado-brand-text {
+    font-size: 12px;
+  }
+
+  .encabezado-brand-icon {
+    font-size: 7px;
+    letter-spacing: 0.5px;
+  }
+
+  .encabezado-brand-text span {
+    font-size: 9px;
+  }
+
+  .encabezado-admin {
+    font-size: 8px;
+    padding: 2px 8px;
+  }
+
+  .encabezado-admin i {
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .encabezado {
+    height: 80px;
+    min-height: 80px;
+  }
+
+  .encabezado-logo-img {
+    height: 62px;
+  }
+
   .encabezado-brand-text {
     font-size: 28px;
+  }
+
+  .encabezado-brand-icon {
+    font-size: 14px;
+    letter-spacing: 2.5px;
+  }
+
+  .encabezado-brand-text span {
+    font-size: 17px;
+  }
+
+  .encabezado-admin {
+    font-size: 16px;
+    padding: 8px 22px;
+  }
+
+  .encabezado-admin i {
+    font-size: 22px;
   }
 }

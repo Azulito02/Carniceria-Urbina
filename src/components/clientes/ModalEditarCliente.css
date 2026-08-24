@@ -1,0 +1,163 @@
+/* ModalEditarCliente.css */
+
+.modal-editar-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 99999 !important;
+  animation: fadeIn 0.3s ease !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-editar-content {
+  background: white !important;
+  border-radius: 16px !important;
+  max-width: 450px !important;
+  width: 90% !important;
+  animation: slideUp 0.3s ease !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-editar-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 20px 24px !important;
+  border-bottom: 2px solid #f0e8e6 !important;
+}
+
+.modal-editar-header h2 {
+  margin: 0 !important;
+  font-size: 20px !important;
+  color: #8B1E1E !important;
+  font-weight: 700 !important;
+}
+
+.modal-editar-close {
+  background: none !important;
+  border: none !important;
+  font-size: 28px !important;
+  color: #B1B3B6 !important;
+  cursor: pointer !important;
+  padding: 0 4px !important;
+  transition: color 0.2s !important;
+}
+
+.modal-editar-close:hover {
+  color: #c62828 !important;
+}
+
+.modal-editar-content form {
+  padding: 24px !important;
+}
+
+.modal-editar-field {
+  margin-bottom: 16px !important;
+}
+
+.modal-editar-field label {
+  display: block !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  color: #8B1E1E !important;
+  margin-bottom: 6px !important;
+}
+
+.modal-editar-field input {
+  width: 100% !important;
+  padding: 10px 12px !important;
+  border: 2px solid #e0d6d4 !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  transition: all 0.3s ease !important;
+  box-sizing: border-box !important;
+}
+
+.modal-editar-field input:focus {
+  outline: none !important;
+  border-color: #8B1E1E !important;
+  box-shadow: 0 0 0 3px rgba(139, 30, 30, 0.1) !important;
+}
+
+.modal-editar-buttons {
+  display: flex !important;
+  gap: 12px !important;
+  margin-top: 20px !important;
+}
+
+.btn-editar-cancelar {
+  flex: 1;
+  padding: 10px 20px;
+  background: #f5f0ef;
+  color: #495057;
+  border: 2px solid #e0d6d4 !important;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-editar-cancelar:hover {
+  background: #e9e2e0;
+}
+
+.btn-editar-guardar {
+  flex: 1;
+  padding: 10px 20px;
+  background: #8B1E1E;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-editar-guardar:hover:not(:disabled) {
+  background: #6b1515;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(139, 30, 30, 0.3);
+}
+
+.btn-editar-guardar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .modal-editar-content form {
+    padding: 16px;
+  }
+  
+  .modal-editar-buttons {
+    flex-direction: column;
+  }
+  
+  .btn-editar-cancelar,
+  .btn-editar-guardar {
+    width: 100%;
+  }
+}
