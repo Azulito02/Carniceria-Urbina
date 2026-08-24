@@ -2,24 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../database/supabase';
 import Encabezado from '../components/Encabezado';
+import useRealtimeSync from '../hooks/useRealtimeSync';
 import TablaProductos from '../components/productos/TablaProductos';
 import ModalAgregarProducto from '../components/productos/ModalAgregarProducto';
 import ModalEditarProducto from '../components/productos/ModalEditarProducto';
 import ModalEliminarProducto from '../components/productos/ModalEliminarProducto';
+import { agregarOperacion, sincronizarOperaciones, obtenerOperacionesPendientes } from '../services/OfflineService';
 import './Productos.css';
 
 function Productos() {
   const navigate = useNavigate();
-  const [productos, setProductos] = useState([]);
+  
+  const { 
+    data: productos, 
+    setData: setProductos,
+    loading, 
+    error: syncError,
+    conectado,
+    sincronizar
+  } = useRealtimeSync('productos', 'productos_cache');
+
   const [productosFiltrados, setProductosFiltrados] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [modalAgregar, setModalAgregar] = useState(false);
   const [modalEditar, setModalEditar] = useState(false);
   const [modalEliminar, setModalEliminar] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [error, setError] = useState(null);
+  const [exito, setExito] = useState(null);
+  const [operacionesPendientes, setOperacionesPendientes] = useState(0);
   
-  // Estados para el buscador
   const [busqueda, setBusqueda] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [filtroMarca, setFiltroMarca] = useState('');
@@ -38,230 +49,270 @@ function Productos() {
     { value: 'unidad', label: 'Unidad' },
   ];
 
-  // ===== CARGAR PRODUCTOS =====
-  const cargarProductos = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const { data, error } = await supabase
-        .from('productos')
-        .select('*')
-        .order('nombre');
-
-      if (error) {
-        console.error('Error cargando productos:', error);
-        setError('Error al cargar productos: ' + error.message);
-        return;
-      }
-
-      setProductos(data || []);
-      setProductosFiltrados(data || []);
-    } catch (err) {
-      console.error('Error inesperado:', err);
-      setError('Error inesperado al cargar productos');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    cargarProductos();
+    const contar = () => {
+      const ops = obtenerOperacionesPendientes();
+      setOperacionesPendientes(ops.length);
+    };
+    contar();
+    const interval = setInterval(contar, 5000);
+    return () => clearInterval(interval);
   }, []);
 
-  // ===== FILTRAR PRODUCTOS =====
   useEffect(() => {
     filtrarProductos();
   }, [busqueda, filtroCategoria, filtroMarca, productos]);
 
   const filtrarProductos = () => {
     let filtrados = [...productos];
-
-    // Filtrar por búsqueda (nombre)
     if (busqueda.trim() !== '') {
-      const busquedaLower = busqueda.toLowerCase().trim();
-      filtrados = filtrados.filter(p => 
-        p.nombre.toLowerCase().includes(busquedaLower)
-      );
+      const lower = busqueda.toLowerCase().trim();
+      filtrados = filtrados.filter(p => p.nombre?.toLowerCase().includes(lower));
     }
-
-    // Filtrar por categoría
     if (filtroCategoria !== '') {
       filtrados = filtrados.filter(p => p.categoria === filtroCategoria);
     }
-
-    // Filtrar por marca
     if (filtroMarca !== '') {
-      const marcaLower = filtroMarca.toLowerCase().trim();
-      filtrados = filtrados.filter(p => 
-        p.marca && p.marca.toLowerCase().includes(marcaLower)
-      );
+      const lower = filtroMarca.toLowerCase().trim();
+      filtrados = filtrados.filter(p => p.marca?.toLowerCase().includes(lower));
     }
-
     setProductosFiltrados(filtrados);
   };
 
-  // ===== LIMPIAR FILTROS =====
   const limpiarFiltros = () => {
     setBusqueda('');
     setFiltroCategoria('');
     setFiltroMarca('');
   };
 
-  // ===== CREAR PRODUCTO =====
-  const crearProducto = async (formData) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      if (!formData.nombre || formData.nombre.trim() === '') {
-        setError('El nombre del producto es obligatorio');
-        setLoading(false);
-        return false;
+// ===== CREAR PRODUCTO (CORREGIDO) =====
+const crearProducto = async (formData) => {
+  try {
+    if (!formData.nombre?.trim()) {
+      setError('El nombre es obligatorio');
+      return false;
+    }
+
+    const nuevoProducto = {
+      nombre: formData.nombre.trim(),
+      categoria: formData.categoria,
+      marca: formData.marca?.trim() || null,
+      unidad_medida: formData.unidad_medida,
+    };
+
+    // Verificar si ya existe un producto con el mismo nombre (en Supabase)
+    if (conectado) {
+      const { data: existente, error: checkError } = await supabase
+        .from('productos')
+        .select('id')
+        .eq('nombre', nuevoProducto.nombre)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error verificando producto:', checkError);
       }
 
+      if (existente) {
+        setError(`El producto "${nuevoProducto.nombre}" ya existe`);
+        return false;
+      }
+    }
+
+    // Con internet
+    if (conectado) {
       const { data, error } = await supabase
         .from('productos')
-        .insert([{
-          nombre: formData.nombre.trim(),
-          categoria: formData.categoria,
-          marca: formData.marca?.trim() || null,
-          unidad_medida: formData.unidad_medida,
-        }])
+        .insert([nuevoProducto])
         .select();
 
       if (error) {
-        console.error('Error creando producto:', error);
-        setError('Error al crear producto: ' + error.message);
-        setLoading(false);
+        console.error('Error:', error);
+        setError('Error al crear: ' + error.message);
         return false;
       }
 
-      if (data && data.length > 0) {
-        const nuevosProductos = [...productos, data[0]];
-        setProductos(nuevosProductos);
-        setProductosFiltrados(nuevosProductos);
+      if (data?.length > 0) {
         setModalAgregar(false);
-        setError(null);
-        setLoading(false);
-        alert('✅ Producto creado exitosamente');
+        setExito('✅ Producto creado');
+        setTimeout(() => setExito(null), 3000);
         return true;
       }
-
-      setLoading(false);
-      return false;
-    } catch (err) {
-      console.error('Error inesperado:', err);
-      setError('Error inesperado al crear producto');
-      setLoading(false);
       return false;
     }
-  };
+
+    // Sin internet - guardar en cola + mostrar local
+    const idLocal = `local_${Date.now()}`;
+    
+    agregarOperacion({
+      tipo: 'INSERT',
+      tabla: 'productos',
+      datos: nuevoProducto
+    });
+
+    // Solo agregar si no existe ya localmente
+    setProductos(prev => {
+      const existe = prev.some(p => p.nombre?.toLowerCase() === nuevoProducto.nombre.toLowerCase());
+      if (existe) {
+        console.log('⏭️ Producto ya existe localmente');
+        return prev;
+      }
+      return [...prev, { ...nuevoProducto, id: idLocal, _local: true }];
+    });
+
+    setModalAgregar(false);
+    setExito('📝 Guardado localmente. Se sincronizará con internet.');
+    setTimeout(() => setExito(null), 4000);
+    return true;
+
+  } catch (err) {
+    console.error('Error:', err);
+    setError('Error inesperado');
+    return false;
+  }
+};
 
   // ===== ACTUALIZAR PRODUCTO =====
   const actualizarProducto = async (id, formData) => {
     try {
-      setLoading(true);
-      setError(null);
-      
-      if (!id) {
-        alert('Error: ID del producto no válido');
-        setLoading(false);
+      if (!id || !formData.nombre?.trim()) {
+        alert('Datos inválidos');
         return false;
       }
 
-      if (!formData.nombre || formData.nombre.trim() === '') {
-        alert('El nombre del producto es obligatorio');
-        setLoading(false);
-        return false;
-      }
-
-      const datosActualizar = {
+      const datos = {
         nombre: formData.nombre.trim(),
         categoria: formData.categoria || 'otros',
         marca: formData.marca?.trim() || null,
         unidad_medida: formData.unidad_medida || 'unidad',
       };
 
-      const { data, error } = await supabase
-        .from('productos')
-        .update(datosActualizar)
-        .eq('id', id)
-        .select();
-
-      if (error) {
-        console.error('❌ Error de Supabase:', error);
-        alert('Error al actualizar: ' + error.message);
-        setLoading(false);
-        return false;
-      }
-
-      if (data && data.length > 0) {
-        const productosActualizados = productos.map(p => p.id === id ? data[0] : p);
-        setProductos(productosActualizados);
-        setProductosFiltrados(productosActualizados);
+      // Si es local
+      if (typeof id === 'string' && id.startsWith('local_')) {
+        setProductos(prev => prev.map(p => 
+          p.id === id ? { ...p, ...datos } : p
+        ));
         setModalEditar(false);
         setProductoSeleccionado(null);
-        setError(null);
-        setLoading(false);
-        alert('✅ Producto actualizado exitosamente');
+        setExito('📝 Actualizado localmente');
+        setTimeout(() => setExito(null), 3000);
         return true;
       }
 
-      setLoading(false);
-      return false;
+      if (conectado) {
+        const { data, error } = await supabase
+          .from('productos')
+          .update(datos)
+          .eq('id', id)
+          .select();
+
+        if (error) {
+          alert('Error: ' + error.message);
+          return false;
+        }
+
+        if (data?.length > 0) {
+          setProductos(prev => prev.map(p => p.id === id ? data[0] : p));
+          setModalEditar(false);
+          setProductoSeleccionado(null);
+          setExito('✅ Actualizado');
+          setTimeout(() => setExito(null), 3000);
+          return true;
+        }
+        return false;
+      }
+
+      agregarOperacion({
+        tipo: 'UPDATE',
+        tabla: 'productos',
+        datos: datos,
+        id_registro: id
+      });
+      setProductos(prev => prev.map(p => p.id === id ? { ...p, ...datos } : p));
+      setModalEditar(false);
+      setProductoSeleccionado(null);
+      setExito('📝 Actualizado localmente');
+      setTimeout(() => setExito(null), 3000);
+      return true;
+
     } catch (err) {
-      console.error('❌ Error inesperado:', err);
+      console.error('Error:', err);
       alert('Error: ' + err.message);
-      setLoading(false);
       return false;
     }
   };
 
- // ===== ELIMINAR PRODUCTO =====
-const eliminarProducto = async (id) => {
-  console.log('🗑️ Eliminando producto con ID:', id);
-  
-  if (!id) {
-    console.error('❌ Error: ID no proporcionado');
-    alert('Error: No se puede eliminar el producto');
-    return false;
-  }
+  // ===== ELIMINAR PRODUCTO =====
+  const eliminarProducto = async (id) => {
+    try {
+      if (typeof id === 'string' && id.startsWith('local_')) {
+        setProductos(prev => prev.filter(p => p.id !== id));
+        setModalEliminar(false);
+        setProductoSeleccionado(null);
+        setExito('🗑️ Eliminado localmente');
+        setTimeout(() => setExito(null), 3000);
+        return true;
+      }
 
-  try {
-    setLoading(true);
-    setError(null);
+      if (conectado) {
+        const { error } = await supabase
+          .from('productos')
+          .delete()
+          .eq('id', id);
 
-    const { error } = await supabase
-      .from('productos')
-      .delete()
-      .eq('id', id);
+        if (error) {
+          setError('Error: ' + error.message);
+          return false;
+        }
 
-    if (error) {
-      console.error('Error eliminando producto:', error);
-      setError('Error al eliminar producto: ' + error.message);
-      setLoading(false);
+        setProductos(prev => prev.filter(p => p.id !== id));
+        setModalEliminar(false);
+        setProductoSeleccionado(null);
+        setExito('🗑️ Eliminado');
+        setTimeout(() => setExito(null), 3000);
+        return true;
+      }
+
+      agregarOperacion({
+        tipo: 'DELETE',
+        tabla: 'productos',
+        id_registro: id
+      });
+      setProductos(prev => prev.filter(p => p.id !== id));
+      setModalEliminar(false);
+      setProductoSeleccionado(null);
+      setExito('📝 Eliminado localmente');
+      setTimeout(() => setExito(null), 3000);
+      return true;
+
+    } catch (err) {
+      console.error('Error:', err);
+      setError('Error inesperado');
       return false;
     }
+  };
 
-    const productosRestantes = productos.filter(p => p.id !== id);
-    setProductos(productosRestantes);
-    setProductosFiltrados(productosRestantes);
-    setModalEliminar(false);
-    setProductoSeleccionado(null);
-    setError(null);
-    setLoading(false);
-    alert('✅ Producto eliminado exitosamente');
-    return true;
-  } catch (err) {
-    console.error('Error inesperado:', err);
-    setError('Error inesperado al eliminar producto');
-    setLoading(false);
-    return false;
-  }
-};
+  // ===== SINCRONIZAR MANUAL =====
+  const sincronizarManual = async () => {
+    if (!conectado) {
+      setError('Sin internet');
+      return;
+    }
 
-  // ===== ABRIR MODALES =====
+    try {
+      setExito('🔄 Sincronizando...');
+      await sincronizarOperaciones();
+      await sincronizar();
+      
+      const ops = obtenerOperacionesPendientes();
+      setOperacionesPendientes(ops.length);
+      
+      setExito(ops.length === 0 ? '✅ Sincronizado' : `⏳ ${ops.length} pendientes`);
+      setTimeout(() => setExito(null), 3000);
+    } catch (err) {
+      setError('Error: ' + err.message);
+    }
+  };
+
   const abrirAgregar = () => {
     setProductoSeleccionado(null);
     setModalAgregar(true);
@@ -269,11 +320,10 @@ const eliminarProducto = async (id) => {
   };
 
   const abrirEditar = (producto) => {
-    if (!producto || !producto.id) {
+    if (!producto?.id) {
       alert('Error: Producto no válido');
       return;
     }
-    
     setProductoSeleccionado(producto);
     setModalEditar(true);
     setError(null);
@@ -293,8 +343,21 @@ const eliminarProducto = async (id) => {
     setError(null);
   };
 
-  // Obtener marcas únicas para el filtro
-  const marcasUnicas = [...new Set(productos.map(p => p.marca).filter(m => m && m.trim() !== ''))];
+  const marcasUnicas = [...new Set(productos.map(p => p.marca).filter(m => m?.trim()))];
+
+  if (loading) {
+    return (
+      <div className="productos-container">
+        <Encabezado />
+        <div className="productos-content">
+          <div className="loading-spinner">
+            <i className="fas fa-spinner fa-spin"></i>
+            <p>Cargando...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="productos-container">
@@ -304,37 +367,59 @@ const eliminarProducto = async (id) => {
         <div className="productos-header">
           <div className="productos-titulo">
             <h1>📦 Productos</h1>
-            <p>Gestión de productos de la carnicería</p>
+            <p>Gestión de productos</p>
           </div>
-          <button className="btn-agregar" onClick={abrirAgregar}>
-            <i className="fas fa-plus"></i> Agregar Producto
-          </button>
+          <div className="header-actions">
+            <span className={`status-indicator ${conectado ? 'online' : 'offline'}`}>
+              <i className={`fas ${conectado ? 'fa-wifi' : 'fa-wifi-slash'}`}></i>
+              {conectado ? ' En línea' : ' Sin conexión'}
+            </span>
+            {operacionesPendientes > 0 && (
+              <span className="pendientes-indicator">
+                <i className="fas fa-clock"></i> {operacionesPendientes} pendientes
+              </span>
+            )}
+            <button className="btn-sincronizar" onClick={sincronizarManual} disabled={!conectado}>
+              <i className="fas fa-sync"></i> Sincronizar
+            </button>
+            <button className="btn-agregar" onClick={abrirAgregar}>
+              <i className="fas fa-plus"></i> Agregar
+            </button>
+          </div>
         </div>
 
-        {error && (
+        {(syncError || error) && (
           <div className="productos-error">
             <i className="fas fa-exclamation-circle"></i>
-            <span>{error}</span>
+            <span>{syncError || error}</span>
             <button onClick={() => setError(null)} className="error-close">
               <i className="fas fa-times"></i>
             </button>
           </div>
         )}
 
-        {/* ===== BUSCADOR ===== */}
+        {exito && (
+          <div className="productos-exito">
+            <i className="fas fa-check-circle"></i>
+            <span>{exito}</span>
+            <button onClick={() => setExito(null)} className="exito-close">
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+        )}
+
         <div className="buscador-container">
           <div className="buscador-fila">
             <div className="buscador-campo">
               <i className="fas fa-search"></i>
               <input
                 type="text"
-                placeholder="Buscar por nombre..."
+                placeholder="Buscar..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 className="buscador-input"
               />
             </div>
-
             <div className="buscador-campo">
               <i className="fas fa-tag"></i>
               <select
@@ -348,7 +433,6 @@ const eliminarProducto = async (id) => {
                 ))}
               </select>
             </div>
-
             <div className="buscador-campo">
               <i className="fas fa-building"></i>
               <select
@@ -362,19 +446,17 @@ const eliminarProducto = async (id) => {
                 ))}
               </select>
             </div>
-
             {(busqueda || filtroCategoria || filtroMarca) && (
               <button className="btn-limpiar-filtros" onClick={limpiarFiltros}>
                 <i className="fas fa-times"></i> Limpiar
               </button>
             )}
           </div>
-
           <div className="buscador-resultados">
             <span>
-              <strong>{productosFiltrados.length}</strong> productos encontrados
+              <strong>{productosFiltrados.length}</strong> productos
               {productos.length !== productosFiltrados.length && 
-                ` (de ${productos.length} totales)`
+                ` (de ${productos.length})`
               }
             </span>
           </div>
@@ -390,7 +472,6 @@ const eliminarProducto = async (id) => {
         />
       </div>
 
-      {/* MODALES */}
       <ModalAgregarProducto
         isOpen={modalAgregar}
         onClose={cerrarModales}
@@ -418,7 +499,6 @@ const eliminarProducto = async (id) => {
         loading={loading}
       />
 
-      {/* NAVEGACIÓN INFERIOR */}
       <div className="bottom-nav">
         <button className="nav-item" onClick={() => navigate('/')}>
           <i className="fas fa-home"></i>

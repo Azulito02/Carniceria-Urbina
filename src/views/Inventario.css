@@ -982,3 +982,68 @@
     justify-content: center;
   }
 }
+
+/* ===== BOTONES DE ACCIÓN DEL HEADER ===== */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ===== INDICADOR DE CONEXIÓN ===== */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.status-indicator.online {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-indicator.offline {
+  background: #fde8e8;
+  color: #c62828;
+}
+
+/* ===== BOTÓN SINCRONIZAR ===== */
+.btn-sincronizar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #FBAC3E;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(251, 172, 62, 0.3);
+}
+
+.btn-sincronizar:hover:not(:disabled) {
+  background: #e89a2c;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 25px rgba(251, 172, 62, 0.4);
+}
+
+.btn-sincronizar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-sincronizar i {
+  font-size: 16px;
+}

@@ -2,13 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../database/supabase';
 import Encabezado from '../components/Encabezado';
+import useRealtimeSync from '../hooks/useRealtimeSync';
 import PDFInventario from '../components/PDFInventario';
+import { agregarOperacion, sincronizarOperaciones, obtenerOperacionesPendientes } from '../services/OfflineService';
+import { guardarLocal, obtenerLocal } from '../utils/storage'; // ← AGREGAR OBJETOS LOCALES
 import './Inventario.css';
 
 function Inventario() {
   const navigate = useNavigate();
+  
+  const { 
+    data: productos, 
+    loading: loadingProductos,
+    error: errorProductos,
+    conectado,
+    sincronizar
+  } = useRealtimeSync('productos', 'productos_cache');
+
   const [loading, setLoading] = useState(false);
-  const [productos, setProductos] = useState([]);
   const [inventarioActual, setInventarioActual] = useState([]);
   const [productoSeleccionado, setProductoSeleccionado] = useState('');
   const [cantidad, setCantidad] = useState('');
@@ -18,31 +29,39 @@ function Inventario() {
   const [exito, setExito] = useState(null);
   const [cargandoInventario, setCargandoInventario] = useState(false);
   const [generandoPDF, setGenerandoPDF] = useState(false);
+  const [operacionesPendientes, setOperacionesPendientes] = useState(0);
   
   const [editandoId, setEditandoId] = useState(null);
   const [editandoProducto, setEditandoProducto] = useState('');
   const [editandoCantidad, setEditandoCantidad] = useState('');
   const [editandoFecha, setEditandoFecha] = useState('');
 
+  // ===== CONTAR OPERACIONES PENDIENTES =====
   useEffect(() => {
-    cargarProductos();
+    const contar = () => {
+      const ops = obtenerOperacionesPendientes();
+      setOperacionesPendientes(ops.length);
+    };
+    contar();
+    const interval = setInterval(contar, 5000);
+    return () => clearInterval(interval);
   }, []);
 
-  const cargarProductos = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('productos')
-        .select('id, nombre, categoria, marca, unidad_medida')
-        .order('nombre');
-
-      if (error) throw error;
-      setProductos(data || []);
-    } catch (err) {
-      console.error('Error cargando productos:', err);
-      setError('Error al cargar productos');
+  // ===== PRODUCTOS DISPONIBLES (con fallback) =====
+  const getProductos = () => {
+    if (productos && productos.length > 0) {
+      return productos;
     }
+    return [
+      { id: 1, nombre: 'Lomo Fino', categoria: 'carnes_res', marca: 'Tip-Top', unidad_medida: 'libra' },
+      { id: 2, nombre: 'Pierna', categoria: 'carnes_res', marca: 'Kimby', unidad_medida: 'libra' },
+      { id: 3, nombre: 'Pechuga', categoria: 'pollo', marca: 'Tip-Top', unidad_medida: 'libra' },
+    ];
   };
 
+  const productosDisponibles = getProductos();
+
+  // ===== CARGAR INVENTARIO POR FECHA =====
   const cargarInventarioPorFecha = async (fecha) => {
     if (!fecha) {
       setInventarioActual([]);
@@ -73,7 +92,13 @@ function Inventario() {
         .eq('fecha', fecha)
         .order('producto_id');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error cargando inventario:', error);
+        setError('Error al cargar el inventario: ' + error.message);
+        setInventarioActual([]);
+        setCargandoInventario(false);
+        return;
+      }
 
       if (data && data.length > 0) {
         const items = data.map(item => ({
@@ -93,13 +118,15 @@ function Inventario() {
         setExito(`📅 No hay inventario registrado para el ${fecha}`);
       }
     } catch (err) {
-      console.error('Error cargando inventario:', err);
-      setError('Error al cargar el inventario');
+      console.error('Error inesperado:', err);
+      setError('Error inesperado al cargar el inventario');
+      setInventarioActual([]);
     } finally {
       setCargandoInventario(false);
     }
   };
 
+  // ===== AGREGAR PRODUCTO AL INVENTARIO =====
   const agregarProducto = async () => {
     if (!productoSeleccionado) {
       setError('Selecciona un producto');
@@ -113,8 +140,14 @@ function Inventario() {
 
     try {
       setLoading(true);
-      const producto = productos.find(p => p.id === parseInt(productoSeleccionado));
+      const producto = productosDisponibles.find(p => p.id === parseInt(productoSeleccionado));
       
+      if (!producto) {
+        setError('Producto no encontrado');
+        setLoading(false);
+        return;
+      }
+
       const existe = inventarioActual.find(item => item.producto_id === parseInt(productoSeleccionado));
       
       if (existe) {
@@ -151,6 +184,7 @@ function Inventario() {
     }
   };
 
+  // ===== INICIAR EDICIÓN =====
   const iniciarEdicion = (item) => {
     if (!item || !item.id) {
       setError('Error: No se puede editar este registro');
@@ -163,6 +197,7 @@ function Inventario() {
     setEditandoFecha(item.fecha || '');
   };
 
+  // ===== CANCELAR EDICIÓN =====
   const cancelarEdicion = () => {
     setEditandoId(null);
     setEditandoProducto('');
@@ -170,6 +205,7 @@ function Inventario() {
     setEditandoFecha('');
   };
 
+  // ===== ACTUALIZAR REGISTRO =====
   const actualizarRegistro = async () => {
     if (!editandoId) {
       setError('Error: No se puede actualizar sin un ID');
@@ -202,12 +238,100 @@ function Inventario() {
       setLoading(true);
       setError(null);
 
-      const producto = productos.find(p => p.id === productoId);
+      const producto = productosDisponibles.find(p => p.id === productoId);
       if (!producto) {
         setError('Producto no encontrado');
         setLoading(false);
         return;
       }
+
+      // Si es un ID temporal (local)
+      if (typeof editandoId === 'string' && editandoId.startsWith('temp_')) {
+        const nuevosItems = inventarioActual.map(item => {
+          if (item.id === editandoId) {
+            return {
+              ...item,
+              producto_id: productoId,
+              nombre: producto.nombre,
+              categoria: producto.categoria,
+              marca: producto.marca || '-',
+              unidad_medida: producto.unidad_medida,
+              cantidad: cantidadNum,
+              fecha: editandoFecha
+            };
+          }
+          return item;
+        });
+        setInventarioActual(nuevosItems);
+        setEditandoId(null);
+        setEditandoProducto('');
+        setEditandoCantidad('');
+        setEditandoFecha('');
+        setExito(`✅ Registro actualizado correctamente`);
+        setLoading(false);
+        return;
+      }
+
+      // Con internet - actualizar en Supabase
+      if (conectado) {
+        const { data, error } = await supabase
+          .from('inventario')
+          .update({
+            producto_id: productoId,
+            cantidad: cantidadNum,
+            fecha: editandoFecha
+          })
+          .eq('id', editandoId)
+          .select();
+
+        if (error) {
+          setError('Error al actualizar: ' + error.message);
+          setLoading(false);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          const nuevosItems = inventarioActual.map(item => {
+            if (item.id === editandoId) {
+              return {
+                ...item,
+                producto_id: productoId,
+                nombre: producto.nombre,
+                categoria: producto.categoria,
+                marca: producto.marca || '-',
+                unidad_medida: producto.unidad_medida,
+                cantidad: cantidadNum,
+                fecha: editandoFecha
+              };
+            }
+            return item;
+          });
+          setInventarioActual(nuevosItems);
+          setEditandoId(null);
+          setEditandoProducto('');
+          setEditandoCantidad('');
+          setEditandoFecha('');
+          setExito(`✅ Registro actualizado correctamente`);
+          
+          if (filtroFecha) {
+            cargarInventarioPorFecha(filtroFecha);
+          }
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Sin internet - guardar en cola
+      agregarOperacion({
+        tipo: 'UPDATE',
+        tabla: 'inventario',
+        datos: {
+          producto_id: productoId,
+          cantidad: cantidadNum,
+          fecha: editandoFecha
+        },
+        id_registro: editandoId
+      });
 
       const nuevosItems = inventarioActual.map(item => {
         if (item.id === editandoId) {
@@ -224,14 +348,12 @@ function Inventario() {
         }
         return item;
       });
-      
       setInventarioActual(nuevosItems);
-      
       setEditandoId(null);
       setEditandoProducto('');
       setEditandoCantidad('');
       setEditandoFecha('');
-      setExito(`✅ Registro actualizado correctamente`);
+      setExito(`📝 Registro actualizado localmente. Se sincronizará con internet.`);
       
       if (filtroFecha) {
         cargarInventarioPorFecha(filtroFecha);
@@ -244,6 +366,7 @@ function Inventario() {
     }
   };
 
+  // ===== ELIMINAR PRODUCTO DEL INVENTARIO =====
   const eliminarDelInventario = (index) => {
     const producto = inventarioActual[index];
     const nuevosItems = inventarioActual.filter((_, i) => i !== index);
@@ -251,6 +374,7 @@ function Inventario() {
     setExito(`🗑️ "${producto.nombre}" eliminado del inventario`);
   };
 
+  // ===== ELIMINAR PRODUCTO DE LA BASE DE DATOS =====
   const eliminarDeBD = async (id, nombre) => {
     if (!window.confirm(`¿Estás seguro de eliminar "${nombre}" del inventario?`)) {
       return;
@@ -260,38 +384,133 @@ function Inventario() {
       setLoading(true);
       setError(null);
 
-      const { error } = await supabase
-        .from('inventario')
-        .delete()
-        .eq('id', id);
+      // Si es temporal
+      if (typeof id === 'string' && id.startsWith('temp_')) {
+        const nuevosItems = inventarioActual.filter(item => item.id !== id);
+        setInventarioActual(nuevosItems);
+        setExito(`🗑️ "${nombre}" eliminado del inventario`);
+        setLoading(false);
+        return;
+      }
 
-      if (error) throw error;
+      if (conectado) {
+        const { error } = await supabase
+          .from('inventario')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+
+        const nuevosItems = inventarioActual.filter(item => item.id !== id);
+        setInventarioActual(nuevosItems);
+        setExito(`🗑️ "${nombre}" eliminado del inventario permanentemente`);
+        
+        if (filtroFecha) {
+          cargarInventarioPorFecha(filtroFecha);
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Sin internet
+      agregarOperacion({
+        tipo: 'DELETE',
+        tabla: 'inventario',
+        id_registro: id
+      });
 
       const nuevosItems = inventarioActual.filter(item => item.id !== id);
       setInventarioActual(nuevosItems);
-      setExito(`🗑️ "${nombre}" eliminado del inventario permanentemente`);
-      
-      if (filtroFecha) {
-        cargarInventarioPorFecha(filtroFecha);
-      }
+      setExito(`📝 "${nombre}" eliminado localmente. Se sincronizará con internet.`);
+      setLoading(false);
+
     } catch (err) {
       console.error('Error eliminando:', err);
       setError('Error al eliminar el producto del inventario: ' + err.message);
-    } finally {
       setLoading(false);
     }
   };
 
-  const guardarInventario = async () => {
-    if (inventarioActual.length === 0) {
-      setError('Agrega al menos un producto al inventario');
-      return;
-    }
+// ===== GUARDAR INVENTARIO (CON SOPORTE OFFLINE) =====
+const guardarInventario = async () => {
+  if (inventarioActual.length === 0) {
+    setError('Agrega al menos un producto al inventario');
+    return;
+  }
 
+  // Si no hay conexión, guardar localmente y en cola
+  if (!conectado) {
     try {
       setLoading(true);
-      setError(null);
+      
+      // Preparar datos para guardar
+      const datosInventario = inventarioActual.map(item => ({
+        producto_id: item.producto_id,
+        cantidad: item.cantidad,
+        fecha: fecha
+      }));
+      
+      // Guardar en localStorage como respaldo
+      const inventarioKey = `inventario_${fecha}`;
+      guardarLocal(inventarioKey, datosInventario);
+      
+      // Guardar en la cola de operaciones pendientes
+      agregarOperacion({
+        tipo: 'INSERT',
+        tabla: 'inventario',
+        datos: datosInventario,
+        esInventario: true,
+        fecha: fecha
+      });
 
+      setExito(`📝 Inventario guardado localmente (${datosInventario.length} productos). Se sincronizará con internet.`);
+      setTimeout(() => setExito(null), 4000);
+      setLoading(false);
+      return;
+    } catch (err) {
+      console.error('Error guardando inventario offline:', err);
+      setError('Error al guardar inventario offline: ' + err.message);
+      setLoading(false);
+      return;
+    }
+  }
+
+  // Con conexión - guardar normal
+  try {
+    setLoading(true);
+    setError(null);
+
+    // Separar items temporales de los reales
+    const itemsTemporales = inventarioActual.filter(item => 
+      typeof item.id === 'string' && item.id.startsWith('temp_')
+    );
+
+    const itemsReales = inventarioActual.filter(item => 
+      !(typeof item.id === 'string' && item.id.startsWith('temp_'))
+    );
+
+    // Si hay items temporales, guardarlos primero en la cola
+    if (itemsTemporales.length > 0) {
+      const datosTemporales = itemsTemporales.map(item => ({
+        producto_id: item.producto_id,
+        cantidad: item.cantidad,
+        fecha: fecha
+      }));
+
+      agregarOperacion({
+        tipo: 'INSERT',
+        tabla: 'inventario',
+        datos: datosTemporales,
+        esInventario: true,
+        fecha: fecha
+      });
+
+      setExito(`📝 ${itemsTemporales.length} productos temporales guardados en cola.`);
+    }
+
+    // Si hay items reales, guardarlos directamente en Supabase
+    if (itemsReales.length > 0) {
+      // Eliminar registros existentes para esta fecha
       const { error: deleteError } = await supabase
         .from('inventario')
         .delete()
@@ -299,7 +518,7 @@ function Inventario() {
 
       if (deleteError) throw deleteError;
 
-      const datosInventario = inventarioActual.map(item => ({
+      const datosReales = itemsReales.map(item => ({
         producto_id: item.producto_id,
         cantidad: item.cantidad,
         fecha: fecha
@@ -307,34 +526,46 @@ function Inventario() {
 
       const { data, error } = await supabase
         .from('inventario')
-        .insert(datosInventario)
+        .insert(datosReales)
         .select();
 
       if (error) throw error;
 
       if (data && data.length > 0) {
-        const itemsActualizados = inventarioActual.map((item, index) => ({
-          ...item,
-          id: data[index]?.id || item.id
-        }));
+        // Actualizar IDs de items reales
+        const itemsActualizados = inventarioActual.map((item) => {
+          const realItem = data.find(d => 
+            d.producto_id === item.producto_id && 
+            d.cantidad === item.cantidad &&
+            d.fecha === fecha
+          );
+          return {
+            ...item,
+            id: realItem?.id || item.id
+          };
+        });
         setInventarioActual(itemsActualizados);
+        setExito(`✅ ${data.length} productos guardados en Supabase`);
       }
-
-      setExito(`✅ Inventario guardado exitosamente - ${data.length} productos`);
-      
-      if (filtroFecha) {
-        cargarInventarioPorFecha(filtroFecha);
-      } else {
-        cargarInventarioPorFecha(fecha);
-      }
-    } catch (err) {
-      console.error('Error guardando inventario:', err);
-      setError('Error al guardar el inventario: ' + err.message);
-    } finally {
-      setLoading(false);
     }
-  };
 
+    // Si todo está bien, recargar inventario
+    if (filtroFecha) {
+      cargarInventarioPorFecha(filtroFecha);
+    } else {
+      cargarInventarioPorFecha(fecha);
+    }
+
+    setTimeout(() => setExito(null), 4000);
+  } catch (err) {
+    console.error('Error guardando inventario:', err);
+    setError('Error al guardar el inventario: ' + err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // ===== NUEVO INVENTARIO =====
   const nuevoInventario = () => {
     setInventarioActual([]);
     setFecha(new Date().toISOString().split('T')[0]);
@@ -373,6 +604,28 @@ function Inventario() {
     }
   };
 
+  // ===== SINCRONIZAR MANUAL =====
+  const sincronizarManual = async () => {
+    if (!conectado) {
+      setError('Sin internet');
+      return;
+    }
+
+    try {
+      setExito('🔄 Sincronizando...');
+      await sincronizarOperaciones();
+      await sincronizar();
+      
+      const ops = obtenerOperacionesPendientes();
+      setOperacionesPendientes(ops.length);
+      
+      setExito(ops.length === 0 ? '✅ Sincronizado' : `⏳ ${ops.length} pendientes`);
+      setTimeout(() => setExito(null), 3000);
+    } catch (err) {
+      setError('Error: ' + err.message);
+    }
+  };
+
   const totalProductos = inventarioActual.length;
   const totalCantidad = inventarioActual.reduce((sum, item) => sum + item.cantidad, 0);
 
@@ -386,7 +639,19 @@ function Inventario() {
             <h1>📦 Gestión de Inventario</h1>
             <p>Control y seguimiento de productos en stock</p>
           </div>
-          <div className="header-buttons">
+          <div className="header-actions">
+            <span className={`status-indicator ${conectado ? 'online' : 'offline'}`}>
+              <i className={`fas ${conectado ? 'fa-wifi' : 'fa-wifi-slash'}`}></i>
+              {conectado ? ' En línea' : ' Sin conexión'}
+            </span>
+            {operacionesPendientes > 0 && (
+              <span className="pendientes-indicator">
+                <i className="fas fa-clock"></i> {operacionesPendientes} pendientes
+              </span>
+            )}
+            <button className="btn-sincronizar" onClick={sincronizarManual} disabled={!conectado}>
+              <i className="fas fa-sync"></i> Sincronizar
+            </button>
             <button className="btn-pdf" onClick={exportarPDF} disabled={generandoPDF || inventarioActual.length === 0}>
               {generandoPDF ? (
                 <>
@@ -403,6 +668,16 @@ function Inventario() {
             </button>
           </div>
         </div>
+
+        {errorProductos && (
+          <div className="inventario-error">
+            <i className="fas fa-exclamation-triangle"></i>
+            <span>Error cargando productos: {errorProductos}</span>
+            <button onClick={() => setError(null)} className="error-close">
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+        )}
 
         {error && (
           <div className="inventario-error">
@@ -476,15 +751,18 @@ function Inventario() {
                 value={productoSeleccionado}
                 onChange={(e) => setProductoSeleccionado(e.target.value)}
                 className="form-select"
-                disabled={filtroFecha !== ''}
+                disabled={filtroFecha !== '' || loadingProductos}
               >
                 <option value="">Seleccionar producto...</option>
-                {productos.map(p => (
+                {productosDisponibles.map(p => (
                   <option key={p.id} value={p.id}>
                     {p.nombre} {p.marca ? `(${p.marca})` : ''}
                   </option>
                 ))}
               </select>
+              {loadingProductos && (
+                <span className="cargando-productos">Cargando productos...</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -569,7 +847,7 @@ function Inventario() {
                               style={{ padding: '4px 8px', fontSize: '13px' }}
                             >
                               <option value="">Seleccionar producto...</option>
-                              {productos.map(p => (
+                              {productosDisponibles.map(p => (
                                 <option key={p.id} value={p.id}>
                                   {p.nombre} {p.marca ? `(${p.marca})` : ''}
                                 </option>

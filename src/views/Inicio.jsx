@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../database/supabase';
 import Encabezado from '../components/Encabezado';
+import useRealtimeSync from '../hooks/useRealtimeSync';
 import './Inicio.css';
 
 function Inicio() {
@@ -13,36 +14,33 @@ function Inicio() {
     pendientes: 0
   });
 
+  const { 
+    data: ventas, 
+    conectado,
+    sincronizar,
+    loading: syncLoading
+  } = useRealtimeSync('ventas', 'ventas_cache');
+
   useEffect(() => {
-    cargarDatosDashboard();
-  }, []);
-
-  const cargarDatosDashboard = async () => {
-    try {
-      setLoading(true);
-      const hoy = new Date().toISOString().split('T')[0];
-
-      const { data: ventasData, error: ventasError } = await supabase
-        .from('ventas')
-        .select('total, estado')
-        .eq('fecha', hoy);
-
-      if (ventasError) throw ventasError;
-
-      const totalVentas = ventasData?.reduce((sum, v) => sum + (v.total || 0), 0) || 0;
-      const ventasRealizadas = ventasData?.filter(v => v.estado === 'completada').length || 0;
-      const pendientes = ventasData?.filter(v => v.estado === 'pendiente').length || 0;
-
-      setResumen({
-        ventasHoy: totalVentas,
-        ventasRealizadas: ventasRealizadas,
-        pendientes: pendientes
-      });
-    } catch (err) {
-      console.error('Error cargando datos:', err);
-    } finally {
-      setLoading(false);
+    if (ventas.length > 0 || !syncLoading) {
+      calcularResumen();
     }
+  }, [ventas, syncLoading]);
+
+  const calcularResumen = () => {
+    const hoy = new Date().toISOString().split('T')[0];
+    const ventasHoy = ventas.filter(v => v.fecha === hoy);
+    
+    const totalVentas = ventasHoy?.reduce((sum, v) => sum + (v.total || 0), 0) || 0;
+    const ventasRealizadas = ventasHoy?.filter(v => v.estado === 'completada').length || 0;
+    const pendientes = ventasHoy?.filter(v => v.estado === 'pendiente').length || 0;
+
+    setResumen({
+      ventasHoy: totalVentas,
+      ventasRealizadas: ventasRealizadas,
+      pendientes: pendientes
+    });
+    setLoading(false);
   };
 
   const modulos = [
@@ -54,11 +52,10 @@ function Inicio() {
     { id: 'gastos', nombre: 'Gastos', icono: 'fa-receipt', color: '#c62828', ruta: '/gastos' },
     { id: 'arqueos', nombre: 'Arqueos', icono: 'fa-calculator', color: '#6a1b9a', ruta: '/arqueos' },
     { id: 'reportes', nombre: 'Reportes', icono: 'fa-chart-bar', color: '#37474f', ruta: '/reportes' },
-    { id: 'clientes', nombre: 'Clientes', icono: 'fa-users', color: '#00838f', ruta: '/clientes' }, // ← CAMBIADO
+    { id: 'clientes', nombre: 'Clientes', icono: 'fa-users', color: '#00838f', ruta: '/clientes' },
     { id: 'inversiones', nombre: 'Inversiones', icono: 'fa-chart-line', color: '#1a237e', ruta: '/inversiones' }
   ];
 
-  // Navegación inferior
   const navItems = [
     { id: 'inicio', icono: 'fa-home', label: 'Inicio', ruta: '/' },
     { id: 'productos', icono: 'fa-box', label: 'Productos', ruta: '/productos' },
@@ -72,7 +69,20 @@ function Inicio() {
       <Encabezado />
 
       <div className="inicio-content">
-        {/* Bienvenida */}
+        <div className="inicio-header">
+          <div className="inicio-titulo">
+          </div>
+          <div className="header-actions">
+            <span className={`status-indicator ${conectado ? 'online' : 'offline'}`}>
+              <i className={`fas ${conectado ? 'fa-wifi' : 'fa-wifi-slash'}`}></i>
+              {conectado ? ' En línea' : ' Sin conexión'}
+            </span>
+            <button className="btn-sincronizar" onClick={sincronizar} disabled={!conectado}>
+              <i className="fas fa-sync"></i> Sincronizar
+            </button>
+          </div>
+        </div>
+
         <div className="welcome-section">
           <div className="welcome-text">
             <h2>¡Bienvenido!</h2>
@@ -81,7 +91,6 @@ function Inicio() {
           </div>
         </div>
 
-        {/* Módulos */}
         <div className="modulos-grid">
           {modulos.map((modulo) => (
             <div 
@@ -103,7 +112,6 @@ function Inicio() {
           ))}
         </div>
 
-        {/* Resumen general */}
         <div className="resumen-section">
           <h3>Resumen general</h3>
           <div className="resumen-cards">
@@ -146,7 +154,6 @@ function Inicio() {
         </div>
       </div>
 
-      {/* Navegación inferior - CORREGIDA */}
       <div className="bottom-nav">
         {navItems.map((item) => (
           <button 
