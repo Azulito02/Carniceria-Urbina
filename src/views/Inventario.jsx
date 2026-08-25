@@ -5,7 +5,10 @@ import Encabezado from '../components/Encabezado';
 import useRealtimeSync from '../hooks/useRealtimeSync';
 import PDFInventario from '../components/PDFInventario';
 import { agregarOperacion, sincronizarOperaciones, obtenerOperacionesPendientes } from '../services/OfflineService';
-import { guardarLocal, obtenerLocal } from '../utils/storage'; // ← AGREGAR OBJETOS LOCALES
+import { guardarLocal, obtenerLocal } from '../utils/storage';
+import ModalAgregarInventario from '../components/inventario/ModalAgregarInventario';
+import ModalEditarInventario from '../components/inventario/ModalEditarInventario';
+import ModalEliminarInventario from '../components/inventario/ModalEliminarInventario';
 import './Inventario.css';
 
 function Inventario() {
@@ -21,8 +24,6 @@ function Inventario() {
 
   const [loading, setLoading] = useState(false);
   const [inventarioActual, setInventarioActual] = useState([]);
-  const [productoSeleccionado, setProductoSeleccionado] = useState('');
-  const [cantidad, setCantidad] = useState('');
   const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
   const [filtroFecha, setFiltroFecha] = useState('');
   const [error, setError] = useState(null);
@@ -30,11 +31,13 @@ function Inventario() {
   const [cargandoInventario, setCargandoInventario] = useState(false);
   const [generandoPDF, setGenerandoPDF] = useState(false);
   const [operacionesPendientes, setOperacionesPendientes] = useState(0);
+  const [mostrarInventarioCompleto, setMostrarInventarioCompleto] = useState(false);
   
-  const [editandoId, setEditandoId] = useState(null);
-  const [editandoProducto, setEditandoProducto] = useState('');
-  const [editandoCantidad, setEditandoCantidad] = useState('');
-  const [editandoFecha, setEditandoFecha] = useState('');
+  // Estados para modales
+  const [modalAgregarOpen, setModalAgregarOpen] = useState(false);
+  const [modalEditarOpen, setModalEditarOpen] = useState(false);
+  const [modalEliminarOpen, setModalEliminarOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   // ===== CONTAR OPERACIONES PENDIENTES =====
   useEffect(() => {
@@ -47,19 +50,53 @@ function Inventario() {
     return () => clearInterval(interval);
   }, []);
 
-  // ===== PRODUCTOS DISPONIBLES (con fallback) =====
-  const getProductos = () => {
-    if (productos && productos.length > 0) {
-      return productos;
-    }
-    return [
-      { id: 1, nombre: 'Lomo Fino', categoria: 'carnes_res', marca: 'Tip-Top', unidad_medida: 'libra' },
-      { id: 2, nombre: 'Pierna', categoria: 'carnes_res', marca: 'Kimby', unidad_medida: 'libra' },
-      { id: 3, nombre: 'Pechuga', categoria: 'pollo', marca: 'Tip-Top', unidad_medida: 'libra' },
-    ];
-  };
+  // ===== REAL TIME CON onSnapshot =====
+  useEffect(() => {
+    if (!conectado) return;
 
-  const productosDisponibles = getProductos();
+    const subscription = supabase
+      .channel('inventario_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'inventario'
+        },
+        (payload) => {
+          console.log('Cambio en inventario:', payload);
+          
+          if (filtroFecha) {
+            cargarInventarioPorFecha(filtroFecha);
+          } else if (fecha && !mostrarInventarioCompleto) {
+            cargarInventarioPorFecha(fecha);
+          }
+          
+          const evento = payload.eventType;
+          let mensaje = '';
+          switch (evento) {
+            case 'INSERT':
+              mensaje = '📦 Nuevo producto agregado al inventario';
+              break;
+            case 'UPDATE':
+              mensaje = '🔄 Producto actualizado en el inventario';
+              break;
+            case 'DELETE':
+              mensaje = '🗑️ Producto eliminado del inventario';
+              break;
+            default:
+              mensaje = '🔄 Cambios en el inventario';
+          }
+          setExito(mensaje);
+          setTimeout(() => setExito(null), 4000);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [conectado, filtroFecha, fecha, mostrarInventarioCompleto]);
 
   // ===== CARGAR INVENTARIO POR FECHA =====
   const cargarInventarioPorFecha = async (fecha) => {
@@ -72,7 +109,7 @@ function Inventario() {
       setCargandoInventario(true);
       setError(null);
       setExito(null);
-      setEditandoId(null);
+      setMostrarInventarioCompleto(false);
 
       const { data, error } = await supabase
         .from('inventario')
@@ -113,9 +150,11 @@ function Inventario() {
         }));
         setInventarioActual(items);
         setExito(`📋 Inventario cargado para el ${fecha} - ${items.length} productos`);
+        setTimeout(() => setExito(null), 4000);
       } else {
         setInventarioActual([]);
         setExito(`📅 No hay inventario registrado para el ${fecha}`);
+        setTimeout(() => setExito(null), 4000);
       }
     } catch (err) {
       console.error('Error inesperado:', err);
@@ -126,271 +165,202 @@ function Inventario() {
     }
   };
 
-  // ===== AGREGAR PRODUCTO AL INVENTARIO =====
-  const agregarProducto = async () => {
-    if (!productoSeleccionado) {
-      setError('Selecciona un producto');
-      return;
-    }
-
-    if (!cantidad || parseFloat(cantidad) <= 0) {
-      setError('Ingresa una cantidad válida');
-      return;
-    }
-
+  // ===== CARGAR INVENTARIO COMPLETO =====
+  const cargarInventarioCompleto = async () => {
     try {
-      setLoading(true);
-      const producto = productosDisponibles.find(p => p.id === parseInt(productoSeleccionado));
-      
-      if (!producto) {
-        setError('Producto no encontrado');
-        setLoading(false);
+      setCargandoInventario(true);
+      setError(null);
+      setExito(null);
+      setFiltroFecha('');
+
+      const { data, error } = await supabase
+        .from('inventario')
+        .select(`
+          id,
+          producto_id,
+          cantidad,
+          fecha,
+          productos (
+            id,
+            nombre,
+            categoria,
+            marca,
+            unidad_medida
+          )
+        `)
+        .order('fecha', { ascending: false })
+        .order('producto_id');
+
+      if (error) {
+        console.error('Error cargando inventario completo:', error);
+        setError('Error al cargar el inventario completo: ' + error.message);
+        setInventarioActual([]);
+        setCargandoInventario(false);
         return;
       }
 
-      const existe = inventarioActual.find(item => item.producto_id === parseInt(productoSeleccionado));
-      
+      if (data && data.length > 0) {
+        const items = data.map(item => ({
+          id: item.id,
+          producto_id: item.producto_id,
+          nombre: item.productos?.nombre || 'Producto eliminado',
+          categoria: item.productos?.categoria || '-',
+          marca: item.productos?.marca || '-',
+          unidad_medida: item.productos?.unidad_medida || '-',
+          cantidad: item.cantidad,
+          fecha: item.fecha
+        }));
+        setInventarioActual(items);
+        setExito(`📋 Mostrando inventario completo - ${items.length} registros encontrados`);
+        setTimeout(() => setExito(null), 4000);
+      } else {
+        setInventarioActual([]);
+        setExito('📋 No hay registros de inventario');
+        setTimeout(() => setExito(null), 4000);
+      }
+    } catch (err) {
+      console.error('Error inesperado:', err);
+      setError('Error inesperado al cargar el inventario completo');
+      setInventarioActual([]);
+    } finally {
+      setCargandoInventario(false);
+    }
+  };
+
+  // ===== AGREGAR PRODUCTO DESDE MODAL =====
+  const agregarAlInventario = async (productoId, cantidad, fechaSeleccionada) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const producto = productos?.find(p => p.id === parseInt(productoId));
+      if (!producto) {
+        setError('Producto no encontrado');
+        setTimeout(() => setError(null), 4000);
+        setLoading(false);
+        return false;
+      }
+
+      const existe = inventarioActual.find(
+        item => item.producto_id === parseInt(productoId) && item.fecha === fechaSeleccionada
+      );
+
       if (existe) {
+        if (conectado) {
+          const { error } = await supabase
+            .from('inventario')
+            .update({ cantidad: parseFloat(cantidad) })
+            .eq('id', existe.id);
+
+          if (error) {
+            setError('Error al actualizar: ' + error.message);
+            setTimeout(() => setError(null), 4000);
+            setLoading(false);
+            return false;
+          }
+        } else {
+          agregarOperacion({
+            tipo: 'UPDATE',
+            tabla: 'inventario',
+            datos: { cantidad: parseFloat(cantidad) },
+            id_registro: existe.id
+          });
+        }
+
         const nuevosItems = inventarioActual.map(item =>
-          item.producto_id === parseInt(productoSeleccionado)
+          item.id === existe.id
             ? { ...item, cantidad: parseFloat(cantidad) }
             : item
         );
         setInventarioActual(nuevosItems);
         setExito(`✅ Cantidad actualizada para "${producto.nombre}"`);
+        setTimeout(() => setExito(null), 4000);
+        setLoading(false);
+        return true;
+      }
+
+      if (conectado) {
+        const { data, error } = await supabase
+          .from('inventario')
+          .insert([{
+            producto_id: parseInt(productoId),
+            cantidad: parseFloat(cantidad),
+            fecha: fechaSeleccionada
+          }])
+          .select();
+
+        if (error) {
+          setError('Error al agregar: ' + error.message);
+          setTimeout(() => setError(null), 4000);
+          setLoading(false);
+          return false;
+        }
+
+        if (data && data.length > 0) {
+          const nuevoItem = {
+            id: data[0].id,
+            producto_id: data[0].producto_id,
+            nombre: producto.nombre,
+            categoria: producto.categoria,
+            marca: producto.marca || '-',
+            unidad_medida: producto.unidad_medida,
+            cantidad: data[0].cantidad,
+            fecha: data[0].fecha
+          };
+          setInventarioActual([...inventarioActual, nuevoItem]);
+          setExito(`✅ "${producto.nombre}" agregado al inventario`);
+          setTimeout(() => setExito(null), 4000);
+        }
       } else {
         const nuevoItem = {
-          id: `temp_${Date.now()}_${inventarioActual.length}`,
-          producto_id: producto.id,
+          id: `temp_${Date.now()}`,
+          producto_id: parseInt(productoId),
           nombre: producto.nombre,
           categoria: producto.categoria,
           marca: producto.marca || '-',
           unidad_medida: producto.unidad_medida,
           cantidad: parseFloat(cantidad),
-          fecha: fecha
+          fecha: fechaSeleccionada
         };
         setInventarioActual([...inventarioActual, nuevoItem]);
-        setExito(`✅ "${producto.nombre}" agregado al inventario`);
-      }
+        setExito(`📝 "${producto.nombre}" agregado localmente. Se sincronizará con internet.`);
+        setTimeout(() => setExito(null), 4000);
 
-      setProductoSeleccionado('');
-      setCantidad('');
-      setError(null);
-    } catch (err) {
-      console.error('Error agregando producto:', err);
-      setError('Error al agregar producto');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ===== INICIAR EDICIÓN =====
-  const iniciarEdicion = (item) => {
-    if (!item || !item.id) {
-      setError('Error: No se puede editar este registro');
-      return;
-    }
-    
-    setEditandoId(item.id);
-    setEditandoProducto(item.producto_id ? item.producto_id.toString() : '');
-    setEditandoCantidad(item.cantidad ? item.cantidad.toString() : '');
-    setEditandoFecha(item.fecha || '');
-  };
-
-  // ===== CANCELAR EDICIÓN =====
-  const cancelarEdicion = () => {
-    setEditandoId(null);
-    setEditandoProducto('');
-    setEditandoCantidad('');
-    setEditandoFecha('');
-  };
-
-  // ===== ACTUALIZAR REGISTRO =====
-  const actualizarRegistro = async () => {
-    if (!editandoId) {
-      setError('Error: No se puede actualizar sin un ID');
-      return;
-    }
-
-    if (!editandoProducto || editandoProducto === '') {
-      setError('Selecciona un producto');
-      return;
-    }
-
-    const productoId = parseInt(editandoProducto);
-    if (isNaN(productoId) || productoId <= 0) {
-      setError('Producto no válido');
-      return;
-    }
-
-    const cantidadNum = parseFloat(editandoCantidad);
-    if (isNaN(cantidadNum) || cantidadNum <= 0) {
-      setError('La cantidad debe ser mayor a 0');
-      return;
-    }
-
-    if (!editandoFecha) {
-      setError('Selecciona una fecha');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const producto = productosDisponibles.find(p => p.id === productoId);
-      if (!producto) {
-        setError('Producto no encontrado');
-        setLoading(false);
-        return;
-      }
-
-      // Si es un ID temporal (local)
-      if (typeof editandoId === 'string' && editandoId.startsWith('temp_')) {
-        const nuevosItems = inventarioActual.map(item => {
-          if (item.id === editandoId) {
-            return {
-              ...item,
-              producto_id: productoId,
-              nombre: producto.nombre,
-              categoria: producto.categoria,
-              marca: producto.marca || '-',
-              unidad_medida: producto.unidad_medida,
-              cantidad: cantidadNum,
-              fecha: editandoFecha
-            };
+        agregarOperacion({
+          tipo: 'INSERT',
+          tabla: 'inventario',
+          datos: {
+            producto_id: parseInt(productoId),
+            cantidad: parseFloat(cantidad),
+            fecha: fechaSeleccionada
           }
-          return item;
         });
-        setInventarioActual(nuevosItems);
-        setEditandoId(null);
-        setEditandoProducto('');
-        setEditandoCantidad('');
-        setEditandoFecha('');
-        setExito(`✅ Registro actualizado correctamente`);
-        setLoading(false);
-        return;
       }
 
-      // Con internet - actualizar en Supabase
-      if (conectado) {
-        const { data, error } = await supabase
-          .from('inventario')
-          .update({
-            producto_id: productoId,
-            cantidad: cantidadNum,
-            fecha: editandoFecha
-          })
-          .eq('id', editandoId)
-          .select();
-
-        if (error) {
-          setError('Error al actualizar: ' + error.message);
-          setLoading(false);
-          return;
-        }
-
-        if (data && data.length > 0) {
-          const nuevosItems = inventarioActual.map(item => {
-            if (item.id === editandoId) {
-              return {
-                ...item,
-                producto_id: productoId,
-                nombre: producto.nombre,
-                categoria: producto.categoria,
-                marca: producto.marca || '-',
-                unidad_medida: producto.unidad_medida,
-                cantidad: cantidadNum,
-                fecha: editandoFecha
-              };
-            }
-            return item;
-          });
-          setInventarioActual(nuevosItems);
-          setEditandoId(null);
-          setEditandoProducto('');
-          setEditandoCantidad('');
-          setEditandoFecha('');
-          setExito(`✅ Registro actualizado correctamente`);
-          
-          if (filtroFecha) {
-            cargarInventarioPorFecha(filtroFecha);
-          }
-        }
-        setLoading(false);
-        return;
-      }
-
-      // Sin internet - guardar en cola
-      agregarOperacion({
-        tipo: 'UPDATE',
-        tabla: 'inventario',
-        datos: {
-          producto_id: productoId,
-          cantidad: cantidadNum,
-          fecha: editandoFecha
-        },
-        id_registro: editandoId
-      });
-
-      const nuevosItems = inventarioActual.map(item => {
-        if (item.id === editandoId) {
-          return {
-            ...item,
-            producto_id: productoId,
-            nombre: producto.nombre,
-            categoria: producto.categoria,
-            marca: producto.marca || '-',
-            unidad_medida: producto.unidad_medida,
-            cantidad: cantidadNum,
-            fecha: editandoFecha
-          };
-        }
-        return item;
-      });
-      setInventarioActual(nuevosItems);
-      setEditandoId(null);
-      setEditandoProducto('');
-      setEditandoCantidad('');
-      setEditandoFecha('');
-      setExito(`📝 Registro actualizado localmente. Se sincronizará con internet.`);
-      
-      if (filtroFecha) {
-        cargarInventarioPorFecha(filtroFecha);
-      }
+      setLoading(false);
+      return true;
     } catch (err) {
       console.error('Error:', err);
-      setError('Error al actualizar: ' + err.message);
-    } finally {
+      setError('Error al agregar producto: ' + err.message);
+      setTimeout(() => setError(null), 4000);
       setLoading(false);
+      return false;
     }
   };
 
-  // ===== ELIMINAR PRODUCTO DEL INVENTARIO =====
-  const eliminarDelInventario = (index) => {
-    const producto = inventarioActual[index];
-    const nuevosItems = inventarioActual.filter((_, i) => i !== index);
-    setInventarioActual(nuevosItems);
-    setExito(`🗑️ "${producto.nombre}" eliminado del inventario`);
-  };
-
-  // ===== ELIMINAR PRODUCTO DE LA BASE DE DATOS =====
-  const eliminarDeBD = async (id, nombre) => {
-    if (!window.confirm(`¿Estás seguro de eliminar "${nombre}" del inventario?`)) {
-      return;
-    }
-
+  // ===== ELIMINAR PRODUCTO DESDE MODAL =====
+  const eliminarInventario = async (id, nombre) => {
     try {
       setLoading(true);
       setError(null);
 
-      // Si es temporal
       if (typeof id === 'string' && id.startsWith('temp_')) {
         const nuevosItems = inventarioActual.filter(item => item.id !== id);
         setInventarioActual(nuevosItems);
         setExito(`🗑️ "${nombre}" eliminado del inventario`);
+        setTimeout(() => setExito(null), 4000);
         setLoading(false);
-        return;
+        return true;
       }
 
       if (conectado) {
@@ -399,191 +369,119 @@ function Inventario() {
           .delete()
           .eq('id', id);
 
-        if (error) throw error;
-
-        const nuevosItems = inventarioActual.filter(item => item.id !== id);
-        setInventarioActual(nuevosItems);
-        setExito(`🗑️ "${nombre}" eliminado del inventario permanentemente`);
-        
-        if (filtroFecha) {
-          cargarInventarioPorFecha(filtroFecha);
+        if (error) {
+          setError('Error al eliminar: ' + error.message);
+          setTimeout(() => setError(null), 4000);
+          setLoading(false);
+          return false;
         }
-        setLoading(false);
-        return;
+      } else {
+        agregarOperacion({
+          tipo: 'DELETE',
+          tabla: 'inventario',
+          id_registro: id
+        });
       }
-
-      // Sin internet
-      agregarOperacion({
-        tipo: 'DELETE',
-        tabla: 'inventario',
-        id_registro: id
-      });
 
       const nuevosItems = inventarioActual.filter(item => item.id !== id);
       setInventarioActual(nuevosItems);
-      setExito(`📝 "${nombre}" eliminado localmente. Se sincronizará con internet.`);
+      setExito(`🗑️ "${nombre}" eliminado del inventario`);
+      setTimeout(() => setExito(null), 4000);
       setLoading(false);
-
+      return true;
     } catch (err) {
-      console.error('Error eliminando:', err);
-      setError('Error al eliminar el producto del inventario: ' + err.message);
+      console.error('Error:', err);
+      setError('Error al eliminar: ' + err.message);
+      setTimeout(() => setError(null), 4000);
       setLoading(false);
+      return false;
     }
   };
 
-// ===== GUARDAR INVENTARIO (CON SOPORTE OFFLINE) =====
-const guardarInventario = async () => {
-  if (inventarioActual.length === 0) {
-    setError('Agrega al menos un producto al inventario');
-    return;
-  }
-
-  // Si no hay conexión, guardar localmente y en cola
-  if (!conectado) {
+  // ===== EDITAR PRODUCTO DESDE MODAL =====
+  const editarInventario = async (id, productoId, cantidad, fechaSeleccionada) => {
     try {
       setLoading(true);
-      
-      // Preparar datos para guardar
-      const datosInventario = inventarioActual.map(item => ({
-        producto_id: item.producto_id,
-        cantidad: item.cantidad,
-        fecha: fecha
-      }));
-      
-      // Guardar en localStorage como respaldo
-      const inventarioKey = `inventario_${fecha}`;
-      guardarLocal(inventarioKey, datosInventario);
-      
-      // Guardar en la cola de operaciones pendientes
-      agregarOperacion({
-        tipo: 'INSERT',
-        tabla: 'inventario',
-        datos: datosInventario,
-        esInventario: true,
-        fecha: fecha
-      });
+      setError(null);
 
-      setExito(`📝 Inventario guardado localmente (${datosInventario.length} productos). Se sincronizará con internet.`);
+      const producto = productos?.find(p => p.id === parseInt(productoId));
+      if (!producto) {
+        setError('Producto no encontrado');
+        setTimeout(() => setError(null), 4000);
+        setLoading(false);
+        return false;
+      }
+
+      if (conectado) {
+        const { error } = await supabase
+          .from('inventario')
+          .update({
+            producto_id: parseInt(productoId),
+            cantidad: parseFloat(cantidad),
+            fecha: fechaSeleccionada
+          })
+          .eq('id', id);
+
+        if (error) {
+          setError('Error al actualizar: ' + error.message);
+          setTimeout(() => setError(null), 4000);
+          setLoading(false);
+          return false;
+        }
+      } else {
+        agregarOperacion({
+          tipo: 'UPDATE',
+          tabla: 'inventario',
+          datos: {
+            producto_id: parseInt(productoId),
+            cantidad: parseFloat(cantidad),
+            fecha: fechaSeleccionada
+          },
+          id_registro: id
+        });
+      }
+
+      const nuevosItems = inventarioActual.map(item =>
+        item.id === id
+          ? {
+              ...item,
+              producto_id: parseInt(productoId),
+              nombre: producto.nombre,
+              categoria: producto.categoria,
+              marca: producto.marca || '-',
+              unidad_medida: producto.unidad_medida,
+              cantidad: parseFloat(cantidad),
+              fecha: fechaSeleccionada
+            }
+          : item
+      );
+      setInventarioActual(nuevosItems);
+      setExito(`✅ Registro actualizado correctamente`);
       setTimeout(() => setExito(null), 4000);
       setLoading(false);
-      return;
+      return true;
     } catch (err) {
-      console.error('Error guardando inventario offline:', err);
-      setError('Error al guardar inventario offline: ' + err.message);
+      console.error('Error:', err);
+      setError('Error al editar: ' + err.message);
+      setTimeout(() => setError(null), 4000);
       setLoading(false);
+      return false;
+    }
+  };
+
+  // ===== ELIMINAR PRODUCTO DIRECTAMENTE DESDE LA TABLA =====
+  const eliminarDirecto = async (id, nombre) => {
+    if (!window.confirm(`¿Estás seguro de eliminar "${nombre}" del inventario?`)) {
       return;
     }
-  }
-
-  // Con conexión - guardar normal
-  try {
-    setLoading(true);
-    setError(null);
-
-    // Separar items temporales de los reales
-    const itemsTemporales = inventarioActual.filter(item => 
-      typeof item.id === 'string' && item.id.startsWith('temp_')
-    );
-
-    const itemsReales = inventarioActual.filter(item => 
-      !(typeof item.id === 'string' && item.id.startsWith('temp_'))
-    );
-
-    // Si hay items temporales, guardarlos primero en la cola
-    if (itemsTemporales.length > 0) {
-      const datosTemporales = itemsTemporales.map(item => ({
-        producto_id: item.producto_id,
-        cantidad: item.cantidad,
-        fecha: fecha
-      }));
-
-      agregarOperacion({
-        tipo: 'INSERT',
-        tabla: 'inventario',
-        datos: datosTemporales,
-        esInventario: true,
-        fecha: fecha
-      });
-
-      setExito(`📝 ${itemsTemporales.length} productos temporales guardados en cola.`);
-    }
-
-    // Si hay items reales, guardarlos directamente en Supabase
-    if (itemsReales.length > 0) {
-      // Eliminar registros existentes para esta fecha
-      const { error: deleteError } = await supabase
-        .from('inventario')
-        .delete()
-        .eq('fecha', fecha);
-
-      if (deleteError) throw deleteError;
-
-      const datosReales = itemsReales.map(item => ({
-        producto_id: item.producto_id,
-        cantidad: item.cantidad,
-        fecha: fecha
-      }));
-
-      const { data, error } = await supabase
-        .from('inventario')
-        .insert(datosReales)
-        .select();
-
-      if (error) throw error;
-
-      if (data && data.length > 0) {
-        // Actualizar IDs de items reales
-        const itemsActualizados = inventarioActual.map((item) => {
-          const realItem = data.find(d => 
-            d.producto_id === item.producto_id && 
-            d.cantidad === item.cantidad &&
-            d.fecha === fecha
-          );
-          return {
-            ...item,
-            id: realItem?.id || item.id
-          };
-        });
-        setInventarioActual(itemsActualizados);
-        setExito(`✅ ${data.length} productos guardados en Supabase`);
-      }
-    }
-
-    // Si todo está bien, recargar inventario
-    if (filtroFecha) {
-      cargarInventarioPorFecha(filtroFecha);
-    } else {
-      cargarInventarioPorFecha(fecha);
-    }
-
-    setTimeout(() => setExito(null), 4000);
-  } catch (err) {
-    console.error('Error guardando inventario:', err);
-    setError('Error al guardar el inventario: ' + err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
-  // ===== NUEVO INVENTARIO =====
-  const nuevoInventario = () => {
-    setInventarioActual([]);
-    setFecha(new Date().toISOString().split('T')[0]);
-    setFiltroFecha('');
-    setError(null);
-    setExito('📝 Nuevo inventario creado');
-    setProductoSeleccionado('');
-    setCantidad('');
-    setEditandoId(null);
-    setEditandoProducto('');
-    setEditandoCantidad('');
-    setEditandoFecha('');
+    await eliminarInventario(id, nombre);
   };
 
   // ===== EXPORTAR A PDF =====
   const exportarPDF = async () => {
     if (inventarioActual.length === 0) {
       setError('No hay productos para exportar');
+      setTimeout(() => setError(null), 4000);
       return;
     }
 
@@ -599,6 +497,7 @@ const guardarInventario = async () => {
     } catch (err) {
       console.error('Error generando PDF:', err);
       setError('Error al generar el PDF: ' + err.message);
+      setTimeout(() => setError(null), 4000);
     } finally {
       setGenerandoPDF(false);
     }
@@ -608,6 +507,7 @@ const guardarInventario = async () => {
   const sincronizarManual = async () => {
     if (!conectado) {
       setError('Sin internet');
+      setTimeout(() => setError(null), 4000);
       return;
     }
 
@@ -623,11 +523,42 @@ const guardarInventario = async () => {
       setTimeout(() => setExito(null), 3000);
     } catch (err) {
       setError('Error: ' + err.message);
+      setTimeout(() => setError(null), 4000);
     }
   };
 
-  const totalProductos = inventarioActual.length;
-  const totalCantidad = inventarioActual.reduce((sum, item) => sum + item.cantidad, 0);
+  // ===== ABRIR MODALES =====
+  const abrirModalAgregar = () => setModalAgregarOpen(true);
+  const cerrarModalAgregar = () => setModalAgregarOpen(false);
+
+  const abrirModalEditar = (item) => {
+    setSelectedItem(item);
+    setModalEditarOpen(true);
+  };
+  const cerrarModalEditar = () => {
+    setSelectedItem(null);
+    setModalEditarOpen(false);
+  };
+
+  const abrirModalEliminar = (item) => {
+    setSelectedItem(item);
+    setModalEliminarOpen(true);
+  };
+  const cerrarModalEliminar = () => {
+    setSelectedItem(null);
+    setModalEliminarOpen(false);
+  };
+
+  // ===== CALCULAR TOTALES =====
+  const totalRegistros = inventarioActual.length;
+  
+  const totalLibras = inventarioActual
+    .filter(item => item.unidad_medida && item.unidad_medida.toLowerCase() === 'libra')
+    .reduce((sum, item) => sum + item.cantidad, 0);
+
+  const totalUnidades = inventarioActual
+    .filter(item => item.unidad_medida && item.unidad_medida.toLowerCase() === 'unidad')
+    .reduce((sum, item) => sum + item.cantidad, 0);
 
   return (
     <div className="inventario-container">
@@ -663,8 +594,8 @@ const guardarInventario = async () => {
                 </>
               )}
             </button>
-            <button className="btn-nuevo" onClick={nuevoInventario}>
-              <i className="fas fa-plus-circle"></i> Nuevo Inventario
+            <button className="btn-agregar-producto" onClick={abrirModalAgregar}>
+              <i className="fas fa-plus-circle"></i> Agregar Producto
             </button>
           </div>
         </div>
@@ -710,6 +641,7 @@ const guardarInventario = async () => {
               value={filtroFecha}
               onChange={(e) => {
                 setFiltroFecha(e.target.value);
+                setMostrarInventarioCompleto(false);
                 cargarInventarioPorFecha(e.target.value);
               }}
               className="fecha-input"
@@ -721,7 +653,7 @@ const guardarInventario = async () => {
                   setFiltroFecha('');
                   setInventarioActual([]);
                   setExito(null);
-                  setEditandoId(null);
+                  setMostrarInventarioCompleto(false);
                 }}
               >
                 <i className="fas fa-times-circle"></i> Limpiar
@@ -738,56 +670,59 @@ const guardarInventario = async () => {
               value={fecha}
               onChange={(e) => setFecha(e.target.value)}
               className="fecha-input"
-              disabled={filtroFecha !== ''}
+              disabled={filtroFecha !== '' || mostrarInventarioCompleto}
             />
+          </div>
+
+          <div className="ver-todos-container">
+            <button 
+              className={`btn-ver-todos ${mostrarInventarioCompleto ? 'active' : ''}`}
+              onClick={() => {
+                if (mostrarInventarioCompleto) {
+                  setMostrarInventarioCompleto(false);
+                  setInventarioActual([]);
+                  setExito(null);
+                  setFiltroFecha('');
+                } else {
+                  cargarInventarioCompleto();
+                }
+              }}
+            >
+              <i className="fas fa-list"></i>
+              {mostrarInventarioCompleto ? 'Ocultar todo' : 'Ver todo el inventario'}
+            </button>
           </div>
         </div>
 
-        <div className="agregar-producto-container">
-          <div className="agregar-producto-form">
-            <div className="form-group">
-              <label><i className="fas fa-box"></i> Producto *</label>
-              <select
-                value={productoSeleccionado}
-                onChange={(e) => setProductoSeleccionado(e.target.value)}
-                className="form-select"
-                disabled={filtroFecha !== '' || loadingProductos}
-              >
-                <option value="">Seleccionar producto...</option>
-                {productosDisponibles.map(p => (
-                  <option key={p.id} value={p.id}>
-                    {p.nombre} {p.marca ? `(${p.marca})` : ''}
-                  </option>
-                ))}
-              </select>
-              {loadingProductos && (
-                <span className="cargando-productos">Cargando productos...</span>
-              )}
+        {/* ===== TARJETAS DE TOTALES ===== */}
+        <div className="totales-container">
+          <div className="total-card">
+            <div className="total-icon">
+              <i className="fas fa-cubes"></i>
             </div>
-
-            <div className="form-group">
-              <label><i className="fas fa-weight-hanging"></i> Cantidad *</label>
-              <input
-                type="number"
-                value={cantidad}
-                onChange={(e) => setCantidad(e.target.value)}
-                placeholder="0.00"
-                className="form-input"
-                step="0.01"
-                min="0"
-                disabled={filtroFecha !== ''}
-              />
+            <div className="total-info">
+              <span className="total-label">Total Registros</span>
+              <span className="total-value">{totalRegistros}</span>
             </div>
+          </div>
 
-            <div className="form-group">
-              <label>&nbsp;</label>
-              <button 
-                className="btn-agregar" 
-                onClick={agregarProducto}
-                disabled={loading || filtroFecha !== ''}
-              >
-                <i className="fas fa-plus-circle"></i> Agregar
-              </button>
+          <div className="total-card">
+            <div className="total-icon">
+              <i className="fas fa-weight"></i>
+            </div>
+            <div className="total-info">
+              <span className="total-label">Total Libras</span>
+              <span className="total-value">{totalLibras.toFixed(2)} <span className="total-unit">lb</span></span>
+            </div>
+          </div>
+
+          <div className="total-card">
+            <div className="total-icon">
+              <i className="fas fa-box"></i>
+            </div>
+            <div className="total-info">
+              <span className="total-label">Total Unidades</span>
+              <span className="total-value">{totalUnidades.toFixed(2)} <span className="total-unit">und</span></span>
             </div>
           </div>
         </div>
@@ -795,10 +730,11 @@ const guardarInventario = async () => {
         <div className="inventario-tabla-container">
           <div className="inventario-tabla-header">
             <h3><i className="fas fa-clipboard-list"></i> Inventario Actual</h3>
-            <div className="inventario-resumen">
-              <span><i className="fas fa-cubes"></i> Productos: <strong>{totalProductos}</strong></span>
-              <span><i className="fas fa-weight"></i> Total: <strong>{totalCantidad.toFixed(2)}</strong></span>
-            </div>
+            {mostrarInventarioCompleto && (
+              <span className="completo-badge">
+                <i className="fas fa-eye"></i> Vista completa
+              </span>
+            )}
           </div>
 
           {cargandoInventario ? (
@@ -830,7 +766,7 @@ const guardarInventario = async () => {
                         <span className="sin-productos-sub">
                           {filtroFecha 
                             ? 'No hay inventario registrado para esta fecha'
-                            : 'Agrega productos usando el formulario de arriba'}
+                            : 'Selecciona una fecha o haz clic en "Ver todo el inventario"'}
                         </span>
                       </td>
                     </tr>
@@ -838,25 +774,7 @@ const guardarInventario = async () => {
                     inventarioActual.map((item, index) => (
                       <tr key={item.id || index} className="inventario-fila">
                         <td className="numero">{index + 1}</td>
-                        <td className="producto-nombre">
-                          {editandoId === item.id ? (
-                            <select
-                              value={editandoProducto}
-                              onChange={(e) => setEditandoProducto(e.target.value)}
-                              className="form-select"
-                              style={{ padding: '4px 8px', fontSize: '13px' }}
-                            >
-                              <option value="">Seleccionar producto...</option>
-                              {productosDisponibles.map(p => (
-                                <option key={p.id} value={p.id}>
-                                  {p.nombre} {p.marca ? `(${p.marca})` : ''}
-                                </option>
-                              ))}
-                            </select>
-                          ) : (
-                            item.nombre
-                          )}
-                        </td>
+                        <td className="producto-nombre">{item.nombre}</td>
                         <td className="categoria">
                           <span className="categoria-badge">{item.categoria}</span>
                         </td>
@@ -865,83 +783,36 @@ const guardarInventario = async () => {
                           <span className="unidad-badge">{item.unidad_medida}</span>
                         </td>
                         <td className="cantidad">
-                          {editandoId === item.id ? (
-                            <input
-                              type="number"
-                              value={editandoCantidad}
-                              onChange={(e) => setEditandoCantidad(e.target.value)}
-                              className="form-input"
-                              style={{ width: '80px', padding: '4px 8px', textAlign: 'center' }}
-                              step="0.01"
-                              min="0"
-                              autoFocus
-                            />
-                          ) : (
-                            <strong>{item.cantidad.toFixed(2)}</strong>
-                          )}
+                          <strong>{item.cantidad.toFixed(2)}</strong>
                         </td>
-                        <td className="fecha">
-                          {editandoId === item.id ? (
-                            <input
-                              type="date"
-                              value={editandoFecha}
-                              onChange={(e) => setEditandoFecha(e.target.value)}
-                              className="form-input"
-                              style={{ padding: '4px 8px', fontSize: '13px' }}
-                            />
-                          ) : (
-                            item.fecha
-                          )}
-                        </td>
+                        <td className="fecha">{item.fecha}</td>
                         <td className="acciones">
-                          {editandoId === item.id ? (
-                            <div className="acciones-botones">
-                              <button 
-                                className="btn-guardar-edicion" 
-                                onClick={actualizarRegistro}
-                                disabled={loading}
-                                title="Guardar cambios"
-                              >
-                                <i className="fas fa-save"></i>
-                                <span>Guardar</span>
-                              </button>
-                              <button 
-                                className="btn-cancelar-edicion" 
-                                onClick={cancelarEdicion}
-                                title="Cancelar edición"
-                              >
-                                <i className="fas fa-times"></i>
-                                <span>Cancelar</span>
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="acciones-botones">
-                              <button 
-                                className="btn-editar" 
-                                onClick={() => iniciarEdicion(item)}
-                                title="Editar registro"
-                                disabled={filtroFecha !== ''}
-                              >
-                                <i className="fas fa-edit"></i>
-                                <span>Editar</span>
-                              </button>
-                              <button 
-                                className="btn-eliminar" 
-                                onClick={() => {
-                                  if (typeof item.id === 'string' && item.id.startsWith('temp_')) {
-                                    eliminarDelInventario(index);
-                                  } else {
-                                    eliminarDeBD(item.id, item.nombre);
-                                  }
-                                }}
-                                title="Eliminar del inventario"
-                                disabled={filtroFecha !== ''}
-                              >
-                                <i className="fas fa-trash-alt"></i>
-                                <span>Eliminar</span>
-                              </button>
-                            </div>
-                          )}
+                          <div className="acciones-botones">
+                            <button 
+                              className="btn-editar" 
+                              onClick={() => abrirModalEditar(item)}
+                              title="Editar registro"
+                              disabled={filtroFecha !== '' || mostrarInventarioCompleto}
+                            >
+                              <i className="fas fa-edit"></i>
+                              <span>Editar</span>
+                            </button>
+                            <button 
+                              className="btn-eliminar" 
+                              onClick={() => {
+                                if (typeof item.id === 'string' && item.id.startsWith('temp_')) {
+                                  eliminarDirecto(item.id, item.nombre);
+                                } else {
+                                  abrirModalEliminar(item);
+                                }
+                              }}
+                              title="Eliminar del inventario"
+                              disabled={filtroFecha !== '' || mostrarInventarioCompleto}
+                            >
+                              <i className="fas fa-trash-alt"></i>
+                              <span>Eliminar</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -951,33 +822,34 @@ const guardarInventario = async () => {
             </div>
           )}
         </div>
-
-        <div className="inventario-acciones">
-          <button 
-            className="btn-guardar" 
-            onClick={guardarInventario}
-            disabled={loading || inventarioActual.length === 0 || filtroFecha !== ''}
-          >
-            {loading ? (
-              <>
-                <i className="fas fa-spinner fa-spin"></i> Guardando...
-              </>
-            ) : (
-              <>
-                <i className="fas fa-save"></i> Guardar Inventario
-              </>
-            )}
-          </button>
-
-          <button 
-            className="btn-limpiar" 
-            onClick={nuevoInventario}
-            disabled={loading}
-          >
-            <i className="fas fa-undo-alt"></i> Nuevo Inventario
-          </button>
-        </div>
       </div>
+
+      {/* ===== MODALES ===== */}
+      <ModalAgregarInventario
+        isOpen={modalAgregarOpen}
+        onClose={cerrarModalAgregar}
+        onAgregar={agregarAlInventario}
+        productos={productos}
+        fecha={fecha}
+        loading={loading}
+      />
+
+      <ModalEditarInventario
+        isOpen={modalEditarOpen}
+        onClose={cerrarModalEditar}
+        onEditar={editarInventario}
+        item={selectedItem}
+        productos={productos}
+        loading={loading}
+      />
+
+      <ModalEliminarInventario
+        isOpen={modalEliminarOpen}
+        onClose={cerrarModalEliminar}
+        onEliminar={eliminarInventario}
+        item={selectedItem}
+        loading={loading}
+      />
 
       <div className="bottom-nav">
         <button className="nav-item" onClick={() => navigate('/')}>

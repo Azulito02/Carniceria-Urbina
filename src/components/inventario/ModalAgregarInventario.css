@@ -1,0 +1,233 @@
+/* ModalAgregarInventario.css */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 20px 60px rgba(139, 30, 30, 0.2);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: #8B1E1E;
+  color: white;
+  border-radius: 16px 16px 0 0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-header h2 i {
+  color: #FBAC3E;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #fde8e8;
+  border-left: 4px solid #8B1E1E;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  color: #8B1E1E;
+  font-size: 14px;
+}
+
+.modal-error i {
+  font-size: 18px;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  color: #8B1E1E;
+  margin-bottom: 6px;
+}
+
+.form-group label i {
+  color: #FBAC3E;
+  margin-right: 8px;
+}
+
+.form-select,
+.form-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 2px solid #e0d6d4;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: white;
+  color: #333;
+}
+
+.form-select:focus,
+.form-input:focus {
+  outline: none;
+  border-color: #8B1E1E;
+  box-shadow: 0 0 0 3px rgba(139, 30, 30, 0.1);
+}
+
+.form-select:disabled,
+.form-input:disabled {
+  background: #f5f0ef;
+  cursor: not-allowed;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px 24px;
+  justify-content: flex-end;
+  border-top: 1px solid #f0e8e6;
+}
+
+.btn-cancelar,
+.btn-guardar {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-cancelar {
+  background: #f5f0ef;
+  color: #8B1E1E;
+}
+
+.btn-cancelar:hover {
+  background: #e8e0de;
+}
+
+.btn-guardar {
+  background: #8B1E1E;
+  color: white;
+  box-shadow: 0 4px 15px rgba(139, 30, 30, 0.3);
+}
+
+.btn-guardar:hover:not(:disabled) {
+  background: #6b1515;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(139, 30, 30, 0.4);
+}
+
+.btn-guardar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-guardar i {
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .modal-content {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .modal-header {
+    padding: 16px 18px;
+  }
+
+  .modal-header h2 {
+    font-size: 17px;
+  }
+
+  .modal-body {
+    padding: 18px;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    padding: 16px 18px 18px;
+  }
+
+  .btn-cancelar,
+  .btn-guardar {
+    width: 100%;
+    justify-content: center;
+  }
+}

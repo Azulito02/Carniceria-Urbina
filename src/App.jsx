@@ -4,6 +4,7 @@ import Inicio from './views/Inicio';
 import Productos from './views/Productos';
 import Inventario from './views/Inventario';
 import Clientes from './views/Clientes';
+import Inversiones from './views/Inversiones';
 import { iniciarEscuchaOffline, sincronizarOperaciones } from './services/OfflineService';
 import './App.css';
 
@@ -31,6 +32,7 @@ function App() {
         <Route path="/productos" element={<Productos />} />
         <Route path="/inventario" element={<Inventario />} />
         <Route path="/clientes" element={<Clientes />} />
+        <Route path="/inversiones" element={<Inversiones />} />
       </Routes>
     </BrowserRouter>
   );
