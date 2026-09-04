@@ -1,0 +1,266 @@
+/* src/components/creditos/ModalEliminarCredito.css */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 1.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-titulo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  background: linear-gradient(135deg, #8B1E1E, #b91c1c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.modal-cerrar {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.modal-cerrar:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.modal-body {
+  padding: 1.75rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.25rem 1.75rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.form-error {
+  padding: 0.75rem 1rem;
+  background: #fee2e2;
+  border-radius: 10px;
+  color: #dc2626;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  border: 1px solid #fecaca;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.eliminar-confirmacion {
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+.eliminar-icono {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.eliminar-texto {
+  font-size: 1.1rem;
+  color: #0f172a;
+  margin-bottom: 1.5rem;
+}
+
+.eliminar-detalles {
+  text-align: left;
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.eliminar-detalles p {
+  margin: 0.25rem 0;
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
+.eliminar-detalles p strong {
+  color: #475569;
+}
+
+.eliminar-advertencia {
+  color: #dc2626;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.75rem;
+  background: #fef2f2;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+}
+
+.btn-modal-cancelar,
+.btn-modal-eliminar {
+  padding: 0.6rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-modal-cancelar {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.btn-modal-cancelar:hover {
+  background: #e2e8f0;
+}
+
+.btn-modal-eliminar {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: white;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.btn-modal-eliminar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+}
+
+.btn-modal-eliminar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    max-width: 100%;
+    margin: 0.5rem;
+    border-radius: 16px;
+  }
+
+  .modal-header {
+    padding: 1.25rem 1.25rem;
+  }
+
+  .modal-titulo {
+    font-size: 1.1rem;
+  }
+
+  .modal-body {
+    padding: 1.25rem;
+  }
+
+  .modal-footer {
+    padding: 1rem 1.25rem;
+    flex-direction: column;
+  }
+
+  .btn-modal-cancelar,
+  .btn-modal-eliminar {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .eliminar-detalles p {
+    font-size: 0.85rem;
+  }
+  
+  .eliminar-texto {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    width: 98%;
+    margin: 0.25rem;
+    border-radius: 12px;
+  }
+
+  .modal-header {
+    padding: 1rem 1rem;
+  }
+
+  .modal-titulo {
+    font-size: 1rem;
+  }
+
+  .modal-cerrar {
+    font-size: 1.2rem;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-footer {
+    padding: 0.75rem 1rem;
+  }
+
+  .eliminar-icono {
+    font-size: 2.5rem;
+  }
+
+  .btn-modal-cancelar,
+  .btn-modal-eliminar {
+    font-size: 0.8rem;
+    padding: 0.5rem 1rem;
+  }
+}
