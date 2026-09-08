@@ -3,7 +3,12 @@ import './TablaGastos.css';
 
 const TablaGastos = ({ gastos, loading, onEditar, onEliminar }) => {
   if (loading) {
-    return <div className="tabla-loading">Cargando gastos...</div>;
+    return (
+      <div className="tabla-loading">
+        <div className="spinner"></div>
+        <p>Cargando gastos...</p>
+      </div>
+    );
   }
 
   if (!gastos || gastos.length === 0) {
@@ -11,6 +16,7 @@ const TablaGastos = ({ gastos, loading, onEditar, onEliminar }) => {
       <div className="tabla-vacia">
         <i className="fas fa-inbox"></i>
         <p>No hay gastos registrados</p>
+        <span>Haz clic en "Agregar" para crear un nuevo gasto</span>
       </div>
     );
   }
@@ -18,15 +24,19 @@ const TablaGastos = ({ gastos, loading, onEditar, onEliminar }) => {
   // Formatear fecha
   const formatearFecha = (fecha) => {
     if (!fecha) return '—';
-    const date = new Date(fecha);
-    return date.toLocaleString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
+    try {
+      const date = new Date(fecha);
+      return date.toLocaleString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch (e) {
+      return fecha;
+    }
   };
 
   // Formatear monto como moneda
@@ -40,45 +50,51 @@ const TablaGastos = ({ gastos, loading, onEditar, onEliminar }) => {
 
   return (
     <div className="tabla-container">
-      <table className="tabla-gastos">
-        <thead>
-          <tr>
-            <th>Descripción</th>
-            <th>Monto</th>
-            <th>Fecha de Registro</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {gastos.map((gasto) => (
-            <tr key={gasto.id}>
-              <td>{gasto.descripcion}</td>
-              <td className={gasto.monto < 0 ? 'monto-negativo' : 'monto-positivo'}>
-                {formatearMonto(gasto.monto)}
-              </td>
-              <td>{formatearFecha(gasto.fecha_registro)}</td>
-              <td>
-                <div className="acciones-botones">
-                  <button
-                    className="btn-editar"
-                    onClick={() => onEditar(gasto)}
-                    title="Editar"
-                  >
-                    <i className="fas fa-edit"></i>
-                  </button>
-                  <button
-                    className="btn-eliminar"
-                    onClick={() => onEliminar(gasto)}
-                    title="Eliminar"
-                  >
-                    <i className="fas fa-trash"></i>
-                  </button>
-                </div>
-              </td>
+      <div className="tabla-scroll">
+        <table className="tabla-gastos">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Descripción</th>
+              <th>Monto</th>
+              <th>Fecha de Registro</th>
+              <th>Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {gastos.map((gasto, index) => (
+              <tr key={gasto.id || index} className={gasto._local ? 'fila-local' : ''}>
+                <td className="numero">{index + 1}</td>
+                <td className="descripcion">{gasto.descripcion}</td>
+                <td className={`monto ${gasto.monto < 0 ? 'monto-negativo' : 'monto-positivo'}`}>
+                  {formatearMonto(gasto.monto)}
+                </td>
+                <td className="fecha">{formatearFecha(gasto.fecha_registro)}</td>
+                <td className="acciones">
+                  <div className="acciones-botones">
+                    <button
+                      className="btn-editar"
+                      onClick={() => onEditar(gasto)}
+                      title="Editar gasto"
+                    >
+                      <i className="fas fa-edit"></i>
+                      <span>Editar</span>
+                    </button>
+                    <button
+                      className="btn-eliminar"
+                      onClick={() => onEliminar(gasto)}
+                      title="Eliminar gasto"
+                    >
+                      <i className="fas fa-trash-alt"></i>
+                      <span>Eliminar</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

@@ -154,18 +154,7 @@ function Inicio() {
         </div>
       </div>
 
-      <div className="bottom-nav">
-        {navItems.map((item) => (
-          <button 
-            key={item.id}
-            className={`nav-item ${item.id === 'inicio' ? 'active' : ''}`} 
-            onClick={() => navigate(item.ruta)}
-          >
-            <i className={`fas ${item.icono}`}></i>
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </div>
+      
     </div>
   );
 }

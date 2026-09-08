@@ -85,91 +85,87 @@ function Productos() {
     setFiltroMarca('');
   };
 
-// ===== CREAR PRODUCTO (CORREGIDO) =====
-const crearProducto = async (formData) => {
-  try {
-    if (!formData.nombre?.trim()) {
-      setError('El nombre es obligatorio');
-      return false;
-    }
-
-    const nuevoProducto = {
-      nombre: formData.nombre.trim(),
-      categoria: formData.categoria,
-      marca: formData.marca?.trim() || null,
-      unidad_medida: formData.unidad_medida,
-    };
-
-    // Verificar si ya existe un producto con el mismo nombre (en Supabase)
-    if (conectado) {
-      const { data: existente, error: checkError } = await supabase
-        .from('productos')
-        .select('id')
-        .eq('nombre', nuevoProducto.nombre)
-        .maybeSingle();
-
-      if (checkError) {
-        console.error('Error verificando producto:', checkError);
-      }
-
-      if (existente) {
-        setError(`El producto "${nuevoProducto.nombre}" ya existe`);
-        return false;
-      }
-    }
-
-    // Con internet
-    if (conectado) {
-      const { data, error } = await supabase
-        .from('productos')
-        .insert([nuevoProducto])
-        .select();
-
-      if (error) {
-        console.error('Error:', error);
-        setError('Error al crear: ' + error.message);
+  // ===== CREAR PRODUCTO =====
+  const crearProducto = async (formData) => {
+    try {
+      if (!formData.nombre?.trim()) {
+        setError('El nombre es obligatorio');
         return false;
       }
 
-      if (data?.length > 0) {
-        setModalAgregar(false);
-        setExito('✅ Producto creado');
-        setTimeout(() => setExito(null), 3000);
-        return true;
+      const nuevoProducto = {
+        nombre: formData.nombre.trim(),
+        categoria: formData.categoria,
+        marca: formData.marca?.trim() || null,
+        unidad_medida: formData.unidad_medida,
+      };
+
+      if (conectado) {
+        const { data: existente, error: checkError } = await supabase
+          .from('productos')
+          .select('id')
+          .eq('nombre', nuevoProducto.nombre)
+          .maybeSingle();
+
+        if (checkError) {
+          console.error('Error verificando producto:', checkError);
+        }
+
+        if (existente) {
+          setError(`El producto "${nuevoProducto.nombre}" ya existe`);
+          return false;
+        }
       }
+
+      if (conectado) {
+        const { data, error } = await supabase
+          .from('productos')
+          .insert([nuevoProducto])
+          .select();
+
+        if (error) {
+          console.error('Error:', error);
+          setError('Error al crear: ' + error.message);
+          return false;
+        }
+
+        if (data?.length > 0) {
+          setModalAgregar(false);
+          setExito('✅ Producto creado');
+          setTimeout(() => setExito(null), 3000);
+          return true;
+        }
+        return false;
+      }
+
+      const idLocal = `local_${Date.now()}`;
+      
+      agregarOperacion({
+        tipo: 'INSERT',
+        tabla: 'productos',
+        datos: nuevoProducto
+      });
+
+      setProductos(prev => {
+        const existe = prev.some(p => p.nombre?.toLowerCase() === nuevoProducto.nombre.toLowerCase());
+        if (existe) {
+          console.log('⏭️ Producto ya existe localmente');
+          return prev;
+        }
+        return [...prev, { ...nuevoProducto, id: idLocal, _local: true }];
+      });
+
+      setModalAgregar(false);
+      setExito('📝 Guardado localmente. Se sincronizará con internet.');
+      setTimeout(() => setExito(null), 4000);
+      return true;
+
+    } catch (err) {
+      console.error('Error:', err);
+      setError('Error inesperado');
       return false;
     }
-
-    // Sin internet - guardar en cola + mostrar local
-    const idLocal = `local_${Date.now()}`;
-    
-    agregarOperacion({
-      tipo: 'INSERT',
-      tabla: 'productos',
-      datos: nuevoProducto
-    });
-
-    // Solo agregar si no existe ya localmente
-    setProductos(prev => {
-      const existe = prev.some(p => p.nombre?.toLowerCase() === nuevoProducto.nombre.toLowerCase());
-      if (existe) {
-        console.log('⏭️ Producto ya existe localmente');
-        return prev;
-      }
-      return [...prev, { ...nuevoProducto, id: idLocal, _local: true }];
-    });
-
-    setModalAgregar(false);
-    setExito('📝 Guardado localmente. Se sincronizará con internet.');
-    setTimeout(() => setExito(null), 4000);
-    return true;
-
-  } catch (err) {
-    console.error('Error:', err);
-    setError('Error inesperado');
-    return false;
-  }
-};
+  };
 
   // ===== ACTUALIZAR PRODUCTO =====
   const actualizarProducto = async (id, formData) => {
@@ -186,7 +182,6 @@ const crearProducto = async (formData) => {
         unidad_medida: formData.unidad_medida || 'unidad',
       };
 
-      // Si es local
       if (typeof id === 'string' && id.startsWith('local_')) {
         setProductos(prev => prev.map(p => 
           p.id === id ? { ...p, ...datos } : p
@@ -456,8 +451,7 @@ const crearProducto = async (formData) => {
             <span>
               <strong>{productosFiltrados.length}</strong> productos
               {productos.length !== productosFiltrados.length && 
-                ` (de ${productos.length})`
-              }
+                ` (de ${productos.length})`}
             </span>
           </div>
         </div>
@@ -499,24 +493,9 @@ const crearProducto = async (formData) => {
         loading={loading}
       />
 
-      <div className="bottom-nav">
-        <button className="nav-item" onClick={() => navigate('/')}>
-          <i className="fas fa-home"></i>
-          <span>Inicio</span>
-        </button>
-        <button className="nav-item active" onClick={() => navigate('/productos')}>
-          <i className="fas fa-box"></i>
-          <span>Productos</span>
-        </button>
-        <button className="nav-item" onClick={() => navigate('/ventas')}>
-          <i className="fas fa-cash-register"></i>
-          <span>Ventas</span>
-        </button>
-        <button className="nav-item" onClick={() => navigate('/reportes')}>
-          <i className="fas fa-chart-bar"></i>
-          <span>Reportes</span>
-        </button>
-      </div>
+      {/* ===== BOTTOM-NAV ELIMINADO ===== */}
+      {/* La navegación ahora está en el encabezado */}
+
     </div>
   );
 }

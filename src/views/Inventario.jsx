@@ -851,24 +851,7 @@ function Inventario() {
         loading={loading}
       />
 
-      <div className="bottom-nav">
-        <button className="nav-item" onClick={() => navigate('/')}>
-          <i className="fas fa-home"></i>
-          <span>Inicio</span>
-        </button>
-        <button className="nav-item" onClick={() => navigate('/productos')}>
-          <i className="fas fa-box"></i>
-          <span>Productos</span>
-        </button>
-        <button className="nav-item active" onClick={() => navigate('/inventario')}>
-          <i className="fas fa-warehouse"></i>
-          <span>Inventario</span>
-        </button>
-        <button className="nav-item" onClick={() => navigate('/ventas')}>
-          <i className="fas fa-cash-register"></i>
-          <span>Ventas</span>
-        </button>
-      </div>
+    
     </div>
   );
 }

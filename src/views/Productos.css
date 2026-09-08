@@ -1,4 +1,4 @@
-/* Productos.css - Corregido */
+/* Productos.css - Sin bottom-nav */
 
 .productos-container {
   min-height: 100vh;
@@ -263,9 +263,8 @@
   -moz-appearance: none;
 }
 
-/* ===== SELECT - CORREGIDO PARA QUE SE VEA EL TEXTO ===== */
 .buscador-select {
-  padding: 10px 30px 10px 36px; /* Aumentamos padding derecho para la flecha */
+  padding: 10px 30px 10px 36px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238B1E1E' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
@@ -277,7 +276,6 @@
   white-space: nowrap;
 }
 
-/* ===== ESTILO PARA LAS OPCIONES DEL SELECT ===== */
 .buscador-select option {
   padding: 10px 12px;
   font-size: 14px;
@@ -288,7 +286,6 @@
   text-overflow: ellipsis;
 }
 
-/* ===== ESTILO PARA EL SELECT CUANDO ESTÁ FOCUS ===== */
 .buscador-select:focus {
   outline: none;
   border-color: #8B1E1E;
@@ -356,69 +353,6 @@
   color: #8B1E1E;
 }
 
-/* ===== NAVEGACIÓN INFERIOR ===== */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: white;
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0 14px 0;
-  border-top: 2px solid #f0e8e6;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
-  z-index: 1000;
-}
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  color: #B1B3B6;
-  font-size: 11px;
-  cursor: pointer;
-  padding: 4px 20px;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.nav-item i {
-  font-size: 22px;
-  transition: all 0.3s ease;
-}
-
-.nav-item:hover {
-  color: #8B1E1E;
-}
-
-.nav-item:hover i {
-  transform: translateY(-2px);
-}
-
-.nav-item.active {
-  color: #8B1E1E;
-}
-
-.nav-item.active::after {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 30px;
-  height: 3px;
-  background: #8B1E1E;
-  border-radius: 0 0 3px 3px;
-}
-
-.nav-item.active i {
-  color: #FBAC3E;
-}
-
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .productos-content {
@@ -470,19 +404,6 @@
   .buscador-resultados {
     text-align: center;
     font-size: 13px;
-  }
-
-  .bottom-nav {
-    padding: 8px 0 12px 0;
-  }
-
-  .nav-item {
-    padding: 2px 12px;
-    font-size: 10px;
-  }
-
-  .nav-item i {
-    font-size: 18px;
   }
 }
 
