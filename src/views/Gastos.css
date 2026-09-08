@@ -1,0 +1,379 @@
+/* ============================================================
+   GASTOS.CSS - Estilos para la pantalla de gastos
+   Basado en la estructura de Clientes.css
+   ============================================================ */
+
+/* ---- Contenedor principal ---- */
+.gastos-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.gastos-content {
+  flex: 1;
+  padding: 1.5rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ---- Encabezado de la sección ---- */
+.gastos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.gastos-titulo h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gastos-titulo p {
+  color: #4a5568;
+  font-size: 0.95rem;
+  margin: 0.2rem 0 0 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ---- Indicadores de estado ---- */
+.status-indicator {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: #edf2f7;
+  color: #2d3748;
+}
+
+.status-indicator.online {
+  background-color: #c6f6d5;
+  color: #276749;
+}
+
+.status-indicator.offline {
+  background-color: #fed7d7;
+  color: #9b2c2c;
+}
+
+.pendientes-indicator {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background-color: #fefcbf;
+  color: #975a16;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ---- Botones generales ---- */
+.btn-agregar {
+  background-color: #38a169;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1.2rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-agregar:hover {
+  background-color: #2f855a;
+  transform: translateY(-1px);
+}
+
+.btn-agregar:active {
+  transform: translateY(0);
+}
+
+.btn-sincronizar {
+  background-color: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1.2rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-sincronizar:hover:not(:disabled) {
+  background-color: #2b6cb0;
+  transform: translateY(-1px);
+}
+
+.btn-sincronizar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---- Mensajes de error y éxito ---- */
+.gastos-error,
+.gastos-exito {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  position: relative;
+}
+
+.gastos-error {
+  background-color: #fed7d7;
+  color: #9b2c2c;
+  border-left: 4px solid #e53e3e;
+}
+
+.gastos-exito {
+  background-color: #c6f6d5;
+  color: #276749;
+  border-left: 4px solid #38a169;
+}
+
+.error-close,
+.exito-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-left: auto;
+  color: inherit;
+  opacity: 0.7;
+  padding: 0 0.2rem;
+}
+
+.error-close:hover,
+.exito-close:hover {
+  opacity: 1;
+}
+
+/* ---- Buscador ---- */
+.buscador-container {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.buscador-fila {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1 1 300px;
+}
+
+.buscador-campo {
+  display: flex;
+  align-items: center;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  padding: 0.3rem 0.75rem;
+  flex: 1;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.buscador-campo:focus-within {
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+}
+
+.buscador-campo i {
+  color: #a0aec0;
+  margin-right: 0.5rem;
+}
+
+.buscador-input {
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+  width: 100%;
+  outline: none;
+  color: #2d3748;
+}
+
+.buscador-input::placeholder {
+  color: #a0aec0;
+}
+
+.btn-limpiar-busqueda {
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+  color: #4a5568;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: background-color 0.2s;
+}
+
+.btn-limpiar-busqueda:hover {
+  background-color: #f7fafc;
+}
+
+.buscador-resultados {
+  font-size: 0.9rem;
+  color: #4a5568;
+  white-space: nowrap;
+}
+
+.buscador-resultados strong {
+  color: #2d3748;
+}
+
+/* ---- Loading spinner ---- */
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+  color: #4a5568;
+}
+
+.loading-spinner i {
+  font-size: 2.5rem;
+  color: #3182ce;
+  margin-bottom: 1rem;
+}
+
+/* ---- Bottom navigation (igual que en Clientes) ---- */
+.bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  padding: 0.5rem 0.75rem;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+  z-index: 10;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.75rem;
+  color: #718096;
+  cursor: pointer;
+  transition: color 0.2s;
+  gap: 0.1rem;
+}
+
+.nav-item i {
+  font-size: 1.4rem;
+}
+
+.nav-item:hover {
+  color: #2d3748;
+}
+
+.nav-item.active {
+  color: #3182ce;
+  font-weight: 600;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .gastos-content {
+    padding: 1rem;
+  }
+
+  .gastos-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .header-actions {
+    justify-content: flex-start;
+  }
+
+  .buscador-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .buscador-fila {
+    flex-wrap: wrap;
+  }
+
+  .buscador-resultados {
+    text-align: right;
+  }
+
+  .gastos-titulo h1 {
+    font-size: 1.6rem;
+  }
+
+  .btn-agregar,
+  .btn-sincronizar {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .gastos-titulo h1 {
+    font-size: 1.3rem;
+  }
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .status-indicator,
+  .pendientes-indicator {
+    justify-content: center;
+  }
+}

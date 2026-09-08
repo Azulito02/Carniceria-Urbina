@@ -6,6 +6,7 @@ import Inventario from './views/Inventario';
 import Clientes from './views/Clientes';
 import Inversiones from './views/Inversiones';
 import Creditos from './views/Creditos';
+import Gastos from './views/Gastos';
 import { iniciarEscuchaOffline, sincronizarOperaciones } from './services/OfflineService';
 import './App.css';
 
@@ -35,6 +36,7 @@ function App() {
         <Route path="/clientes" element={<Clientes />} />
         <Route path="/inversiones" element={<Inversiones />} />
         <Route path="/creditos" element={<Creditos />} />
+        <Route path="/gastos" element={<Gastos/>} />
       </Routes>
     </BrowserRouter>
   );
