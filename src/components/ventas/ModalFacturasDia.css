@@ -1,0 +1,140 @@
+.modal-facturas {
+  max-width: 800px;
+}
+
+.filtro-fecha-facturas {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: #f5f0ef;
+  border-radius: 8px;
+}
+
+.filtro-fecha-facturas label {
+  font-weight: 600;
+  color: #8B1E1E;
+}
+
+.lista-facturas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.factura-item {
+  background: white;
+  border: 2px solid #e0d6d4;
+  border-radius: 10px;
+  padding: 14px 18px;
+  transition: all 0.3s ease;
+}
+
+.factura-item:hover {
+  border-color: #8B1E1E;
+  box-shadow: 0 4px 15px rgba(139, 30, 30, 0.1);
+}
+
+.factura-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.factura-numero {
+  font-weight: 700;
+  color: #8B1E1E;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.factura-cliente {
+  color: #333;
+  font-weight: 500;
+}
+
+.factura-hora {
+  color: #B1B3B6;
+  font-size: 13px;
+}
+
+.factura-detalles {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.factura-productos {
+  color: #B1B3B6;
+  font-size: 13px;
+}
+
+.factura-metodo {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.factura-metodo.contado {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.factura-metodo.credito {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.factura-total {
+  font-weight: 700;
+  color: #8B1E1E;
+  font-size: 16px;
+}
+
+.btn-ver-factura {
+  padding: 6px 14px;
+  background: #FBAC3E;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-ver-factura:hover {
+  background: #e89a2c;
+  transform: translateY(-2px);
+}
+
+.loading-facturas, .sin-facturas {
+  text-align: center;
+  padding: 40px 20px;
+  color: #B1B3B6;
+}
+
+.loading-facturas i, .sin-facturas i {
+  font-size: 48px;
+  color: #D8A9A0;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.loading-facturas i {
+  color: #8B1E1E;
+}

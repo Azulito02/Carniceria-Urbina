@@ -1,0 +1,76 @@
+.modal-factura-ver {
+  max-width: 700px;
+}
+
+.factura-preview {
+  background: white;
+  border: 2px solid #e0d6d4;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.factura-header-preview {
+  text-align: center;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #8B1E1E;
+  margin-bottom: 16px;
+}
+
+.factura-header-preview h3 {
+  margin: 0 0 8px 0;
+  color: #8B1E1E;
+  font-size: 20px;
+}
+
+.factura-header-preview p {
+  margin: 2px 0;
+  color: #B1B3B6;
+  font-size: 13px;
+}
+
+.factura-cliente-preview {
+  background: #f5f0ef;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.tabla-factura-preview {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.tabla-factura-preview th {
+  background: #faf7f6;
+  padding: 10px;
+  text-align: left;
+  font-size: 12px;
+  color: #8B1E1E;
+  border-bottom: 2px solid #f0e8e6;
+}
+
+.tabla-factura-preview td {
+  padding: 10px;
+  border-bottom: 1px solid #f0e8e6;
+  font-size: 13px;
+}
+
+.factura-total-preview {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #8B1E1E;
+  color: white;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.factura-metodo-preview {
+  text-align: center;
+  font-size: 13px;
+  color: #B1B3B6;
+}

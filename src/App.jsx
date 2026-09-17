@@ -8,6 +8,7 @@ import Inversiones from './views/Inversiones';
 import Creditos from './views/Creditos';
 import Gastos from './views/Gastos';
 import Abonos from './views/Abonos';
+import Ventas from './views/Ventas';
 import { iniciarEscuchaOffline, sincronizarOperaciones } from './services/OfflineService';
 import './App.css';
 
@@ -39,6 +40,7 @@ function App() {
         <Route path="/creditos" element={<Creditos />} />
         <Route path="/gastos" element={<Gastos/>} />
         <Route path="/abonos" element={<Abonos/>} />
+        <Route path="/ventas" element={<Ventas/>} />
       </Routes>
     </BrowserRouter>
   );
