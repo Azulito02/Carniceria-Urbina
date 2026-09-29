@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../database/supabase';
+import { useAuth } from '../context/AuthContext';
 import Encabezado from '../components/Encabezado';
 import useRealtimeSync from '../hooks/useRealtimeSync';
 import './Inicio.css';
 
 function Inicio() {
   const navigate = useNavigate();
+  const { esAdmin } = useAuth();  // ← NUEVO
   const [loading, setLoading] = useState(true);
   const [resumen, setResumen] = useState({
     ventasHoy: 0,
@@ -43,26 +44,22 @@ function Inicio() {
     setLoading(false);
   };
 
-  const modulos = [
-    { id: 'productos', nombre: 'Productos', icono: 'fa-box', color: '#8B1E1E', ruta: '/productos' },
-    { id: 'inventario', nombre: 'Inventario', icono: 'fa-warehouse', color: '#FBAC3E', ruta: '/inventario' },
-    { id: 'ventas', nombre: 'Ventas', icono: 'fa-cash-register', color: '#2e7d32', ruta: '/ventas' },
-    { id: 'creditos', nombre: 'Créditos', icono: 'fa-hand-holding-usd', color: '#1565c0', ruta: '/creditos' },
-    { id: 'abonos', nombre: 'Abonos', icono: 'fa-coins', color: '#00897b', ruta: '/abonos' },
-    { id: 'gastos', nombre: 'Gastos', icono: 'fa-receipt', color: '#c62828', ruta: '/gastos' },
-    { id: 'arqueos', nombre: 'Arqueos', icono: 'fa-calculator', color: '#6a1b9a', ruta: '/arqueos' },
-    { id: 'reportes', nombre: 'Reportes', icono: 'fa-chart-bar', color: '#37474f', ruta: '/reportes' },
-    { id: 'clientes', nombre: 'Clientes', icono: 'fa-users', color: '#00838f', ruta: '/clientes' },
-    { id: 'inversiones', nombre: 'Inversiones', icono: 'fa-chart-line', color: '#1a237e', ruta: '/inversiones' }
+  // ===== MÓDULOS CON PERMISOS =====
+  const todosLosModulos = [
+    { id: 'productos',   nombre: 'Productos',   icono: 'fa-box',              color: '#8B1E1E', ruta: '/productos',   soloAdmin: false },
+    { id: 'inventario',  nombre: 'Inventario',  icono: 'fa-warehouse',        color: '#FBAC3E', ruta: '/inventario',  soloAdmin: true  },
+    { id: 'ventas',      nombre: 'Ventas',      icono: 'fa-cash-register',    color: '#2e7d32', ruta: '/ventas',      soloAdmin: false },
+    { id: 'creditos',    nombre: 'Créditos',    icono: 'fa-hand-holding-usd', color: '#1565c0', ruta: '/creditos',    soloAdmin: false },
+    { id: 'abonos',      nombre: 'Abonos',      icono: 'fa-coins',            color: '#00897b', ruta: '/abonos',      soloAdmin: false },
+    { id: 'gastos',      nombre: 'Gastos',      icono: 'fa-receipt',          color: '#c62828', ruta: '/gastos',      soloAdmin: true  },
+    { id: 'arqueos',     nombre: 'Arqueos',     icono: 'fa-calculator',       color: '#6a1b9a', ruta: '/arqueos',     soloAdmin: true  },
+    { id: 'reportes',    nombre: 'Reportes',    icono: 'fa-chart-bar',        color: '#37474f', ruta: '/reportes',    soloAdmin: true  },
+    { id: 'clientes',    nombre: 'Clientes',    icono: 'fa-users',            color: '#00838f', ruta: '/clientes',    soloAdmin: false },
+    { id: 'inversiones', nombre: 'Inversiones', icono: 'fa-chart-line',       color: '#1a237e', ruta: '/inversiones', soloAdmin: true  }
   ];
 
-  const navItems = [
-    { id: 'inicio', icono: 'fa-home', label: 'Inicio', ruta: '/' },
-    { id: 'productos', icono: 'fa-box', label: 'Productos', ruta: '/productos' },
-    { id: 'inventario', icono: 'fa-warehouse', label: 'Inventario', ruta: '/inventario' },
-    { id: 'ventas', icono: 'fa-cash-register', label: 'Ventas', ruta: '/ventas' },
-    { id: 'mas', icono: 'fa-ellipsis-h', label: 'Más', ruta: '/mas' }
-  ];
+  // Filtrar según rol
+  const modulos = todosLosModulos.filter(m => esAdmin || !m.soloAdmin);
 
   return (
     <div className="inicio-container">
@@ -153,8 +150,6 @@ function Inicio() {
           </div>
         </div>
       </div>
-
-      
     </div>
   );
 }

@@ -74,7 +74,7 @@
   font-size: 15px;
 }
 
-/* ===== ADMIN ===== */
+/* ===== ADMIN (legacy - ya no se usa) ===== */
 .encabezado-admin {
   display: flex;
   align-items: center;
@@ -91,6 +91,69 @@
 .encabezado-admin i {
   font-size: 20px;
   color: #FBAC3E;
+}
+
+/* ===== BLOQUE DE USUARIO + LOGOUT ===== */
+.encabezado-usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.encabezado-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.encabezado-user-info i {
+  font-size: 18px;
+  color: #FBAC3E;
+}
+
+.encabezado-user-nombre {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.encabezado-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: transparent;
+  color: #ffffff;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.encabezado-logout-btn:hover {
+  background: #c62828;
+  border-color: #c62828;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
+}
+
+.encabezado-logout-btn:active {
+  transform: translateY(0);
+}
+
+.encabezado-logout-btn i {
+  font-size: 14px;
 }
 
 /* ===== NAVEGACIÓN SUPERIOR ===== */
@@ -280,11 +343,6 @@
     font-size: 13px;
   }
 
-  .encabezado-nav {
-    padding: 3px 4px;
-    gap: 1px;
-  }
-
   .nav-superior-item {
     font-size: 8px;
     padding: 4px 6px;
@@ -293,6 +351,23 @@
 
   .nav-superior-item i {
     font-size: 10px;
+  }
+
+  /* Ocultar nombre del usuario y texto "Salir" en móvil */
+  .encabezado-user-nombre {
+    display: none;
+  }
+
+  .encabezado-logout-btn span {
+    display: none;
+  }
+
+  .encabezado-logout-btn {
+    padding: 8px 10px;
+  }
+
+  .encabezado-user-info {
+    padding: 6px 10px;
   }
 }
 
