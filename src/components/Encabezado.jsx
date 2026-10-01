@@ -138,6 +138,10 @@ function Encabezado() {
                     <i className="fas fa-chart-line"></i>
                     <span>Inversiones</span>
                   </button>
+                    <button className="dropdown-item" onClick={() => irA('/proveedores')}>
+                    <i className="fas fa-chart-line"></i>
+                    <span>Proveedores</span>
+                  </button>
                   <button className="dropdown-item" onClick={() => irA('/reportes')}>
                     <i className="fas fa-file-alt"></i>
                     <span>Reportes</span>

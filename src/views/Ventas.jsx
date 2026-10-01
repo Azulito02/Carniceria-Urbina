@@ -5,6 +5,7 @@ import Encabezado from '../components/Encabezado';
 import useRealtimeSync from '../hooks/useRealtimeSync';
 import FormularioVenta from '../components/ventas/FormularioVenta';
 import TablaVenta from '../components/ventas/TablaVenta';
+import ModalAgregarProductoVenta from '../components/ventas/ModalAgregarProductoVenta';
 import ModalFacturasDia from '../components/ventas/ModalFacturasDia';
 import ModalVerFactura from '../components/ventas/ModalVerFactura';
 import usePreciosCliente from '../hooks/usePreciosCliente';
@@ -30,9 +31,15 @@ function Ventas() {
   const [transferencia, setTransferencia] = useState('');
   const [vuelto, setVuelto] = useState('0.00');
 
+  // ===== SALDO ANTERIOR =====
+  const [saldoAnterior, setSaldoAnterior] = useState(0);
+  const [creditoAnterior, setCreditoAnterior] = useState(null);
+  const [sumarSaldoAnterior, setSumarSaldoAnterior] = useState(true);
+
   // ===== MODALES =====
   const [modalFacturasDia, setModalFacturasDia] = useState(false);
   const [modalVerFactura, setModalVerFactura] = useState(false);
+  const [modalAgregarProducto, setModalAgregarProducto] = useState(false);
   const [numeroFacturaVer, setNumeroFacturaVer] = useState('');
 
   // ===== MENSAJES =====
@@ -52,20 +59,49 @@ function Ventas() {
           .select('id, nombre')
           .order('nombre');
         
-        if (error) {
-          console.error('Error cargando clientes:', error);
-          return;
-        }
-        
+        if (error) throw error;
         setClientes(data || []);
       } catch (err) {
-        console.error('Error:', err);
+        console.error('Error cargando clientes:', err);
       }
     };
     cargarClientes();
   }, []);
 
-  // ===== FECHA VENCIMIENTO POR DEFECTO (8 DÍAS) =====
+  // ===== BUSCAR SALDO ANTERIOR DEL CLIENTE =====
+  useEffect(() => {
+    const buscarSaldoAnterior = async () => {
+      setSaldoAnterior(0);
+      setCreditoAnterior(null);
+
+      if (!clienteSeleccionado || clienteSeleccionado === 'general') return;
+
+      try {
+        const clienteId = parseInt(clienteSeleccionado);
+
+        const { data, error } = await supabase
+          .from('creditos')
+          .select('*')
+          .eq('cliente_id', clienteId)
+          .eq('estado', 'activo')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const totalSaldo = data.reduce((sum, c) => sum + parseFloat(c.saldo_pendiente || 0), 0);
+          setSaldoAnterior(totalSaldo);
+          setCreditoAnterior(data);
+        }
+      } catch (err) {
+        console.error('Error buscando saldo anterior:', err);
+      }
+    };
+
+    buscarSaldoAnterior();
+  }, [clienteSeleccionado]);
+
+  // ===== FECHA VENCIMIENTO (8 DÍAS) =====
   useEffect(() => {
     if (metodoPago === 'credito') {
       const hoy = new Date();
@@ -76,7 +112,7 @@ function Ventas() {
     }
   }, [metodoPago]);
 
-  // ===== LIMPIAR CAMPOS DE PAGO CUANDO CAMBIA EL MÉTODO =====
+  // ===== LIMPIAR CAMPOS DE PAGO =====
   useEffect(() => {
     setEfectivo('');
     setTarjeta('');
@@ -100,29 +136,22 @@ function Ventas() {
         .gte('fecha', inicioDia)
         .lte('fecha', finDia);
 
-      if (error) {
-        console.error('Error obteniendo último número:', error);
-      }
+      if (error) console.error('Error obteniendo último número:', error);
 
       let correlativo = 1;
       if (data && data.length > 0) {
         const correlativos = data
           .map(v => {
             const partes = v.numero_factura?.split('-');
-            if (partes && partes.length === 2) {
-              return parseInt(partes[1]) || 0;
-            }
+            if (partes && partes.length === 2) return parseInt(partes[1]) || 0;
             return 0;
           })
           .filter(n => n > 0);
         
-        if (correlativos.length > 0) {
-          correlativo = Math.max(...correlativos) + 1;
-        }
+        if (correlativos.length > 0) correlativo = Math.max(...correlativos) + 1;
       }
 
       return `${fechaStr}-${String(correlativo).padStart(3, '0')}`;
-
     } catch (err) {
       console.error('Error generando número:', err);
       const timestamp = Date.now().toString().slice(-6);
@@ -130,6 +159,28 @@ function Ventas() {
       const fechaStr = `${hoy.getFullYear()}${String(hoy.getMonth() + 1).padStart(2, '0')}${String(hoy.getDate()).padStart(2, '0')}`;
       return `${fechaStr}-${timestamp}`;
     }
+  };
+
+  // ===== AGREGAR PRODUCTO DESDE MODAL =====
+  const agregarProductoDesdeModal = (nuevaLinea) => {
+    setLineasVenta(prev => {
+      const existe = prev.find(l => l.producto_id === nuevaLinea.producto_id);
+      
+      if (existe) {
+        return prev.map(l =>
+          l.producto_id === nuevaLinea.producto_id
+            ? {
+                ...l,
+                cantidad: nuevaLinea.cantidad,
+                precio_unitario: nuevaLinea.precio_unitario,
+                total: nuevaLinea.total
+              }
+            : l
+        );
+      } else {
+        return [...prev, nuevaLinea];
+      }
+    });
   };
 
   // ===== GUARDAR VENTA =====
@@ -149,26 +200,28 @@ function Ventas() {
         return;
       }
 
-      const totalVenta = lineasVenta.reduce((sum, l) => sum + l.total, 0);
+      const totalProductosNuevos = lineasVenta.reduce((sum, l) => sum + l.total, 0);
       const efectivoNum = parseFloat(efectivo) || 0;
       const tarjetaNum = parseFloat(tarjeta) || 0;
       const transferenciaNum = parseFloat(transferencia) || 0;
       const vueltoNum = parseFloat(vuelto) || 0;
       const totalPagado = efectivoNum + tarjetaNum + transferenciaNum;
 
-      // Validación CONTADO
-      if (metodoPago === 'contado' && totalPagado < totalVenta) {
-        setError(`El total pagado (C$${totalPagado.toFixed(2)}) es menor al total de la venta (C$${totalVenta.toFixed(2)})`);
+      if (metodoPago === 'contado' && totalPagado < totalProductosNuevos) {
+        setError(`El total pagado (C$${totalPagado.toFixed(2)}) es menor al total de la venta (C$${totalProductosNuevos.toFixed(2)})`);
         setTimeout(() => setError(null), 5000);
         return;
       }
+
+      const aplicarSaldoAnterior = metodoPago === 'credito' && saldoAnterior > 0 && sumarSaldoAnterior;
+      const saldoAAgregar = aplicarSaldoAnterior ? saldoAnterior : 0;
+      const totalFacturaConSaldo = totalProductosNuevos + saldoAAgregar;
 
       setGuardando(true);
 
       const numeroFactura = await generarNumeroFactura();
       const clienteIdFinal = clienteSeleccionado === 'general' ? null : parseInt(clienteSeleccionado);
 
-      // ===== 1. DETERMINAR METODO_PAGO VÁLIDO PARA LA BD =====
       let metodoPagoBD = 'efectivo';
       
       if (metodoPago === 'credito') {
@@ -179,19 +232,13 @@ function Ventas() {
         if (tarjetaNum > 0) metodosConMonto.push('tarjeta');
         if (transferenciaNum > 0) metodosConMonto.push('transferencia');
         
-        if (metodosConMonto.length === 0) {
-          metodoPagoBD = 'efectivo';
-        } else if (metodosConMonto.length === 1) {
-          metodoPagoBD = metodosConMonto[0];
-        } else {
-          metodoPagoBD = 'mixto';
-        }
+        if (metodosConMonto.length === 0) metodoPagoBD = 'efectivo';
+        else if (metodosConMonto.length === 1) metodoPagoBD = metodosConMonto[0];
+        else metodoPagoBD = 'mixto';
       }
 
-      // ===== 2. DETERMINAR ESTADO VÁLIDO =====
       const estadoBD = metodoPago === 'credito' ? 'credito' : 'completada';
 
-      // ===== 3. INSERTAR EN VENTAS =====
       const filasVenta = lineasVenta.map(l => ({
         producto_id: l.producto_id,
         cliente_id: clienteIdFinal,
@@ -209,30 +256,19 @@ function Ventas() {
         usuario: 'Admin'
       }));
 
-      console.log('📝 Insertando en ventas:', filasVenta);
-
       const { data: ventasInsertadas, error: errVenta } = await supabase
         .from('ventas')
         .insert(filasVenta)
         .select();
 
-      if (errVenta) {
-        console.error('❌ Error insertando ventas:', errVenta);
-        throw errVenta;
-      }
+      if (errVenta) throw errVenta;
 
-      console.log('✅ Ventas insertadas:', ventasInsertadas);
-
-      // ===== 4. SI ES CRÉDITO, INSERTAR TAMBIÉN EN CREDITOS =====
       if (metodoPago === 'credito' && clienteIdFinal) {
-        
-        // Obtener el ID de la venta principal
         let ventaIdPrincipal = null;
         
         if (ventasInsertadas && ventasInsertadas.length > 0 && ventasInsertadas[0].id) {
           ventaIdPrincipal = ventasInsertadas[0].id;
         } else {
-          console.log('⚠️ Buscando ID de venta por numero_factura...');
           const { data: ventaBuscada } = await supabase
             .from('ventas')
             .select('id')
@@ -240,37 +276,41 @@ function Ventas() {
             .limit(1)
             .maybeSingle();
           
-          if (ventaBuscada) {
-            ventaIdPrincipal = ventaBuscada.id;
-          }
+          if (ventaBuscada) ventaIdPrincipal = ventaBuscada.id;
         }
 
-        console.log('📌 ID de venta para vincular crédito:', ventaIdPrincipal);
-
-        // ===== CALCULAR ABONO Y SALDO =====
         const abonoInicial = totalPagado;
-        const saldoPendiente = totalVenta - abonoInicial;
+        const saldoPendiente = totalFacturaConSaldo - abonoInicial;
 
-        console.log('💰 Total:', totalVenta, '| Abono:', abonoInicial, '| Saldo:', saldoPendiente);
+        // Cancelar créditos anteriores si se sumaron
+        if (aplicarSaldoAnterior && creditoAnterior && creditoAnterior.length > 0) {
+          const idsAnteriores = creditoAnterior.map(c => c.id);
 
-        // Estado del crédito
-        let estadoCredito = 'activo';
-        if (saldoPendiente <= 0) {
-          estadoCredito = 'pagado';
+          await supabase
+            .from('creditos')
+            .update({
+              estado: 'cancelado',
+              observaciones: `Unificado en factura ${numeroFactura}`
+            })
+            .in('id', idsAnteriores);
         }
+
+        let estadoCredito = 'activo';
+        if (saldoPendiente <= 0) estadoCredito = 'pagado';
 
         const creditoData = {
           cliente_id: clienteIdFinal,
           venta_id: ventaIdPrincipal,
           fecha_inicio: new Date().toISOString(),
           fecha_fin: fechaVencimiento,
-          monto_total: totalVenta,
-          monto_pagado: abonoInicial,           // ✅ AHORA SÍ GUARDA EL ABONO
-          saldo_pendiente: saldoPendiente,       // ✅ AHORA SÍ CALCULA EL SALDO
-          estado: estadoCredito
+          monto_total: totalFacturaConSaldo,
+          monto_pagado: abonoInicial,
+          saldo_pendiente: saldoPendiente,
+          estado: estadoCredito,
+          observaciones: aplicarSaldoAnterior 
+            ? `Incluye saldo anterior de C$${saldoAAgregar.toFixed(2)}` 
+            : null
         };
-
-        console.log('📝 Insertando en creditos:', creditoData);
 
         const { data: creditoInsertado, error: errCredito } = await supabase
           .from('creditos')
@@ -278,57 +318,38 @@ function Ventas() {
           .select();
 
         if (errCredito) {
-          console.error('❌ Error al registrar crédito:', errCredito);
           setError('Venta guardada, pero error al crear crédito: ' + errCredito.message);
-        } else {
-          console.log('✅ Crédito registrado:', creditoInsertado);
+        } else if (abonoInicial > 0 && creditoInsertado && creditoInsertado.length > 0) {
+          const creditoId = creditoInsertado[0].id;
+          
+          let metodoAbono = 'efectivo';
+          const metodosAbono = [];
+          if (efectivoNum > 0) metodosAbono.push('efectivo');
+          if (tarjetaNum > 0) metodosAbono.push('tarjeta');
+          if (transferenciaNum > 0) metodosAbono.push('transferencia');
+          
+          if (metodosAbono.length === 1) metodoAbono = metodosAbono[0];
+          else if (metodosAbono.length > 1) metodoAbono = 'mixto';
 
-          // ===== 5. SI HAY ABONO INICIAL, TAMBIÉN REGISTRAR EN abonos_credito =====
-          if (abonoInicial > 0 && creditoInsertado && creditoInsertado.length > 0) {
-            const creditoId = creditoInsertado[0].id;
-            
-            // Determinar método del abono
-            let metodoAbono = 'efectivo';
-            const metodosAbono = [];
-            if (efectivoNum > 0) metodosAbono.push('efectivo');
-            if (tarjetaNum > 0) metodosAbono.push('tarjeta');
-            if (transferenciaNum > 0) metodosAbono.push('transferencia');
-            
-            if (metodosAbono.length === 1) metodoAbono = metodosAbono[0];
-            else if (metodosAbono.length > 1) metodoAbono = 'mixto';
-
-            const abonoData = {
+          await supabase
+            .from('abonos_credito')
+            .insert([{
               credito_id: creditoId,
               monto: abonoInicial,
               metodo_pago: metodoAbono,
               banco: banco || null,
               fecha: new Date().toISOString(),
               observaciones: 'Abono inicial al momento de la venta'
-            };
-
-            console.log('📝 Insertando abono inicial en abonos_credito:', abonoData);
-
-            const { error: errAbono } = await supabase
-              .from('abonos_credito')
-              .insert([abonoData]);
-
-            if (errAbono) {
-              console.error('❌ Error al registrar abono inicial:', errAbono);
-            } else {
-              console.log('✅ Abono inicial registrado');
-            }
-          }
+            }]);
         }
       }
 
-      // ===== 6. ABRIR LA FACTURA AUTOMÁTICAMENTE =====
       setNumeroFacturaVer(numeroFactura);
       setModalVerFactura(true);
       
       setExito(`✅ Venta registrada - Factura: ${numeroFactura}`);
       setTimeout(() => setExito(null), 4000);
 
-      // ===== 7. LIMPIAR FORMULARIO =====
       setLineasVenta([]);
       setClienteSeleccionado('general');
       setMetodoPago('contado');
@@ -338,15 +359,12 @@ function Ventas() {
       setTarjeta('');
       setTransferencia('');
       setVuelto('0.00');
+      setSaldoAnterior(0);
+      setCreditoAnterior(null);
+      setSumarSaldoAnterior(true);
 
     } catch (err) {
       console.error('❌ Error guardando venta:', err);
-      console.error('Detalles:', {
-        message: err.message,
-        details: err.details,
-        hint: err.hint,
-        code: err.code
-      });
       
       let mensajeError = 'Error al guardar la venta';
       if (err.code === '23505') {
@@ -362,14 +380,14 @@ function Ventas() {
     }
   };
 
-  // ===== ABRIR VER FACTURA =====
   const handleVerFactura = (numeroFactura) => {
     setNumeroFacturaVer(numeroFactura);
     setModalVerFactura(true);
   };
 
-  // ===== TOTAL =====
-  const totalVenta = lineasVenta.reduce((sum, l) => sum + l.total, 0);
+  const totalProductosNuevos = lineasVenta.reduce((sum, l) => sum + l.total, 0);
+  const aplicarSaldo = metodoPago === 'credito' && saldoAnterior > 0 && sumarSaldoAnterior;
+  const totalFinal = totalProductosNuevos + (aplicarSaldo ? saldoAnterior : 0);
 
   return (
     <div className="ventas-container">
@@ -412,6 +430,32 @@ function Ventas() {
           </div>
         )}
 
+        {saldoAnterior > 0 && metodoPago === 'credito' && (
+          <div className="aviso-saldo-anterior">
+            <div className="aviso-saldo-icon">
+              <i className="fas fa-exclamation-triangle"></i>
+            </div>
+            <div className="aviso-saldo-content">
+              <h4>⚠️ Este cliente tiene saldo pendiente</h4>
+              <p>
+                <strong>{clientes.find(c => c.id === parseInt(clienteSeleccionado))?.nombre}</strong> tiene un saldo pendiente de <strong>C${saldoAnterior.toFixed(2)}</strong>
+                {creditoAnterior && creditoAnterior.length > 1 && ` (${creditoAnterior.length} créditos activos)`}
+              </p>
+              <label className="aviso-saldo-checkbox">
+                <input
+                  type="checkbox"
+                  checked={sumarSaldoAnterior}
+                  onChange={(e) => setSumarSaldoAnterior(e.target.checked)}
+                />
+                <span>
+                  <strong>Sumar este saldo a la nueva factura</strong>
+                  <small>Si desmarcas, el saldo anterior quedará como crédito separado</small>
+                </span>
+              </label>
+            </div>
+          </div>
+        )}
+
         <FormularioVenta
           clientes={clientes}
           clienteSeleccionado={clienteSeleccionado}
@@ -430,21 +474,39 @@ function Ventas() {
           setTransferencia={setTransferencia}
           vuelto={vuelto}
           setVuelto={setVuelto}
-          totalVenta={totalVenta}
+          totalVenta={totalProductosNuevos}
         />
 
         <TablaVenta
-          productos={productos || []}
           lineasVenta={lineasVenta}
           setLineasVenta={setLineasVenta}
-          preciosCliente={preciosCliente}
+          onAbrirModalAgregar={() => setModalAgregarProducto(true)}
         />
 
         {lineasVenta.length > 0 && (
           <div className="ventas-acciones">
             <div className="resumen-total">
-              <span>Total:</span>
-              <strong>C${totalVenta.toFixed(2)}</strong>
+              {aplicarSaldo ? (
+                <>
+                  <div className="resumen-linea">
+                    <span>Productos nuevos:</span>
+                    <strong>C${totalProductosNuevos.toFixed(2)}</strong>
+                  </div>
+                  <div className="resumen-linea resumen-saldo-anterior">
+                    <span>Saldo anterior:</span>
+                    <strong>C${saldoAnterior.toFixed(2)}</strong>
+                  </div>
+                  <div className="resumen-linea resumen-total-final">
+                    <span>TOTAL A PAGAR:</span>
+                    <strong>C${totalFinal.toFixed(2)}</strong>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span>Total:</span>
+                  <strong>C${totalProductosNuevos.toFixed(2)}</strong>
+                </>
+              )}
             </div>
             <button
               className="btn-guardar-venta"
@@ -464,6 +526,14 @@ function Ventas() {
           </div>
         )}
       </div>
+
+      <ModalAgregarProductoVenta
+        isOpen={modalAgregarProducto}
+        onClose={() => setModalAgregarProducto(false)}
+        productos={productos || []}
+        onAgregar={agregarProductoDesdeModal}
+        preciosCliente={preciosCliente}
+      />
 
       <ModalFacturasDia
         isOpen={modalFacturasDia}

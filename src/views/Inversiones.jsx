@@ -1,4 +1,3 @@
-// src/views/Inversiones.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../database/supabase';
@@ -16,6 +15,10 @@ const Inversiones = () => {
   const [conectado, setConectado] = useState(navigator.onLine);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [editando, setEditando] = useState(null);
+
+  // ===== PROVEEDORES Y CATEGORÍAS =====
+  const [proveedores, setProveedores] = useState([]);
+  const [categoriasDisponibles, setCategoriasDisponibles] = useState([]);
   
   const [filtroFecha, setFiltroFecha] = useState(() => {
     const ahora = new Date();
@@ -23,6 +26,7 @@ const Inversiones = () => {
   });
   const [filtroTipo, setFiltroTipo] = useState('todos');
   const [filtroBanco, setFiltroBanco] = useState('todos');
+  const [filtroCategoria, setFiltroCategoria] = useState('todas');
   const [filtroBusqueda, setFiltroBusqueda] = useState('');
   
   const [resumen, setResumen] = useState({
@@ -37,6 +41,8 @@ const Inversiones = () => {
     monto: '',
     tipo_monto: 'transferencia',
     banco: '',
+    categoria: '',
+    proveedor_id: '',
     fecha: new Date().toISOString().slice(0, 16)
   });
 
@@ -45,7 +51,61 @@ const Inversiones = () => {
   const [exito, setExito] = useState(null);
   const [operacionesPendientes, setOperacionesPendientes] = useState(0);
 
-  // ===== CARGAR DATOS =====
+  // ===== ETIQUETAS DE CATEGORÍAS =====
+  const etiquetasCategorias = {
+    carnes_res: 'Carnes de Res',
+    carnes_cerdo: 'Carnes de Cerdo',
+    pollo: 'Pollo',
+    embutidos: 'Embutidos',
+    otros: 'Otros'
+  };
+
+  const getEtiquetaCategoria = (cat) => {
+    return etiquetasCategorias[cat] || cat;
+  };
+
+  // ===== CARGAR PROVEEDORES Y CATEGORÍAS =====
+  useEffect(() => {
+    const cargarDatosIniciales = async () => {
+      try {
+        console.log('🔄 Cargando proveedores y categorías...');
+        
+        const { data: provData, error: provError } = await supabase
+          .from('proveedores')
+          .select('id, nombre_empresa, nombre_vendedor, categorias')
+          .order('nombre_empresa');
+
+        if (provError) {
+          console.error('❌ Error cargando proveedores:', provError);
+        } else {
+          console.log('✅ Proveedores cargados:', provData?.length || 0);
+          setProveedores(provData || []);
+        }
+
+        const { data: prodData, error: prodError } = await supabase
+          .from('productos')
+          .select('categoria');
+
+        if (prodError) {
+          console.error('❌ Error cargando categorías:', prodError);
+        } else {
+          const cats = [...new Set(
+            (prodData || [])
+              .map(p => p.categoria)
+              .filter(c => c && c.trim() !== '')
+          )].sort();
+
+          console.log('✅ Categorías cargadas:', cats);
+          setCategoriasDisponibles(cats);
+        }
+      } catch (err) {
+        console.error('❌ Error general:', err);
+      }
+    };
+    cargarDatosIniciales();
+  }, []);
+
+  // ===== CARGAR INVERSIONES =====
   const cargarInversiones = async () => {
     try {
       setLoading(true);
@@ -57,12 +117,26 @@ const Inversiones = () => {
           .select('*')
           .order('fecha', { ascending: false });
 
-        if (err) throw err;
-
-        if (data) {
-          setInversiones(data);
-          localStorage.setItem('inversiones_cache', JSON.stringify(data));
+        if (err) {
+          console.error('❌ Error en SELECT:', err);
+          throw err;
         }
+
+        console.log('✅ Inversiones crudas desde Supabase:', data);
+
+        const inversionesEnriquecidas = (data || []).map(inv => {
+          const proveedorEncontrado = proveedores.find(p => p.id === inv.proveedor_id);
+          
+          return {
+            ...inv,
+            proveedores: proveedorEncontrado || null
+          };
+        });
+
+        console.log('✅ Inversiones enriquecidas:', inversionesEnriquecidas);
+
+        setInversiones(inversionesEnriquecidas);
+        localStorage.setItem('inversiones_cache', JSON.stringify(inversionesEnriquecidas));
         setConectado(true);
       } else {
         const cache = localStorage.getItem('inversiones_cache');
@@ -75,7 +149,7 @@ const Inversiones = () => {
         setConectado(false);
       }
     } catch (err) {
-      console.error('Error cargando inversiones:', err);
+      console.error('❌ Error cargando inversiones:', err);
       setError(err.message);
       
       const cache = localStorage.getItem('inversiones_cache');
@@ -87,6 +161,12 @@ const Inversiones = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (proveedores.length > 0) {
+      cargarInversiones();
+    }
+  }, [proveedores]);
 
   // ===== CONTAR OPERACIONES PENDIENTES =====
   useEffect(() => {
@@ -117,7 +197,7 @@ const Inversiones = () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [proveedores]);
 
   // ===== CARGA INICIAL =====
   useEffect(() => {
@@ -127,12 +207,13 @@ const Inversiones = () => {
   // ===== APLICAR FILTROS =====
   useEffect(() => {
     aplicarFiltros();
-  }, [inversiones, filtroFecha, filtroTipo, filtroBanco, filtroBusqueda]);
+  }, [inversiones, filtroFecha, filtroTipo, filtroBanco, filtroCategoria, filtroBusqueda]);
 
   const aplicarFiltros = () => {
     let filtradas = [...inversiones];
     
-    if (filtroFecha) {
+    // Filtro por fecha (solo si hay valor)
+    if (filtroFecha && filtroFecha !== 'todos') {
       const [year, month] = filtroFecha.split('-');
       const inicioMes = new Date(year, month - 1, 1);
       const finMes = new Date(year, month, 0, 23, 59, 59);
@@ -151,6 +232,10 @@ const Inversiones = () => {
     if (filtroBanco !== 'todos') {
       filtradas = filtradas.filter(f => f.banco === filtroBanco);
     }
+
+    if (filtroCategoria !== 'todas') {
+      filtradas = filtradas.filter(f => f.categoria === filtroCategoria);
+    }
     
     if (filtroBusqueda.trim() !== '') {
       const termino = filtroBusqueda.toLowerCase();
@@ -158,6 +243,8 @@ const Inversiones = () => {
         return (
           (f.nombre && f.nombre.toLowerCase().includes(termino)) ||
           (f.banco && f.banco.toLowerCase().includes(termino)) ||
+          (f.proveedores?.nombre_empresa && f.proveedores.nombre_empresa.toLowerCase().includes(termino)) ||
+          (f.categoria && f.categoria.toLowerCase().includes(termino)) ||
           (f.id && f.id.toString().includes(termino))
         );
       });
@@ -344,8 +431,12 @@ const Inversiones = () => {
         monto: parseFloat(formData.monto),
         tipo_monto: formData.tipo_monto,
         banco: formData.tipo_monto === 'transferencia' ? formData.banco : null,
+        categoria: formData.categoria || null,
+        proveedor_id: formData.proveedor_id ? parseInt(formData.proveedor_id) : null,
         fecha: new Date(formData.fecha).toISOString()
       };
+
+      console.log('📤 dataToSave para Supabase:', dataToSave);
 
       if (editando) {
         if (typeof editando === 'string' && editando.startsWith('local_')) {
@@ -369,16 +460,13 @@ const Inversiones = () => {
             .eq('id', editando)
             .select();
 
-          if (updateError) throw updateError;
+          if (updateError) {
+            console.error('❌ Error UPDATE:', updateError);
+            throw updateError;
+          }
 
           if (data && data.length > 0) {
-            setInversiones(prev => {
-              const updated = prev.map(item => 
-                item.id === editando ? data[0] : item
-              );
-              localStorage.setItem('inversiones_cache', JSON.stringify(updated));
-              return updated;
-            });
+            await cargarInversiones();
             cerrarModal();
             setExito('✅ Inversión actualizada');
             setTimeout(() => setExito(null), 3000);
@@ -407,32 +495,20 @@ const Inversiones = () => {
 
       } else {
         if (conectado) {
-          const { data: existente } = await supabase
-            .from('inversiones')
-            .select('id')
-            .eq('nombre', dataToSave.nombre)
-            .maybeSingle();
-
-          if (existente) {
-            setError(`La inversión "${dataToSave.nombre}" ya existe`);
-            return;
-          }
-        }
-
-        if (conectado) {
           const { data, error: insertError } = await supabase
             .from('inversiones')
             .insert([dataToSave])
             .select();
 
-          if (insertError) throw insertError;
+          if (insertError) {
+            console.error('❌ Error INSERT:', insertError);
+            throw insertError;
+          }
+
+          console.log('✅ Inversión insertada:', data);
 
           if (data && data.length > 0) {
-            setInversiones(prev => {
-              const updated = [data[0], ...prev];
-              localStorage.setItem('inversiones_cache', JSON.stringify(updated));
-              return updated;
-            });
+            await cargarInversiones();
             cerrarModal();
             setExito('✅ Inversión creada');
             setTimeout(() => setExito(null), 3000);
@@ -452,6 +528,7 @@ const Inversiones = () => {
         const nuevoRegistro = { 
           ...dataToSave, 
           id: idLocal, 
+          proveedores: proveedores.find(p => p.id === dataToSave.proveedor_id) || null,
           _local: true 
         };
 
@@ -467,7 +544,7 @@ const Inversiones = () => {
       }
 
     } catch (error) {
-      console.error('Error:', error);
+      console.error('❌ Error general:', error);
       setError(`Error: ${error.message}`);
     }
   };
@@ -562,6 +639,8 @@ const Inversiones = () => {
         monto: inversion.monto ? inversion.monto.toString() : '',
         tipo_monto: inversion.tipo_monto || 'transferencia',
         banco: inversion.banco || '',
+        categoria: inversion.categoria || '',
+        proveedor_id: inversion.proveedor_id ? inversion.proveedor_id.toString() : '',
         fecha: inversion.fecha ? new Date(inversion.fecha).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)
       });
     } else {
@@ -571,6 +650,8 @@ const Inversiones = () => {
         monto: '',
         tipo_monto: 'transferencia',
         banco: '',
+        categoria: '',
+        proveedor_id: '',
         fecha: new Date().toISOString().slice(0, 16)
       });
     }
@@ -583,6 +664,13 @@ const Inversiones = () => {
     setError(null);
   };
 
+  const proveedoresFiltradosPorCategoria = () => {
+    if (!formData.categoria) return proveedores;
+    return proveedores.filter(p =>
+      p.categorias && p.categorias.includes(formData.categoria)
+    );
+  };
+
   // ===== EXPORTAR EXCEL =====
   const exportarExcel = () => {
     try {
@@ -591,6 +679,8 @@ const Inversiones = () => {
       const datosExcel = inversionesFiltradas.map(f => ({
         'Fecha': formatFechaNicaragua(f.fecha).split(' ')[0],
         'Nombre': f.nombre,
+        'Proveedor': f.proveedores?.nombre_empresa || 'N/A',
+        'Categoría': f.categoria ? getEtiquetaCategoria(f.categoria) : 'N/A',
         'Tipo': f.tipo_monto,
         'Banco': f.banco || 'N/A',
         'Monto': `C$${parseFloat(f.monto || 0).toFixed(2)}`
@@ -602,6 +692,8 @@ const Inversiones = () => {
       const colWidths = [
         { wch: 15 },
         { wch: 40 },
+        { wch: 25 },
+        { wch: 20 },
         { wch: 15 },
         { wch: 15 },
         { wch: 15 }
@@ -642,7 +734,7 @@ const Inversiones = () => {
     }
   };
 
-  // ===== EXPORTAR PDF (CORREGIDO) =====
+  // ===== EXPORTAR PDF =====
   const exportarPDF = async () => {
     if (inversionesFiltradas.length === 0) {
       setError('No hay inversiones para exportar');
@@ -656,7 +748,6 @@ const Inversiones = () => {
       const [year, month] = filtroFecha.split('-');
       const nombreMes = new Date(year, month - 1).toLocaleDateString('es-MX', { month: 'long' });
       
-      // Llamar a PDFInversiones que ya guarda el archivo automáticamente
       await PDFInversiones(
         inversionesFiltradas,
         `${nombreMes} ${year}`,
@@ -745,6 +836,7 @@ const Inversiones = () => {
               className="filtro-select"
               disabled={loading}
             >
+              <option value="todos">Todos los meses</option>
               {mesesDisponibles.map(({ valor, nombre }) => (
                 <option key={valor} value={valor}>
                   {nombre.charAt(0).toUpperCase() + nombre.slice(1)}
@@ -783,13 +875,27 @@ const Inversiones = () => {
             </select>
           </div>
 
+          <div className="filtro-grupo">
+            <label className="filtro-label">Categoría:</label>
+            <select
+              value={filtroCategoria}
+              onChange={(e) => setFiltroCategoria(e.target.value)}
+              className="filtro-select"
+            >
+              <option value="todas">Todas</option>
+              {categoriasDisponibles.map(cat => (
+                <option key={cat} value={cat}>{getEtiquetaCategoria(cat)}</option>
+              ))}
+            </select>
+          </div>
+
           <div className="filtro-grupo buscador">
             <label className="filtro-label">Buscar:</label>
             <input
               type="text"
               value={filtroBusqueda}
               onChange={(e) => setFiltroBusqueda(e.target.value)}
-              placeholder="Nombre, banco..."
+              placeholder="Nombre, proveedor, banco..."
               className="filtro-input"
             />
             {filtroBusqueda && (
@@ -895,6 +1001,8 @@ const Inversiones = () => {
                   <tr>
                     <th>Fecha</th>
                     <th>Nombre</th>
+                    <th>Proveedor</th>
+                    <th>Categoría</th>
                     <th>Tipo</th>
                     <th>Banco</th>
                     <th>Monto</th>
@@ -909,6 +1017,25 @@ const Inversiones = () => {
                         {inversion.nombre}
                         {inversion._local && (
                           <span className="badge-local">📝 Local</span>
+                        )}
+                      </td>
+                      <td className="col-proveedor">
+                        {inversion.proveedores?.nombre_empresa ? (
+                          <span className="proveedor-badge">
+                            <i className="fas fa-truck"></i>
+                            {inversion.proveedores.nombre_empresa}
+                          </span>
+                        ) : (
+                          <span className="sin-proveedor">—</span>
+                        )}
+                      </td>
+                      <td className="col-categoria">
+                        {inversion.categoria ? (
+                          <span className={`cat-badge cat-${inversion.categoria}`}>
+                            {getEtiquetaCategoria(inversion.categoria)}
+                          </span>
+                        ) : (
+                          <span className="sin-proveedor">—</span>
                         )}
                       </td>
                       <td className="col-tipo">
@@ -976,6 +1103,62 @@ const Inversiones = () => {
                   className="form-input"
                   placeholder="Ej: Compra de equipo, Inversión en proyecto..."
                 />
+              </div>
+
+              <div className="form-grupo-doble">
+                <div className="form-grupo">
+                  <label className="form-label">Categoría</label>
+                  <select
+                    value={formData.categoria}
+                    onChange={(e) => {
+                      setFormData({ 
+                        ...formData, 
+                        categoria: e.target.value,
+                        proveedor_id: ''
+                      });
+                    }}
+                    className="form-select"
+                  >
+                    <option value="">Sin categoría</option>
+                    {categoriasDisponibles.map(cat => (
+                      <option key={cat} value={cat}>{getEtiquetaCategoria(cat)}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-grupo">
+                  <label className="form-label">
+                    Proveedor
+                    {formData.categoria && (
+                      <span className="filtro-info-proveedor">
+                        ({proveedoresFiltradosPorCategoria().length})
+                      </span>
+                    )}
+                  </label>
+                  <select
+                    value={formData.proveedor_id}
+                    onChange={(e) => setFormData({ ...formData, proveedor_id: e.target.value })}
+                    className="form-select"
+                    disabled={!formData.categoria}
+                  >
+                    <option value="">
+                      {formData.categoria 
+                        ? 'Seleccionar proveedor...' 
+                        : 'Selecciona categoría primero'}
+                    </option>
+                    {proveedoresFiltradosPorCategoria().map(p => (
+                      <option key={p.id} value={p.id}>
+                        {p.nombre_empresa} {p.nombre_vendedor ? `- ${p.nombre_vendedor}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {formData.categoria && proveedoresFiltradosPorCategoria().length === 0 && (
+                    <p className="sin-proveedores-msg">
+                      <i className="fas fa-info-circle"></i>
+                      No hay proveedores para esta categoría
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="form-grupo">
@@ -1050,9 +1233,6 @@ const Inversiones = () => {
           </div>
         </div>
       )}
-
-     
-      
     </div>
   );
 };

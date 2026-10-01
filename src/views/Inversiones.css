@@ -1077,3 +1077,76 @@
     padding: 2px 8px;
   }
 }
+/* ===== PROVEEDOR Y CATEGORÍA EN TABLA ===== */
+.col-proveedor {
+  min-width: 180px;
+}
+
+.proveedor-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0e8e6;
+  color: #8B1E1E;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.proveedor-badge i {
+  color: #FBAC3E;
+  font-size: 11px;
+}
+
+.sin-proveedor {
+  color: #B1B3B6;
+  font-style: italic;
+  font-size: 13px;
+}
+
+.col-categoria {
+  min-width: 140px;
+}
+
+/* ===== FORM GRUPO DOBLE ===== */
+.form-grupo-doble {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-grupo-doble .form-grupo {
+  margin-bottom: 0;
+}
+
+.filtro-info-proveedor {
+  color: #B1B3B6;
+  font-size: 12px;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.sin-proveedores-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  color: #e65100;
+  background: #fff3e0;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.sin-proveedores-msg i {
+  color: #FBAC3E;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .form-grupo-doble {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}

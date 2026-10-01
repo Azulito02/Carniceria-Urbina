@@ -43,6 +43,88 @@ const PDFFactura = async (factura) => {
     minute: '2-digit'
   });
 
+  let desgloseHTML = '';
+  if (factura.metodo_pago !== 'credito') {
+    const pagos = [];
+    if (factura.efectivo > 0) pagos.push(`Efectivo: C$${factura.efectivo.toFixed(2)}`);
+    if (factura.tarjeta > 0) pagos.push(`Tarjeta: C$${factura.tarjeta.toFixed(2)}`);
+    if (factura.transferencia > 0) pagos.push(`Transferencia: C$${factura.transferencia.toFixed(2)}`);
+    if (factura.vuelto > 0) pagos.push(`Vuelto: C$${factura.vuelto.toFixed(2)}`);
+    
+    if (pagos.length > 0) {
+      desgloseHTML = `
+        <div style="margin-top: 12px; padding: 12px 16px; background: #f5f0ef; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; font-size: 12px;">
+          ${pagos.map(p => `<span style="background: white; padding: 4px 12px; border-radius: 20px; font-weight: 500;">${p}</span>`).join('')}
+        </div>
+      `;
+    }
+  }
+
+  let creditoHTML = '';
+  if (factura.metodo_pago === 'credito' && factura.credito) {
+    const credito = factura.credito;
+    const montoTotal = parseFloat(credito.monto_total || factura.total);
+    const montoPagado = parseFloat(credito.monto_pagado || 0);
+    const saldoPendiente = parseFloat(credito.saldo_pendiente || montoTotal);
+    const fechaFin = credito.fecha_fin ? new Date(credito.fecha_fin).toLocaleDateString('es-MX') : '';
+    const saldoAnterior = factura.saldoAnteriorIncluido || 0;
+    const totalProductos = factura.totalProductosNuevos || montoTotal;
+
+    creditoHTML = `
+      <div style="margin-top: 16px; padding: 16px; background: #fff8f0; border-left: 4px solid #FBAC3E; border-radius: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px; color: #8B1E1E; font-size: 13px; font-weight: 700; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #f0e8e6; text-transform: uppercase;">
+          <span style="color: #FBAC3E; font-size: 16px;">💳</span>
+          INFORMACIÓN DEL CRÉDITO
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          ${saldoAnterior > 0 ? `
+            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+              <span style="color: #666;">Productos nuevos:</span>
+              <strong style="color: #333;">C$${totalProductos.toFixed(2)}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 8px 12px; background: #fff3e0; border-radius: 6px;">
+              <span style="color: #e65100; font-weight: 600;">Saldo anterior unificado:</span>
+              <strong style="color: #e65100;">C$${saldoAnterior.toFixed(2)}</strong>
+            </div>
+            <div style="height: 1px; background: #f0e8e6; margin: 4px 0;"></div>
+          ` : ''}
+          
+          <div style="display: flex; justify-content: space-between; font-size: 13px;">
+            <span style="color: #666;">Monto Total:</span>
+            <strong style="color: #333;">C$${montoTotal.toFixed(2)}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 13px;">
+            <span style="color: #666;">Abonado:</span>
+            <strong style="color: #2e7d32;">C$${montoPagado.toFixed(2)}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 10px 12px; background: white; border-radius: 8px; margin-top: 4px;">
+            <span style="color: #666; font-weight: 600;">Saldo Pendiente:</span>
+            <strong style="color: #e65100; font-size: 16px;">C$${saldoPendiente.toFixed(2)}</strong>
+          </div>
+          ${fechaFin ? `
+          <div style="display: flex; justify-content: space-between; font-size: 13px;">
+            <span style="color: #666;">Fecha Vencimiento:</span>
+            <strong style="color: #333;">${fechaFin}</strong>
+          </div>
+          ` : ''}
+        </div>
+
+        ${saldoPendiente > 0 ? `
+        <div style="margin-top: 14px; padding: 12px 16px; background: #fff3e0; border: 1px solid #FBAC3E; border-radius: 8px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: #e65100;">
+          <span style="font-size: 16px;">⚠️</span>
+          <span>Esta factura tiene un saldo pendiente de <strong style="color: #8B1E1E;">C$${saldoPendiente.toFixed(2)}</strong></span>
+        </div>
+        ` : `
+        <div style="margin-top: 14px; padding: 12px 16px; background: #e8f5e9; border: 1px solid #2e7d32; border-radius: 8px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: #2e7d32;">
+          <span style="font-size: 16px;">✅</span>
+          <span>Esta factura está <strong>totalmente pagada</strong></span>
+        </div>
+        `}
+      </div>
+    `;
+  }
+
   container.innerHTML = `
     <div style="background: #8B1E1E; padding: 20px 30px; display: flex; align-items: center; gap: 15px; border-radius: 10px 10px 0 0;">
       <div style="display: flex; align-items: center; gap: 10px;">
@@ -91,6 +173,9 @@ const PDFFactura = async (factura) => {
           </tr>
         </tbody>
       </table>
+
+      ${desgloseHTML}
+      ${creditoHTML}
 
       <div style="margin-top: 20px; padding: 15px 20px; background: white; border-radius: 8px; border-left: 4px solid #FBAC3E;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; color: #B1B3B6;">

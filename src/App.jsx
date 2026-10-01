@@ -10,6 +10,7 @@ import Gastos from './views/Gastos';
 import Abonos from './views/Abonos';
 import Ventas from './views/Ventas';
 import Login from './views/Login';
+import Proveedores from './views/Proveedores';
 import RutaProtegida from './components/RutaProtegida';
 import { iniciarEscuchaOffline, sincronizarOperaciones } from './services/OfflineService';
 import './App.css';
@@ -42,6 +43,7 @@ function App() {
         <Route path="/creditos" element={<RutaProtegida><Creditos /></RutaProtegida>} />
         <Route path="/abonos" element={<RutaProtegida><Abonos /></RutaProtegida>} />
         <Route path="/ventas" element={<RutaProtegida><Ventas /></RutaProtegida>} />
+        <Route path="/proveedores" element={<RutaProtegida><Proveedores /></RutaProtegida>} />
 
         {/* ===== RUTAS SOLO ADMIN ===== */}
         <Route
