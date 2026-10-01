@@ -6,6 +6,7 @@ import useRealtimeSync from '../hooks/useRealtimeSync';
 import PDFInventario from '../components/PDFInventario';
 import { agregarOperacion, sincronizarOperaciones, obtenerOperacionesPendientes } from '../services/OfflineService';
 import { guardarLocal, obtenerLocal } from '../utils/storage';
+import { estaBajoStock, mensajeStockBajo } from '../utils/alertasStock';
 import ModalAgregarInventario from '../components/inventario/ModalAgregarInventario';
 import ModalEditarInventario from '../components/inventario/ModalEditarInventario';
 import ModalEliminarInventario from '../components/inventario/ModalEliminarInventario';
@@ -28,6 +29,7 @@ function Inventario() {
   const [filtroFecha, setFiltroFecha] = useState('');
   const [error, setError] = useState(null);
   const [exito, setExito] = useState(null);
+  const [alertaStock, setAlertaStock] = useState(null);
   const [cargandoInventario, setCargandoInventario] = useState(false);
   const [generandoPDF, setGenerandoPDF] = useState(false);
   const [operacionesPendientes, setOperacionesPendientes] = useState(0);
@@ -98,6 +100,14 @@ function Inventario() {
     };
   }, [conectado, filtroFecha, fecha, mostrarInventarioCompleto]);
 
+  // ===== AVISO DE STOCK BAJO (al agregar / editar) =====
+  const avisarSiStockBajo = (producto, cantidad) => {
+    if (producto && estaBajoStock(cantidad, producto.stock_minimo)) {
+      setAlertaStock(mensajeStockBajo(producto.nombre, cantidad, producto.unidad_medida));
+      setTimeout(() => setAlertaStock(null), 8000);
+    }
+  };
+
   // ===== CARGAR INVENTARIO POR FECHA =====
   const cargarInventarioPorFecha = async (fecha) => {
     if (!fecha) {
@@ -123,7 +133,8 @@ function Inventario() {
             nombre,
             categoria,
             marca,
-            unidad_medida
+            unidad_medida,
+            stock_minimo
           )
         `)
         .eq('fecha', fecha)
@@ -145,6 +156,7 @@ function Inventario() {
           categoria: item.productos?.categoria || '-',
           marca: item.productos?.marca || '-',
           unidad_medida: item.productos?.unidad_medida || '-',
+          stock_minimo: item.productos?.stock_minimo ?? 5,
           cantidad: item.cantidad,
           fecha: item.fecha
         }));
@@ -185,7 +197,8 @@ function Inventario() {
             nombre,
             categoria,
             marca,
-            unidad_medida
+            unidad_medida,
+            stock_minimo
           )
         `)
         .order('fecha', { ascending: false })
@@ -207,14 +220,17 @@ function Inventario() {
           categoria: item.productos?.categoria || '-',
           marca: item.productos?.marca || '-',
           unidad_medida: item.productos?.unidad_medida || '-',
+          stock_minimo: item.productos?.stock_minimo ?? 5,
           cantidad: item.cantidad,
           fecha: item.fecha
         }));
         setInventarioActual(items);
+        setMostrarInventarioCompleto(true);
         setExito(`📋 Mostrando inventario completo - ${items.length} registros encontrados`);
         setTimeout(() => setExito(null), 4000);
       } else {
         setInventarioActual([]);
+        setMostrarInventarioCompleto(true);
         setExito('📋 No hay registros de inventario');
         setTimeout(() => setExito(null), 4000);
       }
@@ -275,6 +291,7 @@ function Inventario() {
         setInventarioActual(nuevosItems);
         setExito(`✅ Cantidad actualizada para "${producto.nombre}"`);
         setTimeout(() => setExito(null), 4000);
+        avisarSiStockBajo(producto, parseFloat(cantidad));
         setLoading(false);
         return true;
       }
@@ -304,6 +321,7 @@ function Inventario() {
             categoria: producto.categoria,
             marca: producto.marca || '-',
             unidad_medida: producto.unidad_medida,
+            stock_minimo: producto.stock_minimo ?? 5,
             cantidad: data[0].cantidad,
             fecha: data[0].fecha
           };
@@ -319,6 +337,7 @@ function Inventario() {
           categoria: producto.categoria,
           marca: producto.marca || '-',
           unidad_medida: producto.unidad_medida,
+          stock_minimo: producto.stock_minimo ?? 5,
           cantidad: parseFloat(cantidad),
           fecha: fechaSeleccionada
         };
@@ -337,6 +356,7 @@ function Inventario() {
         });
       }
 
+      avisarSiStockBajo(producto, parseFloat(cantidad));
       setLoading(false);
       return true;
     } catch (err) {
@@ -450,6 +470,7 @@ function Inventario() {
               categoria: producto.categoria,
               marca: producto.marca || '-',
               unidad_medida: producto.unidad_medida,
+              stock_minimo: producto.stock_minimo ?? 5,
               cantidad: parseFloat(cantidad),
               fecha: fechaSeleccionada
             }
@@ -458,6 +479,7 @@ function Inventario() {
       setInventarioActual(nuevosItems);
       setExito(`✅ Registro actualizado correctamente`);
       setTimeout(() => setExito(null), 4000);
+      avisarSiStockBajo(producto, parseFloat(cantidad));
       setLoading(false);
       return true;
     } catch (err) {
@@ -560,6 +582,13 @@ function Inventario() {
     .filter(item => item.unidad_medida && item.unidad_medida.toLowerCase() === 'unidad')
     .reduce((sum, item) => sum + item.cantidad, 0);
 
+  // ===== PRODUCTOS CON POCO STOCK =====
+  // En la vista completa hay registros históricos de muchas fechas, por eso no se marcan.
+  const itemBajoStock = (item) =>
+    !mostrarInventarioCompleto && estaBajoStock(item.cantidad, item.stock_minimo);
+
+  const productosBajoStock = inventarioActual.filter(itemBajoStock);
+
   return (
     <div className="inventario-container">
       <Encabezado />
@@ -627,6 +656,34 @@ function Inventario() {
             <button onClick={() => setExito(null)} className="exito-close">
               <i className="fas fa-times"></i>
             </button>
+          </div>
+        )}
+
+        {/* ===== ALERTA PUNTUAL (al agregar / editar) ===== */}
+        {alertaStock && (
+          <div className="alerta-stock">
+            <i className="fas fa-exclamation-triangle"></i>
+            <span>{alertaStock}</span>
+            <button onClick={() => setAlertaStock(null)} className="error-close">
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+        )}
+
+        {/* ===== LISTA DE PRODUCTOS CON POCO STOCK ===== */}
+        {productosBajoStock.length > 0 && (
+          <div className="alerta-stock">
+            <i className="fas fa-box-open"></i>
+            <div>
+              <strong>{productosBajoStock.length} producto(s) con poco stock registrado:</strong>
+              <ul>
+                {productosBajoStock.map(p => (
+                  <li key={p.id}>
+                    {p.nombre}: {p.cantidad.toFixed(2)} {p.unidad_medida} (mínimo {p.stock_minimo})
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
 
@@ -772,7 +829,10 @@ function Inventario() {
                     </tr>
                   ) : (
                     inventarioActual.map((item, index) => (
-                      <tr key={item.id || index} className="inventario-fila">
+                      <tr
+                        key={item.id || index}
+                        className={`inventario-fila ${itemBajoStock(item) ? 'fila-stock-bajo' : ''}`}
+                      >
                         <td className="numero">{index + 1}</td>
                         <td className="producto-nombre">{item.nombre}</td>
                         <td className="categoria">
@@ -784,6 +844,9 @@ function Inventario() {
                         </td>
                         <td className="cantidad">
                           <strong>{item.cantidad.toFixed(2)}</strong>
+                          {itemBajoStock(item) && (
+                            <span className="badge-stock-bajo">Poco stock</span>
+                          )}
                         </td>
                         <td className="fecha">{item.fecha}</td>
                         <td className="acciones">
@@ -851,7 +914,6 @@ function Inventario() {
         loading={loading}
       />
 
-    
     </div>
   );
 }

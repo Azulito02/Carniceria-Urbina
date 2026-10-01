@@ -596,3 +596,127 @@
     width: 22px;
   }
 }
+/* ===== Pegar al final de Encabezado.css ===== */
+
+.stock-alerta-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.stock-alerta-btn {
+  position: relative;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 6px 8px;
+}
+
+.stock-alerta-btn.con-alertas i {
+  color: #ffd700;
+  animation: stock-campana 1.6s ease-in-out infinite;
+}
+
+.stock-alerta-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: #f59e0b;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stock-alerta-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 290px;
+  max-width: 85vw;
+  background: #fff;
+  color: #333;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.stock-alerta-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: #fff4e5;
+  color: #92400e;
+}
+
+.stock-alerta-cerrar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #92400e;
+}
+
+.stock-alerta-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.stock-alerta-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 14px;
+  border-bottom: 1px solid #eee;
+  font-size: 0.88rem;
+}
+
+.stock-alerta-nombre {
+  font-weight: 600;
+}
+
+.stock-alerta-cantidad {
+  color: #b45309;
+  white-space: nowrap;
+}
+
+.stock-alerta-cantidad small {
+  color: #888;
+}
+
+.stock-alerta-vacio {
+  margin: 0;
+  padding: 16px 14px;
+  color: #166534;
+  font-size: 0.9rem;
+}
+
+.stock-alerta-ver {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: #8b1e1e;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+@keyframes stock-campana {
+  0%, 100% { transform: rotate(0); }
+  10%, 30% { transform: rotate(-12deg); }
+  20%, 40% { transform: rotate(12deg); }
+  50% { transform: rotate(0); }
+}

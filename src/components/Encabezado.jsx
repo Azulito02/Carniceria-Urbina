@@ -1,19 +1,28 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import useStockBajo from '../hooks/useStockBajo';
 import './Encabezado.css';
 import logo from '../assets/logo2.png';
 
 function Encabezado() {
   const navigate = useNavigate();
-  const { perfil, user, logout, esAdmin } = useAuth();  // ← agregamos esAdmin
+  const { perfil, user, logout, esAdmin } = useAuth();
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [panelStock, setPanelStock] = useState(false);
+  const { productosBajos } = useStockBajo();
 
   const toggleMenu = () => {
     setMenuAbierto(!menuAbierto);
+    setPanelStock(false);
   };
 
   const cerrarMenu = () => {
+    setMenuAbierto(false);
+  };
+
+  const togglePanelStock = () => {
+    setPanelStock(!panelStock);
     setMenuAbierto(false);
   };
 
@@ -47,6 +56,63 @@ function Encabezado() {
         </div>
 
         <div className="encabezado-usuario">
+          {/* ===== CAMPANITA DE STOCK BAJO ===== */}
+          <div className="stock-alerta-container">
+            <button
+              className={`stock-alerta-btn ${productosBajos.length > 0 ? 'con-alertas' : ''}`}
+              onClick={togglePanelStock}
+              title="Productos con poco stock"
+            >
+              <i className="fas fa-bell"></i>
+              {productosBajos.length > 0 && (
+                <span className="stock-alerta-badge">{productosBajos.length}</span>
+              )}
+            </button>
+
+            {panelStock && (
+              <div className="stock-alerta-panel">
+                <div className="stock-alerta-panel-header">
+                  <strong>
+                    <i className="fas fa-exclamation-triangle"></i> Poco stock
+                  </strong>
+                  <button className="stock-alerta-cerrar" onClick={() => setPanelStock(false)}>
+                    <i className="fas fa-times"></i>
+                  </button>
+                </div>
+
+                {productosBajos.length === 0 ? (
+                  <p className="stock-alerta-vacio">
+                    <i className="fas fa-check-circle"></i> Todo el stock está en orden
+                  </p>
+                ) : (
+                  <ul className="stock-alerta-lista">
+                    {productosBajos.map((p) => (
+                      <li key={p.id} className="stock-alerta-item">
+                        <span className="stock-alerta-nombre">{p.nombre}</span>
+                        <span className="stock-alerta-cantidad">
+                          {p.cantidad.toFixed(2)} {p.unidad_medida}
+                          <small> (mín. {p.stock_minimo ?? 5})</small>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {esAdmin && (
+                  <button
+                    className="stock-alerta-ver"
+                    onClick={() => {
+                      setPanelStock(false);
+                      navigate('/inventario');
+                    }}
+                  >
+                    Ir al inventario
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="encabezado-user-info">
             <i className="fas fa-user-circle"></i>
             <span className="encabezado-user-nombre">{nombreUsuario}</span>
@@ -138,8 +204,8 @@ function Encabezado() {
                     <i className="fas fa-chart-line"></i>
                     <span>Inversiones</span>
                   </button>
-                    <button className="dropdown-item" onClick={() => irA('/proveedores')}>
-                    <i className="fas fa-chart-line"></i>
+                  <button className="dropdown-item" onClick={() => irA('/proveedores')}>
+                    <i className="fas fa-truck"></i>
                     <span>Proveedores</span>
                   </button>
                   <button className="dropdown-item" onClick={() => irA('/reportes')}>

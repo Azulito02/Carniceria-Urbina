@@ -8,6 +8,7 @@ import ModalAgregarProducto from '../components/productos/ModalAgregarProducto';
 import ModalEditarProducto from '../components/productos/ModalEditarProducto';
 import ModalEliminarProducto from '../components/productos/ModalEliminarProducto';
 import { agregarOperacion, sincronizarOperaciones, obtenerOperacionesPendientes } from '../services/OfflineService';
+import { leerStockMinimo } from '../utils/alertasStock';
 import './Productos.css';
 
 function Productos() {
@@ -98,6 +99,7 @@ function Productos() {
         categoria: formData.categoria,
         marca: formData.marca?.trim() || null,
         unidad_medida: formData.unidad_medida,
+        stock_minimo: leerStockMinimo(formData.stock_minimo),
       };
 
       if (conectado) {
@@ -180,6 +182,7 @@ function Productos() {
         categoria: formData.categoria || 'otros',
         marca: formData.marca?.trim() || null,
         unidad_medida: formData.unidad_medida || 'unidad',
+        stock_minimo: leerStockMinimo(formData.stock_minimo),
       };
 
       if (typeof id === 'string' && id.startsWith('local_')) {
@@ -492,9 +495,6 @@ function Productos() {
         producto={productoSeleccionado}
         loading={loading}
       />
-
-      {/* ===== BOTTOM-NAV ELIMINADO ===== */}
-      {/* La navegación ahora está en el encabezado */}
 
     </div>
   );

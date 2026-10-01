@@ -9,6 +9,11 @@ import ModalAgregarProductoVenta from '../components/ventas/ModalAgregarProducto
 import ModalFacturasDia from '../components/ventas/ModalFacturasDia';
 import ModalVerFactura from '../components/ventas/ModalVerFactura';
 import usePreciosCliente from '../hooks/usePreciosCliente';
+import {
+  obtenerMapaStock,
+  avisosStockTrasVenta,
+  notificarCambioStock
+} from '../services/StockService';
 import './Ventas.css';
 
 function Ventas() {
@@ -17,6 +22,10 @@ function Ventas() {
   // ===== DATOS =====
   const { data: productos } = useRealtimeSync('productos', 'productos_cache');
   const [clientes, setClientes] = useState([]);
+
+  // ===== STOCK DISPONIBLE (inventario - ventas) =====
+  const [stockMapa, setStockMapa] = useState({});
+  const [alertasStock, setAlertasStock] = useState([]);
 
   // ===== ESTADOS DEL FORMULARIO =====
   const [clienteSeleccionado, setClienteSeleccionado] = useState('general');
@@ -49,6 +58,17 @@ function Ventas() {
 
   // ===== HOOK PRECIOS POR CLIENTE =====
   const { preciosCliente } = usePreciosCliente(clienteSeleccionado);
+
+  // ===== CARGAR STOCK DISPONIBLE =====
+  const cargarStock = async () => {
+    const mapa = await obtenerMapaStock();
+    setStockMapa(mapa);
+    return mapa;
+  };
+
+  useEffect(() => {
+    cargarStock();
+  }, []);
 
   // ===== CARGAR CLIENTES =====
   useEffect(() => {
@@ -183,6 +203,22 @@ function Ventas() {
     });
   };
 
+  // ===== REVISAR STOCK DESPUÉS DE GUARDAR LA VENTA =====
+  // Nunca debe romper el flujo: la venta ya está guardada en este punto.
+  const revisarStockTrasVenta = async (idsVendidos) => {
+    try {
+      const avisos = await avisosStockTrasVenta(idsVendidos);
+      setAlertasStock(avisos);
+      if (avisos.length > 0) {
+        setTimeout(() => setAlertasStock([]), 15000);
+      }
+      notificarCambioStock(); // actualiza la campanita del encabezado
+      await cargarStock();
+    } catch (err) {
+      console.error('Error revisando stock tras la venta:', err);
+    }
+  };
+
   // ===== GUARDAR VENTA =====
   const guardarVenta = async () => {
     try {
@@ -211,6 +247,28 @@ function Ventas() {
         setError(`El total pagado (C$${totalPagado.toFixed(2)}) es menor al total de la venta (C$${totalProductosNuevos.toFixed(2)})`);
         setTimeout(() => setError(null), 5000);
         return;
+      }
+
+      // ===== ADVERTIR SI SE VENDE MÁS DE LO DISPONIBLE =====
+      const idsVendidos = lineasVenta.map(l => l.producto_id);
+      const stockFresco = await obtenerMapaStock();
+      const insuficientes = lineasVenta.filter(l => {
+        const s = stockFresco[l.producto_id];
+        return s && Number(l.cantidad) > s.stock_disponible;
+      });
+
+      if (insuficientes.length > 0) {
+        const detalle = insuficientes
+          .map(l => {
+            const s = stockFresco[l.producto_id];
+            return `• ${s.nombre}: vendes ${Number(l.cantidad).toFixed(2)} y hay ${Math.max(0, s.stock_disponible).toFixed(2)} ${s.unidad_medida || ''}`;
+          })
+          .join('\n');
+
+        const continuar = window.confirm(
+          `⚠️ Stock insuficiente según el inventario:\n\n${detalle}\n\n¿Guardar la venta de todas formas?`
+        );
+        if (!continuar) return;
       }
 
       const aplicarSaldoAnterior = metodoPago === 'credito' && saldoAnterior > 0 && sumarSaldoAnterior;
@@ -350,6 +408,9 @@ function Ventas() {
       setExito(`✅ Venta registrada - Factura: ${numeroFactura}`);
       setTimeout(() => setExito(null), 4000);
 
+      // ===== ALERTA DE STOCK BAJO TRAS LA VENTA =====
+      await revisarStockTrasVenta(idsVendidos);
+
       setLineasVenta([]);
       setClienteSeleccionado('general');
       setMetodoPago('contado');
@@ -430,6 +491,24 @@ function Ventas() {
           </div>
         )}
 
+        {/* ===== ALERTA DE STOCK BAJO TRAS LA VENTA ===== */}
+        {alertasStock.length > 0 && (
+          <div className="alerta-stock-venta">
+            <i className="fas fa-exclamation-triangle"></i>
+            <div>
+              <strong>Atención: poco stock después de esta venta</strong>
+              <ul>
+                {alertasStock.map((aviso, i) => (
+                  <li key={i}>{aviso}</li>
+                ))}
+              </ul>
+            </div>
+            <button onClick={() => setAlertasStock([])} className="error-close">
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+        )}
+
         {saldoAnterior > 0 && metodoPago === 'credito' && (
           <div className="aviso-saldo-anterior">
             <div className="aviso-saldo-icon">
@@ -456,6 +535,22 @@ function Ventas() {
           </div>
         )}
 
+        <div className="ventas-layout">
+          {/* ===== IZQUIERDA: PRODUCTOS DE LA VENTA ===== */}
+          <section className="ventas-col-productos">
+        <TablaVenta
+          lineasVenta={lineasVenta}
+          setLineasVenta={setLineasVenta}
+          onAbrirModalAgregar={() => {
+            cargarStock(); // stock fresco cada vez que se abre el selector
+            setModalAgregarProducto(true);
+          }}
+        />
+
+          </section>
+
+          {/* ===== DERECHA: COBRO (siempre visible) ===== */}
+          <aside className="ventas-col-cobro">
         <FormularioVenta
           clientes={clientes}
           clienteSeleccionado={clienteSeleccionado}
@@ -477,11 +572,6 @@ function Ventas() {
           totalVenta={totalProductosNuevos}
         />
 
-        <TablaVenta
-          lineasVenta={lineasVenta}
-          setLineasVenta={setLineasVenta}
-          onAbrirModalAgregar={() => setModalAgregarProducto(true)}
-        />
 
         {lineasVenta.length > 0 && (
           <div className="ventas-acciones">
@@ -525,6 +615,8 @@ function Ventas() {
             </button>
           </div>
         )}
+          </aside>
+        </div>
       </div>
 
       <ModalAgregarProductoVenta
@@ -533,6 +625,7 @@ function Ventas() {
         productos={productos || []}
         onAgregar={agregarProductoDesdeModal}
         preciosCliente={preciosCliente}
+        stockDisponible={stockMapa}
       />
 
       <ModalFacturasDia
