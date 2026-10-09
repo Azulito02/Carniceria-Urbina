@@ -78,7 +78,7 @@ function Ventas() {
           .from('clientes')
           .select('id, nombre')
           .order('nombre');
-        
+
         if (error) throw error;
         setClientes(data || []);
       } catch (err) {
@@ -167,7 +167,7 @@ function Ventas() {
             return 0;
           })
           .filter(n => n > 0);
-        
+
         if (correlativos.length > 0) correlativo = Math.max(...correlativos) + 1;
       }
 
@@ -185,7 +185,7 @@ function Ventas() {
   const agregarProductoDesdeModal = (nuevaLinea) => {
     setLineasVenta(prev => {
       const existe = prev.find(l => l.producto_id === nuevaLinea.producto_id);
-      
+
       if (existe) {
         return prev.map(l =>
           l.producto_id === nuevaLinea.producto_id
@@ -204,7 +204,6 @@ function Ventas() {
   };
 
   // ===== REVISAR STOCK DESPUÉS DE GUARDAR LA VENTA =====
-  // Nunca debe romper el flujo: la venta ya está guardada en este punto.
   const revisarStockTrasVenta = async (idsVendidos) => {
     try {
       const avisos = await avisosStockTrasVenta(idsVendidos);
@@ -212,7 +211,7 @@ function Ventas() {
       if (avisos.length > 0) {
         setTimeout(() => setAlertasStock([]), 15000);
       }
-      notificarCambioStock(); // actualiza la campanita del encabezado
+      notificarCambioStock();
       await cargarStock();
     } catch (err) {
       console.error('Error revisando stock tras la venta:', err);
@@ -281,7 +280,7 @@ function Ventas() {
       const clienteIdFinal = clienteSeleccionado === 'general' ? null : parseInt(clienteSeleccionado);
 
       let metodoPagoBD = 'efectivo';
-      
+
       if (metodoPago === 'credito') {
         metodoPagoBD = 'credito';
       } else {
@@ -289,13 +288,16 @@ function Ventas() {
         if (efectivoNum > 0) metodosConMonto.push('efectivo');
         if (tarjetaNum > 0) metodosConMonto.push('tarjeta');
         if (transferenciaNum > 0) metodosConMonto.push('transferencia');
-        
+
         if (metodosConMonto.length === 0) metodoPagoBD = 'efectivo';
         else if (metodosConMonto.length === 1) metodoPagoBD = metodosConMonto[0];
         else metodoPagoBD = 'mixto';
       }
 
       const estadoBD = metodoPago === 'credito' ? 'credito' : 'completada';
+
+      // ✅ FECHA ÚNICA PARA TODAS LAS LÍNEAS DE LA FACTURA
+      const fechaVentaISO = new Date().toISOString();
 
       const filasVenta = lineasVenta.map(l => ({
         producto_id: l.producto_id,
@@ -311,7 +313,8 @@ function Ventas() {
         vuelto: vueltoNum,
         estado: estadoBD,
         numero_factura: numeroFactura,
-        usuario: 'Admin'
+        usuario: 'Admin',
+        fecha: fechaVentaISO   // 👈 FIX: ya no queda null
       }));
 
       const { data: ventasInsertadas, error: errVenta } = await supabase
@@ -323,7 +326,7 @@ function Ventas() {
 
       if (metodoPago === 'credito' && clienteIdFinal) {
         let ventaIdPrincipal = null;
-        
+
         if (ventasInsertadas && ventasInsertadas.length > 0 && ventasInsertadas[0].id) {
           ventaIdPrincipal = ventasInsertadas[0].id;
         } else {
@@ -333,7 +336,7 @@ function Ventas() {
             .eq('numero_factura', numeroFactura)
             .limit(1)
             .maybeSingle();
-          
+
           if (ventaBuscada) ventaIdPrincipal = ventaBuscada.id;
         }
 
@@ -365,8 +368,8 @@ function Ventas() {
           monto_pagado: abonoInicial,
           saldo_pendiente: saldoPendiente,
           estado: estadoCredito,
-          observaciones: aplicarSaldoAnterior 
-            ? `Incluye saldo anterior de C$${saldoAAgregar.toFixed(2)}` 
+          observaciones: aplicarSaldoAnterior
+            ? `Incluye saldo anterior de C$${saldoAAgregar.toFixed(2)}`
             : null
         };
 
@@ -379,13 +382,13 @@ function Ventas() {
           setError('Venta guardada, pero error al crear crédito: ' + errCredito.message);
         } else if (abonoInicial > 0 && creditoInsertado && creditoInsertado.length > 0) {
           const creditoId = creditoInsertado[0].id;
-          
+
           let metodoAbono = 'efectivo';
           const metodosAbono = [];
           if (efectivoNum > 0) metodosAbono.push('efectivo');
           if (tarjetaNum > 0) metodosAbono.push('tarjeta');
           if (transferenciaNum > 0) metodosAbono.push('transferencia');
-          
+
           if (metodosAbono.length === 1) metodoAbono = metodosAbono[0];
           else if (metodosAbono.length > 1) metodoAbono = 'mixto';
 
@@ -404,7 +407,7 @@ function Ventas() {
 
       setNumeroFacturaVer(numeroFactura);
       setModalVerFactura(true);
-      
+
       setExito(`✅ Venta registrada - Factura: ${numeroFactura}`);
       setTimeout(() => setExito(null), 4000);
 
@@ -426,14 +429,14 @@ function Ventas() {
 
     } catch (err) {
       console.error('❌ Error guardando venta:', err);
-      
+
       let mensajeError = 'Error al guardar la venta';
       if (err.code === '23505') {
         mensajeError = 'Conflicto: número de factura duplicado. Intenta de nuevo.';
       } else if (err.message) {
         mensajeError += ': ' + err.message;
       }
-      
+
       setError(mensajeError);
       setTimeout(() => setError(null), 5000);
     } finally {
@@ -538,83 +541,81 @@ function Ventas() {
         <div className="ventas-layout">
           {/* ===== IZQUIERDA: PRODUCTOS DE LA VENTA ===== */}
           <section className="ventas-col-productos">
-        <TablaVenta
-          lineasVenta={lineasVenta}
-          setLineasVenta={setLineasVenta}
-          onAbrirModalAgregar={() => {
-            cargarStock(); // stock fresco cada vez que se abre el selector
-            setModalAgregarProducto(true);
-          }}
-        />
-
+            <TablaVenta
+              lineasVenta={lineasVenta}
+              setLineasVenta={setLineasVenta}
+              onAbrirModalAgregar={() => {
+                cargarStock();
+                setModalAgregarProducto(true);
+              }}
+            />
           </section>
 
           {/* ===== DERECHA: COBRO (siempre visible) ===== */}
           <aside className="ventas-col-cobro">
-        <FormularioVenta
-          clientes={clientes}
-          clienteSeleccionado={clienteSeleccionado}
-          setClienteSeleccionado={setClienteSeleccionado}
-          metodoPago={metodoPago}
-          setMetodoPago={setMetodoPago}
-          banco={banco}
-          setBanco={setBanco}
-          fechaVencimiento={fechaVencimiento}
-          setFechaVencimiento={setFechaVencimiento}
-          efectivo={efectivo}
-          setEfectivo={setEfectivo}
-          tarjeta={tarjeta}
-          setTarjeta={setTarjeta}
-          transferencia={transferencia}
-          setTransferencia={setTransferencia}
-          vuelto={vuelto}
-          setVuelto={setVuelto}
-          totalVenta={totalProductosNuevos}
-        />
+            <FormularioVenta
+              clientes={clientes}
+              clienteSeleccionado={clienteSeleccionado}
+              setClienteSeleccionado={setClienteSeleccionado}
+              metodoPago={metodoPago}
+              setMetodoPago={setMetodoPago}
+              banco={banco}
+              setBanco={setBanco}
+              fechaVencimiento={fechaVencimiento}
+              setFechaVencimiento={setFechaVencimiento}
+              efectivo={efectivo}
+              setEfectivo={setEfectivo}
+              tarjeta={tarjeta}
+              setTarjeta={setTarjeta}
+              transferencia={transferencia}
+              setTransferencia={setTransferencia}
+              vuelto={vuelto}
+              setVuelto={setVuelto}
+              totalVenta={totalProductosNuevos}
+            />
 
-
-        {lineasVenta.length > 0 && (
-          <div className="ventas-acciones">
-            <div className="resumen-total">
-              {aplicarSaldo ? (
-                <>
-                  <div className="resumen-linea">
-                    <span>Productos nuevos:</span>
-                    <strong>C${totalProductosNuevos.toFixed(2)}</strong>
-                  </div>
-                  <div className="resumen-linea resumen-saldo-anterior">
-                    <span>Saldo anterior:</span>
-                    <strong>C${saldoAnterior.toFixed(2)}</strong>
-                  </div>
-                  <div className="resumen-linea resumen-total-final">
-                    <span>TOTAL A PAGAR:</span>
-                    <strong>C${totalFinal.toFixed(2)}</strong>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <span>Total:</span>
-                  <strong>C${totalProductosNuevos.toFixed(2)}</strong>
-                </>
-              )}
-            </div>
-            <button
-              className="btn-guardar-venta"
-              onClick={guardarVenta}
-              disabled={guardando}
-            >
-              {guardando ? (
-                <>
-                  <i className="fas fa-spinner fa-spin"></i> Guardando...
-                </>
-              ) : (
-                <>
-                  <i className="fas fa-save"></i> Guardar Venta
-                </>
-              )}
-            </button>
-          </div>
-        )}
+            {lineasVenta.length > 0 && (
+              <div className="ventas-acciones">
+                <div className="resumen-total">
+                  {aplicarSaldo ? (
+                    <>
+                      <div className="resumen-linea">
+                        <span>Productos nuevos:</span>
+                        <strong>C${totalProductosNuevos.toFixed(2)}</strong>
+                      </div>
+                      <div className="resumen-linea resumen-saldo-anterior">
+                        <span>Saldo anterior:</span>
+                        <strong>C${saldoAnterior.toFixed(2)}</strong>
+                      </div>
+                      <div className="resumen-linea resumen-total-final">
+                        <span>TOTAL A PAGAR:</span>
+                        <strong>C${totalFinal.toFixed(2)}</strong>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <span>Total:</span>
+                      <strong>C${totalProductosNuevos.toFixed(2)}</strong>
+                    </>
+                  )}
+                </div>
+                <button
+                  className="btn-guardar-venta"
+                  onClick={guardarVenta}
+                  disabled={guardando}
+                >
+                  {guardando ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin"></i> Guardando...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-save"></i> Guardar Venta
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </aside>
         </div>
       </div>

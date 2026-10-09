@@ -11,9 +11,12 @@ import Abonos from './views/Abonos';
 import Ventas from './views/Ventas';
 import Login from './views/Login';
 import Proveedores from './views/Proveedores';
+import Arqueos from './views/Arqueos';
+import ReportesMensuales from './views/ReportesMensuales';
 import RutaProtegida from './components/RutaProtegida';
 import { iniciarEscuchaOffline, sincronizarOperaciones } from './services/OfflineService';
 import './App.css';
+
 
 function App() {
   useEffect(() => {
@@ -44,6 +47,8 @@ function App() {
         <Route path="/abonos" element={<RutaProtegida><Abonos /></RutaProtegida>} />
         <Route path="/ventas" element={<RutaProtegida><Ventas /></RutaProtegida>} />
         <Route path="/proveedores" element={<RutaProtegida><Proveedores /></RutaProtegida>} />
+         <Route path="/arqueos" element={<RutaProtegida><Arqueos /></RutaProtegida>} />
+          <Route path="/reportesmensuales" element={<RutaProtegida><ReportesMensuales /></RutaProtegida>} />
 
         {/* ===== RUTAS SOLO ADMIN ===== */}
         <Route

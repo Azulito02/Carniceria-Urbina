@@ -1,13 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../database/supabase';
 import { useAuth } from '../context/AuthContext';
 import Encabezado from '../components/Encabezado';
 import useRealtimeSync from '../hooks/useRealtimeSync';
 import './Inicio.css';
 
+// Estados que no cuentan como venta
+const ESTADOS_EXCLUIDOS = ['anulada', 'cancelada'];
+
+// Rango del día de hoy en hora LOCAL (igual que se usa en Ventas.jsx)
+const rangoHoy = () => {
+  const inicio = new Date();
+  inicio.setHours(0, 0, 0, 0);
+  const fin = new Date(inicio);
+  fin.setDate(fin.getDate() + 1);
+  return { inicio, fin };
+};
+
+const formatearMonto = (n) =>
+  new Intl.NumberFormat('es-NI', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(n || 0);
+
+/**
+ * La tabla ventas guarda UNA FILA POR PRODUCTO, así que:
+ *  - Ventas del día     = suma de los totales de todas las filas de hoy
+ *  - Ventas realizadas  = facturas distintas (numero_factura), no filas
+ *  - Pendientes         = facturas a crédito de hoy (estado 'credito')
+ */
+const calcularResumen = (lista) => {
+  const validas = (lista || []).filter(v => !ESTADOS_EXCLUIDOS.includes(v.estado));
+
+  const ventasHoy = validas.reduce((sum, v) => sum + (parseFloat(v.total) || 0), 0);
+
+  const facturas = new Map();
+  validas.forEach(v => {
+    const clave = v.numero_factura || `id_${v.id}`;
+    if (!facturas.has(clave)) facturas.set(clave, v.estado);
+  });
+
+  let pendientes = 0;
+  facturas.forEach(estado => {
+    if (estado === 'credito') pendientes += 1;
+  });
+
+  return {
+    ventasHoy,
+    ventasRealizadas: facturas.size,
+    pendientes
+  };
+};
+
 function Inicio() {
   const navigate = useNavigate();
-  const { esAdmin } = useAuth();  // ← NUEVO
+  const { esAdmin } = useAuth();
   const [loading, setLoading] = useState(true);
   const [resumen, setResumen] = useState({
     ventasHoy: 0,
@@ -18,30 +66,63 @@ function Inicio() {
   const { 
     data: ventas, 
     conectado,
-    sincronizar,
-    loading: syncLoading
+    sincronizar
   } = useRealtimeSync('ventas', 'ventas_cache');
 
-  useEffect(() => {
-    if (ventas.length > 0 || !syncLoading) {
-      calcularResumen();
+  // Copia de las ventas en caché, usada solo si no hay conexión
+  const ventasRef = useRef(ventas);
+  ventasRef.current = ventas;
+
+  // ===== CARGAR RESUMEN DEL DÍA =====
+  const cargarResumen = useCallback(async () => {
+    const { inicio, fin } = rangoHoy();
+
+    try {
+      const { data, error } = await supabase
+        .from('ventas')
+        .select('id, numero_factura, total, estado, fecha')
+        .gte('fecha', inicio.toISOString())
+        .lt('fecha', fin.toISOString());
+
+      if (error) throw error;
+      setResumen(calcularResumen(data));
+    } catch (err) {
+      // Sin conexión: se calcula con las ventas guardadas en caché
+      const delDia = (ventasRef.current || []).filter(v => {
+        const f = new Date(v.fecha);
+        return f >= inicio && f < fin;
+      });
+      setResumen(calcularResumen(delDia));
+    } finally {
+      setLoading(false);
     }
-  }, [ventas, syncLoading]);
+  }, []);
 
-  const calcularResumen = () => {
-    const hoy = new Date().toISOString().split('T')[0];
-    const ventasHoy = ventas.filter(v => v.fecha === hoy);
-    
-    const totalVentas = ventasHoy?.reduce((sum, v) => sum + (v.total || 0), 0) || 0;
-    const ventasRealizadas = ventasHoy?.filter(v => v.estado === 'completada').length || 0;
-    const pendientes = ventasHoy?.filter(v => v.estado === 'pendiente').length || 0;
+  // Al abrir la pantalla + actualización en tiempo real + respaldo cada minuto
+  useEffect(() => {
+    cargarResumen();
 
-    setResumen({
-      ventasHoy: totalVentas,
-      ventasRealizadas: ventasRealizadas,
-      pendientes: pendientes
-    });
-    setLoading(false);
+    const canal = supabase
+      .channel(`inicio_ventas_${Date.now()}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ventas' }, cargarResumen)
+      .subscribe();
+
+    const intervalo = setInterval(cargarResumen, 60000);
+
+    return () => {
+      clearInterval(intervalo);
+      supabase.removeChannel(canal);
+    };
+  }, [cargarResumen]);
+
+  // Cuando cambia la caché de ventas (sincronización), se recalcula
+  useEffect(() => {
+    cargarResumen();
+  }, [ventas, cargarResumen]);
+
+  const handleSincronizar = async () => {
+    await sincronizar();
+    await cargarResumen();
   };
 
   // ===== MÓDULOS CON PERMISOS =====
@@ -61,6 +142,44 @@ function Inicio() {
   // Filtrar según rol
   const modulos = todosLosModulos.filter(m => esAdmin || !m.soloAdmin);
 
+  // ===== TARJETAS DE RESUMEN (cada una lleva a su pantalla) =====
+  const tarjetasResumen = [
+    {
+      id: 'ventas-dia',
+      label: 'Ventas del día',
+      valor: `C$ ${formatearMonto(resumen.ventasHoy)}`,
+      icono: 'fa-dollar-sign',
+      color: '#2e7d32',
+      ruta: '/ventas',
+      ayuda: 'Total vendido hoy (contado y crédito)'
+    },
+    {
+      id: 'ventas-realizadas',
+      label: 'Ventas realizadas',
+      valor: resumen.ventasRealizadas,
+      icono: 'fa-shopping-cart',
+      color: '#1565c0',
+      ruta: '/ventas',
+      ayuda: 'Facturas emitidas hoy'
+    },
+    {
+      id: 'pendientes',
+      label: 'Pendientes',
+      valor: resumen.pendientes,
+      icono: 'fa-clock',
+      color: '#c62828',
+      ruta: '/creditos',
+      ayuda: 'Facturas a crédito de hoy'
+    }
+  ];
+
+  const alPresionarTecla = (e, ruta) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      navigate(ruta);
+    }
+  };
+
   return (
     <div className="inicio-container">
       <Encabezado />
@@ -74,7 +193,7 @@ function Inicio() {
               <i className={`fas ${conectado ? 'fa-wifi' : 'fa-wifi-slash'}`}></i>
               {conectado ? ' En línea' : ' Sin conexión'}
             </span>
-            <button className="btn-sincronizar" onClick={sincronizar} disabled={!conectado}>
+            <button className="btn-sincronizar" onClick={handleSincronizar} disabled={!conectado}>
               <i className="fas fa-sync"></i> Sincronizar
             </button>
           </div>
@@ -93,7 +212,10 @@ function Inicio() {
             <div 
               key={modulo.id}
               className="modulo-card"
+              role="button"
+              tabIndex={0}
               onClick={() => navigate(modulo.ruta)}
+              onKeyDown={(e) => alPresionarTecla(e, modulo.ruta)}
             >
               <div className="modulo-icon" style={{ background: modulo.color }}>
                 <i className={`fas ${modulo.icono}`}></i>
@@ -112,41 +234,27 @@ function Inicio() {
         <div className="resumen-section">
           <h3>Resumen general</h3>
           <div className="resumen-cards">
-            <div className="resumen-card">
-              <div className="resumen-icon" style={{ background: '#2e7d32' }}>
-                <i className="fas fa-dollar-sign"></i>
+            {tarjetasResumen.map((t) => (
+              <div
+                key={t.id}
+                className="resumen-card resumen-card-click"
+                role="button"
+                tabIndex={0}
+                title={t.ayuda}
+                onClick={() => navigate(t.ruta)}
+                onKeyDown={(e) => alPresionarTecla(e, t.ruta)}
+              >
+                <div className="resumen-icon" style={{ background: t.color }}>
+                  <i className={`fas ${t.icono}`}></i>
+                </div>
+                <div className="resumen-info">
+                  <span className="resumen-label">{t.label}</span>
+                  <span className="resumen-valor">
+                    {loading ? 'Cargando...' : t.valor}
+                  </span>
+                </div>
               </div>
-              <div className="resumen-info">
-                <span className="resumen-label">Ventas del día</span>
-                <span className="resumen-valor">
-                  {loading ? 'Cargando...' : `C$ ${resumen.ventasHoy.toFixed(2)}`}
-                </span>
-              </div>
-            </div>
-
-            <div className="resumen-card">
-              <div className="resumen-icon" style={{ background: '#1565c0' }}>
-                <i className="fas fa-shopping-cart"></i>
-              </div>
-              <div className="resumen-info">
-                <span className="resumen-label">Ventas realizadas</span>
-                <span className="resumen-valor">
-                  {loading ? 'Cargando...' : resumen.ventasRealizadas}
-                </span>
-              </div>
-            </div>
-
-            <div className="resumen-card">
-              <div className="resumen-icon" style={{ background: '#c62828' }}>
-                <i className="fas fa-clock"></i>
-              </div>
-              <div className="resumen-info">
-                <span className="resumen-label">Pendientes</span>
-                <span className="resumen-valor">
-                  {loading ? 'Cargando...' : resumen.pendientes}
-                </span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

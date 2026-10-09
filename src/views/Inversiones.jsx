@@ -1,14 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../database/supabase';
 import * as XLSX from 'xlsx';
 import './Inversiones.css';
 import Encabezado from '../components/Encabezado';
 import PDFInversiones from '../components/PDFInversiones';
+import TarjetasResultadoProductos from '../views/TarjetasResultadoProductos';
+
+// ===== UNIDADES DE MEDIDA =====
+const UNIDADES = { libra: 'lb', kilogramo: 'kg', unidad: 'und' };
+const unidadCorta = (u) => UNIDADES[(u || '').toLowerCase()] || u || '';
+const formatoNumero = (n) =>
+  new Intl.NumberFormat('es-NI', { maximumFractionDigits: 2 }).format(n || 0);
 
 const Inversiones = () => {
   const navigate = useNavigate();
-  
+
   const [inversiones, setInversiones] = useState([]);
   const [inversionesFiltradas, setInversionesFiltradas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,10 +23,14 @@ const Inversiones = () => {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [editando, setEditando] = useState(null);
 
-  // ===== PROVEEDORES Y CATEGORÍAS =====
+  // Se incrementa cada vez que cambian las inversiones, para refrescar las tarjetas de resultado
+  const [versionResultado, setVersionResultado] = useState(0);
+
+  // ===== PROVEEDORES, PRODUCTOS Y CATEGORÍAS =====
   const [proveedores, setProveedores] = useState([]);
+  const [productos, setProductos] = useState([]);
   const [categoriasDisponibles, setCategoriasDisponibles] = useState([]);
-  
+
   const [filtroFecha, setFiltroFecha] = useState(() => {
     const ahora = new Date();
     return `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}`;
@@ -28,7 +39,7 @@ const Inversiones = () => {
   const [filtroBanco, setFiltroBanco] = useState('todos');
   const [filtroCategoria, setFiltroCategoria] = useState('todas');
   const [filtroBusqueda, setFiltroBusqueda] = useState('');
-  
+
   const [resumen, setResumen] = useState({
     totalInversiones: 0,
     totalTransferencia: 0,
@@ -36,13 +47,16 @@ const Inversiones = () => {
     cantidadRegistros: 0
   });
 
+  // formData sin "nombre", con "precio_unitario"
   const [formData, setFormData] = useState({
-    nombre: '',
     monto: '',
+    precio_unitario: '',
     tipo_monto: 'transferencia',
     banco: '',
     categoria: '',
     proveedor_id: '',
+    producto_id: '',
+    cantidad: '',
     fecha: new Date().toISOString().slice(0, 16)
   });
 
@@ -60,16 +74,16 @@ const Inversiones = () => {
     otros: 'Otros'
   };
 
-  const getEtiquetaCategoria = (cat) => {
-    return etiquetasCategorias[cat] || cat;
-  };
+  const getEtiquetaCategoria = (cat) => etiquetasCategorias[cat] || cat;
 
-  // ===== CARGAR PROVEEDORES Y CATEGORÍAS =====
+  const productoDe = (inv) => productos.find(p => p.id === inv.producto_id);
+
+  // ===== CARGAR PROVEEDORES, PRODUCTOS Y CATEGORÍAS =====
   useEffect(() => {
     const cargarDatosIniciales = async () => {
       try {
-        console.log('🔄 Cargando proveedores y categorías...');
-        
+        console.log('🔄 Cargando proveedores, productos y categorías...');
+
         const { data: provData, error: provError } = await supabase
           .from('proveedores')
           .select('id, nombre_empresa, nombre_vendedor, categorias')
@@ -84,11 +98,14 @@ const Inversiones = () => {
 
         const { data: prodData, error: prodError } = await supabase
           .from('productos')
-          .select('categoria');
+          .select('id, nombre, categoria, unidad_medida')
+          .order('nombre');
 
         if (prodError) {
-          console.error('❌ Error cargando categorías:', prodError);
+          console.error('❌ Error cargando productos:', prodError);
         } else {
+          setProductos(prodData || []);
+
           const cats = [...new Set(
             (prodData || [])
               .map(p => p.categoria)
@@ -106,7 +123,7 @@ const Inversiones = () => {
   }, []);
 
   // ===== CARGAR INVERSIONES =====
-  const cargarInversiones = async () => {
+  const cargarInversiones = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -122,51 +139,43 @@ const Inversiones = () => {
           throw err;
         }
 
-        console.log('✅ Inversiones crudas desde Supabase:', data);
-
         const inversionesEnriquecidas = (data || []).map(inv => {
           const proveedorEncontrado = proveedores.find(p => p.id === inv.proveedor_id);
-          
           return {
             ...inv,
             proveedores: proveedorEncontrado || null
           };
         });
 
-        console.log('✅ Inversiones enriquecidas:', inversionesEnriquecidas);
-
         setInversiones(inversionesEnriquecidas);
         localStorage.setItem('inversiones_cache', JSON.stringify(inversionesEnriquecidas));
         setConectado(true);
       } else {
         const cache = localStorage.getItem('inversiones_cache');
-        if (cache) {
-          const data = JSON.parse(cache);
-          setInversiones(data);
-        } else {
-          setInversiones([]);
-        }
+        setInversiones(cache ? JSON.parse(cache) : []);
         setConectado(false);
       }
     } catch (err) {
       console.error('❌ Error cargando inversiones:', err);
       setError(err.message);
-      
+
       const cache = localStorage.getItem('inversiones_cache');
-      if (cache) {
-        const data = JSON.parse(cache);
-        setInversiones(data);
-      }
+      if (cache) setInversiones(JSON.parse(cache));
     } finally {
       setLoading(false);
     }
-  };
+  }, [proveedores]);
 
   useEffect(() => {
-    if (proveedores.length > 0) {
+    if (proveedores.length > 0 || !navigator.onLine) {
       cargarInversiones();
     }
-  }, [proveedores]);
+  }, [proveedores, cargarInversiones]);
+
+  // Cada vez que cambian las inversiones, se refrescan las tarjetas de resultado
+  useEffect(() => {
+    setVersionResultado(v => v + 1);
+  }, [inversiones]);
 
   // ===== CONTAR OPERACIONES PENDIENTES =====
   useEffect(() => {
@@ -185,10 +194,7 @@ const Inversiones = () => {
       setConectado(true);
       cargarInversiones();
     };
-    
-    const handleOffline = () => {
-      setConectado(false);
-    };
+    const handleOffline = () => setConectado(false);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -197,12 +203,7 @@ const Inversiones = () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [proveedores]);
-
-  // ===== CARGA INICIAL =====
-  useEffect(() => {
-    cargarInversiones();
-  }, []);
+  }, [cargarInversiones]);
 
   // ===== APLICAR FILTROS =====
   useEffect(() => {
@@ -211,24 +212,23 @@ const Inversiones = () => {
 
   const aplicarFiltros = () => {
     let filtradas = [...inversiones];
-    
-    // Filtro por fecha (solo si hay valor)
+
     if (filtroFecha && filtroFecha !== 'todos') {
       const [year, month] = filtroFecha.split('-');
       const inicioMes = new Date(year, month - 1, 1);
       const finMes = new Date(year, month, 0, 23, 59, 59);
-      
+
       filtradas = filtradas.filter(f => {
         if (!f.fecha) return false;
         const fecha = new Date(f.fecha);
         return fecha >= inicioMes && fecha <= finMes;
       });
     }
-    
+
     if (filtroTipo !== 'todos') {
       filtradas = filtradas.filter(f => f.tipo_monto === filtroTipo);
     }
-    
+
     if (filtroBanco !== 'todos') {
       filtradas = filtradas.filter(f => f.banco === filtroBanco);
     }
@@ -236,20 +236,18 @@ const Inversiones = () => {
     if (filtroCategoria !== 'todas') {
       filtradas = filtradas.filter(f => f.categoria === filtroCategoria);
     }
-    
+
     if (filtroBusqueda.trim() !== '') {
       const termino = filtroBusqueda.toLowerCase();
-      filtradas = filtradas.filter(f => {
-        return (
-          (f.nombre && f.nombre.toLowerCase().includes(termino)) ||
-          (f.banco && f.banco.toLowerCase().includes(termino)) ||
-          (f.proveedores?.nombre_empresa && f.proveedores.nombre_empresa.toLowerCase().includes(termino)) ||
-          (f.categoria && f.categoria.toLowerCase().includes(termino)) ||
-          (f.id && f.id.toString().includes(termino))
-        );
-      });
+      filtradas = filtradas.filter(f => (
+        (f.nombre && f.nombre.toLowerCase().includes(termino)) ||
+        (f.banco && f.banco.toLowerCase().includes(termino)) ||
+        (f.proveedores?.nombre_empresa && f.proveedores.nombre_empresa.toLowerCase().includes(termino)) ||
+        (f.categoria && f.categoria.toLowerCase().includes(termino)) ||
+        (f.id && f.id.toString().includes(termino))
+      ));
     }
-    
+
     setInversionesFiltradas(filtradas);
     calcularResumen(filtradas);
   };
@@ -259,18 +257,18 @@ const Inversiones = () => {
     try {
       const fechaUTC = new Date(fechaISO);
       const fechaNic = new Date(fechaUTC.getTime() - (6 * 60 * 60 * 1000));
-      
+
       const d = fechaNic.getDate().toString().padStart(2, '0');
       const m = (fechaNic.getMonth() + 1).toString().padStart(2, '0');
       const y = fechaNic.getFullYear();
-      
+
       let h = fechaNic.getHours();
       const min = fechaNic.getMinutes().toString().padStart(2, '0');
       const ampm = h >= 12 ? 'p.m.' : 'a.m.';
-      
+
       h = h % 12;
       h = h ? h.toString().padStart(2, '0') : '12';
-      
+
       return `${d}/${m}/${y} ${h}:${min} ${ampm}`;
     } catch (e) {
       return fechaISO;
@@ -285,12 +283,9 @@ const Inversiones = () => {
     data.forEach(f => {
       const monto = parseFloat(f.monto || 0);
       totalInversiones += monto;
-      
-      if (f.tipo_monto === 'transferencia') {
-        totalTransferencia += monto;
-      } else if (f.tipo_monto === 'efectivo') {
-        totalEfectivo += monto;
-      }
+
+      if (f.tipo_monto === 'transferencia') totalTransferencia += monto;
+      else if (f.tipo_monto === 'efectivo') totalEfectivo += monto;
     });
 
     setResumen({
@@ -304,14 +299,14 @@ const Inversiones = () => {
   const generarMesesDisponibles = () => {
     const meses = [];
     const ahora = new Date();
-    
+
     for (let i = 0; i < 12; i++) {
       const fecha = new Date(ahora.getFullYear(), ahora.getMonth() - i, 1);
       const valor = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
       const nombre = fecha.toLocaleDateString('es-MX', { year: 'numeric', month: 'long' });
       meses.push({ valor, nombre });
     }
-    
+
     return meses;
   };
 
@@ -320,7 +315,7 @@ const Inversiones = () => {
     try {
       const data = localStorage.getItem('operaciones_pendientes_inversiones');
       return data ? JSON.parse(data) : [];
-    } catch (error) {
+    } catch {
       return [];
     }
   };
@@ -345,9 +340,9 @@ const Inversiones = () => {
 
   const sincronizarOperaciones = async () => {
     const operaciones = obtenerOperacionesPendientes();
-    
+
     if (operaciones.length === 0) {
-      return { success: true, sincronizadas: 0 };
+      return { success: true, sincronizadas: 0, errores: [], pendientes: 0 };
     }
 
     let sincronizadas = 0;
@@ -356,30 +351,17 @@ const Inversiones = () => {
     for (const op of operaciones) {
       try {
         let result;
-        
+
         switch (op.tipo) {
           case 'INSERT':
-            result = await supabase
-              .from('inversiones')
-              .insert([op.datos])
-              .select();
+            result = await supabase.from('inversiones').insert([op.datos]).select();
             break;
-            
           case 'UPDATE':
-            result = await supabase
-              .from('inversiones')
-              .update(op.datos)
-              .eq('id', op.id_registro)
-              .select();
+            result = await supabase.from('inversiones').update(op.datos).eq('id', op.id_registro).select();
             break;
-            
           case 'DELETE':
-            result = await supabase
-              .from('inversiones')
-              .delete()
-              .eq('id', op.id_registro);
+            result = await supabase.from('inversiones').delete().eq('id', op.id_registro);
             break;
-            
           default:
             continue;
         }
@@ -390,7 +372,6 @@ const Inversiones = () => {
         }
 
         sincronizadas++;
-        
       } catch (error) {
         errores.push({ operacion: op, error: error.message });
       }
@@ -412,9 +393,9 @@ const Inversiones = () => {
   const handleGuardar = async () => {
     try {
       setError(null);
-      
-      if (!formData.nombre.trim()) {
-        setError('El nombre es obligatorio');
+
+      if (!formData.producto_id) {
+        setError('Debes seleccionar un producto');
         return;
       }
       if (!formData.monto || parseFloat(formData.monto) <= 0) {
@@ -425,14 +406,26 @@ const Inversiones = () => {
         setError('Debes seleccionar un banco para transferencias');
         return;
       }
+      if (formData.producto_id && (!formData.cantidad || parseFloat(formData.cantidad) <= 0)) {
+        setError('Indica la cantidad comprada del producto');
+        return;
+      }
+
+      const productoSeleccionado = productos.find(
+        p => String(p.id) === String(formData.producto_id)
+      );
+      const nombreFinal = productoSeleccionado?.nombre || 'Inversión sin producto';
 
       const dataToSave = {
-        nombre: formData.nombre.trim(),
+        nombre: nombreFinal,
         monto: parseFloat(formData.monto),
         tipo_monto: formData.tipo_monto,
         banco: formData.tipo_monto === 'transferencia' ? formData.banco : null,
         categoria: formData.categoria || null,
         proveedor_id: formData.proveedor_id ? parseInt(formData.proveedor_id) : null,
+        producto_id: formData.producto_id ? parseInt(formData.producto_id) : null,
+        cantidad: formData.producto_id && formData.cantidad ? parseFloat(formData.cantidad) : null,
+        precio_unitario: formData.precio_unitario ? parseFloat(formData.precio_unitario) : 0,
         fecha: new Date(formData.fecha).toISOString()
       };
 
@@ -441,7 +434,7 @@ const Inversiones = () => {
       if (editando) {
         if (typeof editando === 'string' && editando.startsWith('local_')) {
           setInversiones(prev => {
-            const updated = prev.map(item => 
+            const updated = prev.map(item =>
               item.id === editando ? { ...item, ...dataToSave } : item
             );
             localStorage.setItem('inversiones_cache', JSON.stringify(updated));
@@ -461,7 +454,7 @@ const Inversiones = () => {
             .select();
 
           if (updateError) {
-            console.error('❌ Error UPDATE:', updateError);
+            console.error('❌ Error UPDATE:', updateError.message, '| código:', updateError.code);
             throw updateError;
           }
 
@@ -481,9 +474,9 @@ const Inversiones = () => {
           datos: dataToSave,
           id_registro: editando
         });
-        
+
         setInversiones(prev => {
-          const updated = prev.map(item => 
+          const updated = prev.map(item =>
             item.id === editando ? { ...item, ...dataToSave, _local: true } : item
           );
           localStorage.setItem('inversiones_cache', JSON.stringify(updated));
@@ -501,11 +494,9 @@ const Inversiones = () => {
             .select();
 
           if (insertError) {
-            console.error('❌ Error INSERT:', insertError);
+            console.error('❌ Error INSERT:', insertError.message, '| código:', insertError.code);
             throw insertError;
           }
-
-          console.log('✅ Inversión insertada:', data);
 
           if (data && data.length > 0) {
             await cargarInversiones();
@@ -518,18 +509,18 @@ const Inversiones = () => {
         }
 
         const idLocal = `local_${Date.now()}`;
-        
+
         agregarOperacion({
           tipo: 'INSERT',
           tabla: 'inversiones',
           datos: dataToSave
         });
 
-        const nuevoRegistro = { 
-          ...dataToSave, 
-          id: idLocal, 
+        const nuevoRegistro = {
+          ...dataToSave,
+          id: idLocal,
           proveedores: proveedores.find(p => p.id === dataToSave.proveedor_id) || null,
-          _local: true 
+          _local: true
         };
 
         setInversiones(prev => {
@@ -551,7 +542,7 @@ const Inversiones = () => {
 
   // ===== ELIMINAR =====
   const handleEliminar = async (id) => {
-    if (!confirm('¿Estás seguro de eliminar esta inversión?')) return;
+    if (!window.confirm('¿Estás seguro de eliminar esta inversión?')) return;
 
     try {
       setError(null);
@@ -590,7 +581,7 @@ const Inversiones = () => {
         tabla: 'inversiones',
         id_registro: id
       });
-      
+
       setInversiones(prev => {
         const updated = prev.filter(item => item.id !== id);
         localStorage.setItem('inversiones_cache', JSON.stringify(updated));
@@ -615,12 +606,12 @@ const Inversiones = () => {
     try {
       setExito('🔄 Sincronizando...');
       const resultado = await sincronizarOperaciones();
-      
+
       if (resultado.success) {
         await cargarInversiones();
-        setExito(resultado.sincronizadas > 0 ? 
-          `✅ ${resultado.sincronizadas} operaciones sincronizadas` : 
-          '✅ Todo sincronizado');
+        setExito(resultado.sincronizadas > 0
+          ? `✅ ${resultado.sincronizadas} operaciones sincronizadas`
+          : '✅ Todo sincronizado');
       } else {
         setExito(`⚠️ ${resultado.sincronizadas} sincronizadas, ${resultado.errores.length} errores`);
       }
@@ -634,24 +625,32 @@ const Inversiones = () => {
     setError(null);
     if (inversion) {
       setEditando(inversion.id);
+      const cantidad = inversion.cantidad ? parseFloat(inversion.cantidad) : 0;
+      const monto = inversion.monto ? parseFloat(inversion.monto) : 0;
+      const precioUnitario = cantidad > 0 ? (monto / cantidad) : '';
+
       setFormData({
-        nombre: inversion.nombre || '',
         monto: inversion.monto ? inversion.monto.toString() : '',
+        precio_unitario: precioUnitario ? precioUnitario.toFixed(2) : '',
         tipo_monto: inversion.tipo_monto || 'transferencia',
         banco: inversion.banco || '',
         categoria: inversion.categoria || '',
         proveedor_id: inversion.proveedor_id ? inversion.proveedor_id.toString() : '',
+        producto_id: inversion.producto_id ? inversion.producto_id.toString() : '',
+        cantidad: inversion.cantidad ? inversion.cantidad.toString() : '',
         fecha: inversion.fecha ? new Date(inversion.fecha).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)
       });
     } else {
       setEditando(null);
       setFormData({
-        nombre: '',
         monto: '',
+        precio_unitario: '',
         tipo_monto: 'transferencia',
         banco: '',
         categoria: '',
         proveedor_id: '',
+        producto_id: '',
+        cantidad: '',
         fecha: new Date().toISOString().slice(0, 16)
       });
     }
@@ -671,6 +670,69 @@ const Inversiones = () => {
     );
   };
 
+  const productosFiltradosPorCategoria = () => {
+    if (!formData.categoria) return productos;
+    return productos.filter(p => p.categoria === formData.categoria);
+  };
+
+  const handleCambioCategoria = (e) => {
+    const nuevaCategoria = e.target.value;
+    const productoActual = productos.find(p => String(p.id) === String(formData.producto_id));
+    const mantenerProducto =
+      !nuevaCategoria || (productoActual && productoActual.categoria === nuevaCategoria);
+
+    setFormData({
+      ...formData,
+      categoria: nuevaCategoria,
+      proveedor_id: '',
+      producto_id: mantenerProducto ? formData.producto_id : '',
+      cantidad: mantenerProducto ? formData.cantidad : ''
+    });
+  };
+
+  const handleCambioProducto = (e) => {
+    const nuevoId = e.target.value;
+    const nuevo = productos.find(p => String(p.id) === String(nuevoId));
+
+    setFormData({
+      ...formData,
+      producto_id: nuevoId,
+      categoria: nuevo && !formData.categoria ? (nuevo.categoria || '') : formData.categoria,
+      cantidad: nuevoId ? formData.cantidad : ''
+    });
+  };
+
+  const handleCambioCantidad = (e) => {
+    const nuevaCantidad = e.target.value;
+    const c = parseFloat(nuevaCantidad) || 0;
+    const p = parseFloat(formData.precio_unitario) || 0;
+    const nuevoMonto = (c > 0 && p > 0) ? (c * p).toFixed(2) : formData.monto;
+
+    setFormData({
+      ...formData,
+      cantidad: nuevaCantidad,
+      monto: nuevoMonto
+    });
+  };
+
+  const handleCambioPrecio = (e) => {
+    const nuevoPrecio = e.target.value;
+    const c = parseFloat(formData.cantidad) || 0;
+    const p = parseFloat(nuevoPrecio) || 0;
+    const nuevoMonto = (c > 0 && p > 0) ? (c * p).toFixed(2) : formData.monto;
+
+    setFormData({
+      ...formData,
+      precio_unitario: nuevoPrecio,
+      monto: nuevoMonto
+    });
+  };
+
+  const productoForm = productos.find(p => String(p.id) === String(formData.producto_id));
+  const unidadForm = unidadCorta(productoForm?.unidad_medida);
+  const montoForm = parseFloat(formData.monto);
+  const cantidadForm = parseFloat(formData.cantidad);
+
   // ===== EXPORTAR EXCEL =====
   const exportarExcel = () => {
     try {
@@ -683,38 +745,28 @@ const Inversiones = () => {
         'Categoría': f.categoria ? getEtiquetaCategoria(f.categoria) : 'N/A',
         'Tipo': f.tipo_monto,
         'Banco': f.banco || 'N/A',
+        'Cantidad': f.producto_id && f.cantidad
+          ? `${formatoNumero(f.cantidad)} ${unidadCorta(productoDe(f)?.unidad_medida)}`.trim()
+          : 'N/A',
         'Monto': `C$${parseFloat(f.monto || 0).toFixed(2)}`
       }));
 
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.json_to_sheet(datosExcel);
 
-      const colWidths = [
-        { wch: 15 },
-        { wch: 40 },
-        { wch: 25 },
-        { wch: 20 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 15 }
+      ws['!cols'] = [
+        { wch: 15 }, { wch: 40 }, { wch: 25 }, { wch: 20 },
+        { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }
       ];
-      ws['!cols'] = colWidths;
 
       XLSX.utils.book_append_sheet(wb, ws, 'Inversiones');
 
-      const resumenData = [{
-        'Concepto': 'Total Inversiones',
-        'Monto': `C$${resumen.totalInversiones.toFixed(2)}`
-      }, {
-        'Concepto': 'Transferencia',
-        'Monto': `C$${resumen.totalTransferencia.toFixed(2)}`
-      }, {
-        'Concepto': 'Efectivo',
-        'Monto': `C$${resumen.totalEfectivo.toFixed(2)}`
-      }, {
-        'Concepto': 'Registros Mostrados',
-        'Monto': resumen.cantidadRegistros
-      }];
+      const resumenData = [
+        { 'Concepto': 'Total Inversiones', 'Monto': `C$${resumen.totalInversiones.toFixed(2)}` },
+        { 'Concepto': 'Transferencia', 'Monto': `C$${resumen.totalTransferencia.toFixed(2)}` },
+        { 'Concepto': 'Efectivo', 'Monto': `C$${resumen.totalEfectivo.toFixed(2)}` },
+        { 'Concepto': 'Registros Mostrados', 'Monto': resumen.cantidadRegistros }
+      ];
 
       const wsResumen = XLSX.utils.json_to_sheet(resumenData);
       XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen');
@@ -744,10 +796,10 @@ const Inversiones = () => {
 
     try {
       setExportando(true);
-      
+
       const [year, month] = filtroFecha.split('-');
       const nombreMes = new Date(year, month - 1).toLocaleDateString('es-MX', { month: 'long' });
-      
+
       await PDFInversiones(
         inversionesFiltradas,
         `${nombreMes} ${year}`,
@@ -755,7 +807,7 @@ const Inversiones = () => {
         resumen.totalTransferencia,
         resumen.totalEfectivo
       );
-      
+
       setExito('📄 PDF generado exitosamente');
       setTimeout(() => setExito(null), 3000);
     } catch (error) {
@@ -772,7 +824,7 @@ const Inversiones = () => {
   return (
     <div className="inversiones-container">
       <Encabezado />
-      
+
       <div className="inversiones-content">
         {/* HEADER */}
         <div className="inversiones-header">
@@ -780,7 +832,7 @@ const Inversiones = () => {
             <h1 className="inversiones-titulo">💰 Inversiones</h1>
             <p className="inversiones-subtitulo">Gestión de inversiones y montos</p>
           </div>
-          
+
           <div className="inversiones-botones-header">
             <span className={`status-indicator ${conectado ? 'online' : 'offline'}`}>
               <i className={`fas ${conectado ? 'fa-wifi' : 'fa-wifi-slash'}`}></i>
@@ -791,10 +843,10 @@ const Inversiones = () => {
                 <i className="fas fa-clock"></i> {operacionesPendientes} pendientes
               </span>
             )}
-            <button 
-              className="btn-sincronizar" 
-              onClick={sincronizarManual} 
-              disabled={!conectado}
+            <button
+              className="btn-sincronizar"
+              onClick={sincronizarManual}
+              disabled={!conectado || operacionesPendientes === 0}
             >
               <i className="fas fa-sync"></i> Sincronizar
             </button>
@@ -847,11 +899,7 @@ const Inversiones = () => {
 
           <div className="filtro-grupo">
             <label className="filtro-label">Tipo:</label>
-            <select
-              value={filtroTipo}
-              onChange={(e) => setFiltroTipo(e.target.value)}
-              className="filtro-select"
-            >
+            <select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)} className="filtro-select">
               <option value="todos">Todos</option>
               <option value="transferencia">Transferencia</option>
               <option value="efectivo">Efectivo</option>
@@ -860,11 +908,7 @@ const Inversiones = () => {
 
           <div className="filtro-grupo">
             <label className="filtro-label">Banco:</label>
-            <select
-              value={filtroBanco}
-              onChange={(e) => setFiltroBanco(e.target.value)}
-              className="filtro-select"
-            >
+            <select value={filtroBanco} onChange={(e) => setFiltroBanco(e.target.value)} className="filtro-select">
               <option value="todos">Todos</option>
               <option value="ficohsa">Ficohsa</option>
               <option value="lafise">Lafise</option>
@@ -877,11 +921,7 @@ const Inversiones = () => {
 
           <div className="filtro-grupo">
             <label className="filtro-label">Categoría:</label>
-            <select
-              value={filtroCategoria}
-              onChange={(e) => setFiltroCategoria(e.target.value)}
-              className="filtro-select"
-            >
+            <select value={filtroCategoria} onChange={(e) => setFiltroCategoria(e.target.value)} className="filtro-select">
               <option value="todas">Todas</option>
               {categoriasDisponibles.map(cat => (
                 <option key={cat} value={cat}>{getEtiquetaCategoria(cat)}</option>
@@ -899,9 +939,7 @@ const Inversiones = () => {
               className="filtro-input"
             />
             {filtroBusqueda && (
-              <button className="filtro-limpiar" onClick={() => setFiltroBusqueda('')}>
-                ✕
-              </button>
+              <button className="filtro-limpiar" onClick={() => setFiltroBusqueda('')}>✕</button>
             )}
           </div>
 
@@ -943,6 +981,9 @@ const Inversiones = () => {
             <div className="resumen-card-icon">💵</div>
           </div>
         </div>
+
+        {/* INVERSIÓN VS VENTAS POR PRODUCTO */}
+        <TarjetasResultadoProductos version={versionResultado} />
 
         {/* BOTONES EXPORTAR */}
         <div className="export-buttons">
@@ -1005,74 +1046,97 @@ const Inversiones = () => {
                     <th>Categoría</th>
                     <th>Tipo</th>
                     <th>Banco</th>
+                    <th>Cantidad</th>
                     <th>Monto</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {inversionesFiltradas.map((inversion) => (
-                    <tr key={inversion.id} className={inversion._local ? 'fila-local' : ''}>
-                      <td className="col-fecha">{formatFechaNicaragua(inversion.fecha)}</td>
-                      <td className="col-nombre">
-                        {inversion.nombre}
-                        {inversion._local && (
-                          <span className="badge-local">📝 Local</span>
-                        )}
-                      </td>
-                      <td className="col-proveedor">
-                        {inversion.proveedores?.nombre_empresa ? (
-                          <span className="proveedor-badge">
-                            <i className="fas fa-truck"></i>
-                            {inversion.proveedores.nombre_empresa}
+                  {inversionesFiltradas.map((inversion) => {
+                    const cantidadFila = parseFloat(inversion.cantidad);
+                    const tieneCantidad = inversion.producto_id && cantidadFila > 0;
+                    const unidadFila = unidadCorta(productoDe(inversion)?.unidad_medida);
+                    const costoUnitario = tieneCantidad
+                      ? (parseFloat(inversion.monto || 0) / cantidadFila)
+                      : 0;
+
+                    return (
+                      <tr key={inversion.id} className={inversion._local ? 'fila-local' : ''}>
+                        <td className="col-fecha">{formatFechaNicaragua(inversion.fecha)}</td>
+                        <td className="col-nombre">
+                          {inversion.nombre}
+                          {inversion._local && <span className="badge-local">📝 Local</span>}
+                        </td>
+                        <td className="col-proveedor">
+                          {inversion.proveedores?.nombre_empresa ? (
+                            <span className="proveedor-badge">
+                              <i className="fas fa-truck"></i>
+                              {inversion.proveedores.nombre_empresa}
+                            </span>
+                          ) : (
+                            <span className="sin-proveedor">—</span>
+                          )}
+                        </td>
+                        <td className="col-categoria">
+                          {inversion.categoria ? (
+                            <span className={`cat-badge cat-${inversion.categoria}`}>
+                              {getEtiquetaCategoria(inversion.categoria)}
+                            </span>
+                          ) : (
+                            <span className="sin-proveedor">—</span>
+                          )}
+                        </td>
+                        <td className="col-tipo">
+                          <span className={`badge-tipo ${inversion.tipo_monto}`}>
+                            {inversion.tipo_monto}
                           </span>
-                        ) : (
-                          <span className="sin-proveedor">—</span>
-                        )}
-                      </td>
-                      <td className="col-categoria">
-                        {inversion.categoria ? (
-                          <span className={`cat-badge cat-${inversion.categoria}`}>
-                            {getEtiquetaCategoria(inversion.categoria)}
-                          </span>
-                        ) : (
-                          <span className="sin-proveedor">—</span>
-                        )}
-                      </td>
-                      <td className="col-tipo">
-                        <span className={`badge-tipo ${inversion.tipo_monto}`}>
-                          {inversion.tipo_monto}
-                        </span>
-                      </td>
-                      <td className="col-banco">
-                        {inversion.banco ? (
-                          <span className={`badge-banco ${inversion.banco}`}>
-                            {inversion.banco}
-                          </span>
-                        ) : (
-                          <span className="badge-banco sin-banco">N/A</span>
-                        )}
-                      </td>
-                      <td className="col-monto">C${parseFloat(inversion.monto || 0).toFixed(2)}</td>
-                      <td className="col-acciones">
-                        <button
-                          onClick={() => abrirModal(inversion)}
-                          className="btn-accion editar"
-                          title="Editar"
-                        >
-                          <i className="fas fa-edit"></i>
-                          <span>Editar</span>
-                        </button>
-                        <button
-                          onClick={() => handleEliminar(inversion.id)}
-                          className="btn-accion eliminar"
-                          title="Eliminar"
-                        >
-                          <i className="fas fa-trash-alt"></i>
-                          <span>Eliminar</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="col-banco">
+                          {inversion.banco ? (
+                            <span className={`badge-banco ${inversion.banco}`}>
+                              {inversion.banco}
+                            </span>
+                          ) : (
+                            <span className="badge-banco sin-banco">N/A</span>
+                          )}
+                        </td>
+                        <td className="col-cantidad">
+                          {tieneCantidad ? (
+                            <>
+                              <span className="cantidad-valor">
+                                {formatoNumero(cantidadFila)} {unidadFila}
+                              </span>
+                              <small className="cantidad-costo">
+                                C${costoUnitario.toFixed(2)}
+                                {unidadFila ? `/${unidadFila}` : ' c/u'}
+                              </small>
+                            </>
+                          ) : (
+                            <span className="sin-proveedor">—</span>
+                          )}
+                        </td>
+                        <td className="col-monto">C${parseFloat(inversion.monto || 0).toFixed(2)}</td>
+                        <td className="col-acciones">
+                          <button
+                            onClick={() => abrirModal(inversion)}
+                            className="btn-accion editar"
+                            title="Editar"
+                            aria-label="Editar"
+                          >
+                            <i className="fas fa-edit"></i>
+                          </button>
+                          <button
+                            onClick={() => handleEliminar(inversion.id)}
+                            className="btn-accion eliminar"
+                            title="Eliminar"
+                            aria-label="Eliminar"
+                          >
+                            <i className="fas fa-trash-alt"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -1094,31 +1158,10 @@ const Inversiones = () => {
             </div>
 
             <div className="modal-body">
-              <div className="form-grupo">
-                <label className="form-label">Nombre *</label>
-                <input
-                  type="text"
-                  value={formData.nombre}
-                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                  className="form-input"
-                  placeholder="Ej: Compra de equipo, Inversión en proyecto..."
-                />
-              </div>
-
               <div className="form-grupo-doble">
                 <div className="form-grupo">
                   <label className="form-label">Categoría</label>
-                  <select
-                    value={formData.categoria}
-                    onChange={(e) => {
-                      setFormData({ 
-                        ...formData, 
-                        categoria: e.target.value,
-                        proveedor_id: ''
-                      });
-                    }}
-                    className="form-select"
-                  >
+                  <select value={formData.categoria} onChange={handleCambioCategoria} className="form-select">
                     <option value="">Sin categoría</option>
                     {categoriasDisponibles.map(cat => (
                       <option key={cat} value={cat}>{getEtiquetaCategoria(cat)}</option>
@@ -1142,9 +1185,7 @@ const Inversiones = () => {
                     disabled={!formData.categoria}
                   >
                     <option value="">
-                      {formData.categoria 
-                        ? 'Seleccionar proveedor...' 
-                        : 'Selecciona categoría primero'}
+                      {formData.categoria ? 'Seleccionar proveedor...' : 'Selecciona categoría primero'}
                     </option>
                     {proveedoresFiltradosPorCategoria().map(p => (
                       <option key={p.id} value={p.id}>
@@ -1154,15 +1195,63 @@ const Inversiones = () => {
                   </select>
                   {formData.categoria && proveedoresFiltradosPorCategoria().length === 0 && (
                     <p className="sin-proveedores-msg">
-                      <i className="fas fa-info-circle"></i>
-                      No hay proveedores para esta categoría
+                      <i className="fas fa-info-circle"></i> No hay proveedores para esta categoría
                     </p>
                   )}
                 </div>
               </div>
 
               <div className="form-grupo">
-                <label className="form-label">Monto (C$) *</label>
+                <label className="form-label">
+                  Producto comprado *
+                  {formData.categoria && (
+                    <span className="filtro-info-proveedor">
+                      ({productosFiltradosPorCategoria().length})
+                    </span>
+                  )}
+                </label>
+                <select value={formData.producto_id} onChange={handleCambioProducto} className="form-select">
+                  <option value="">Seleccionar producto...</option>
+                  {productosFiltradosPorCategoria().map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.nombre}{p.unidad_medida ? ` (${unidadCorta(p.unidad_medida)})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-grupo-doble">
+                <div className="form-grupo">
+                  <label className="form-label">
+                    Cantidad comprada{unidadForm ? ` (${unidadForm})` : ''} *
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.cantidad}
+                    onChange={handleCambioCantidad}
+                    className="form-input"
+                    placeholder="0.00"
+                    min="0.01"
+                    step="0.01"
+                  />
+                </div>
+
+                <div className="form-grupo">
+                  <label className="form-label">Precio unitario (C$) *</label>
+                  <input
+                    type="number"
+                    value={formData.precio_unitario}
+                    onChange={handleCambioPrecio}
+                    className="form-input"
+                    placeholder="0.00"
+                    min="0.01"
+                    step="0.01"
+                  />
+                </div>
+              </div>
+
+              <div className="form-grupo">
+                <label className="form-label">Monto total (C$) *</label>
                 <input
                   type="number"
                   value={formData.monto}
@@ -1174,13 +1263,21 @@ const Inversiones = () => {
                 />
               </div>
 
+              {formData.producto_id && montoForm > 0 && cantidadForm > 0 && (
+                <p className="costo-unitario-msg">
+                  <i className="fas fa-calculator"></i>
+                  Costo por {unidadForm || 'unidad'}:{' '}
+                  <strong>C${(montoForm / cantidadForm).toFixed(2)}</strong>
+                </p>
+              )}
+
               <div className="form-grupo">
                 <label className="form-label">Tipo de Monto *</label>
                 <select
                   value={formData.tipo_monto}
                   onChange={(e) => {
-                    setFormData({ 
-                      ...formData, 
+                    setFormData({
+                      ...formData,
                       tipo_monto: e.target.value,
                       banco: e.target.value === 'transferencia' ? formData.banco : ''
                     });
@@ -1223,9 +1320,7 @@ const Inversiones = () => {
             </div>
 
             <div className="modal-footer">
-              <button className="btn-modal-cancelar" onClick={cerrarModal}>
-                Cancelar
-              </button>
+              <button className="btn-modal-cancelar" onClick={cerrarModal}>Cancelar</button>
               <button className="btn-modal-guardar" onClick={handleGuardar}>
                 {editando ? 'Actualizar' : 'Guardar'}
               </button>

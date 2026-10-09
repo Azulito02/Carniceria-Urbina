@@ -415,3 +415,27 @@
   animation-delay: 0.3s;
   opacity: 0;
 }
+/* ===== Pegar al final de Inicio.css ===== */
+
+/* Las tarjetas de resumen ahora son clicables */
+.resumen-card-click {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.resumen-card-click:hover {
+  background: #fff8f0;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(139, 30, 30, 0.12);
+}
+
+.resumen-card-click:active {
+  transform: scale(0.98);
+}
+
+/* Foco visible al navegar con teclado */
+.modulo-card:focus-visible,
+.resumen-card-click:focus-visible {
+  outline: 3px solid rgba(251, 172, 62, 0.7);
+  outline-offset: 2px;
+}
