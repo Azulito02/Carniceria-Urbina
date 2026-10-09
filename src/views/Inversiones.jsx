@@ -6,6 +6,7 @@ import './Inversiones.css';
 import Encabezado from '../components/Encabezado';
 import PDFInversiones from '../components/PDFInversiones';
 import TarjetasResultadoProductos from '../views/TarjetasResultadoProductos';
+import { notificarCambioStock } from '../services/StockService';
 
 // ===== UNIDADES DE MEDIDA =====
 const UNIDADES = { libra: 'lb', kilogramo: 'kg', unidad: 'und' };
@@ -442,6 +443,7 @@ const Inversiones = () => {
           });
           cerrarModal();
           setExito('📝 Actualizado localmente');
+          notificarCambioStock();
           setTimeout(() => setExito(null), 3000);
           return;
         }
@@ -462,6 +464,7 @@ const Inversiones = () => {
             await cargarInversiones();
             cerrarModal();
             setExito('✅ Inversión actualizada');
+            notificarCambioStock();
             setTimeout(() => setExito(null), 3000);
             return;
           }
@@ -484,6 +487,7 @@ const Inversiones = () => {
         });
         cerrarModal();
         setExito('📝 Actualizado localmente');
+        notificarCambioStock();
         setTimeout(() => setExito(null), 3000);
 
       } else {
@@ -502,6 +506,7 @@ const Inversiones = () => {
             await cargarInversiones();
             cerrarModal();
             setExito('✅ Inversión creada');
+            notificarCambioStock();
             setTimeout(() => setExito(null), 3000);
             return;
           }
@@ -531,6 +536,7 @@ const Inversiones = () => {
 
         cerrarModal();
         setExito('📝 Guardado localmente');
+        notificarCambioStock();
         setTimeout(() => setExito(null), 3000);
       }
 
@@ -554,6 +560,7 @@ const Inversiones = () => {
           return updated;
         });
         setExito('🗑️ Eliminado localmente');
+        notificarCambioStock();
         setTimeout(() => setExito(null), 3000);
         return;
       }
@@ -572,6 +579,7 @@ const Inversiones = () => {
           return updated;
         });
         setExito('🗑️ Inversión eliminada');
+        notificarCambioStock();
         setTimeout(() => setExito(null), 3000);
         return;
       }
@@ -588,6 +596,7 @@ const Inversiones = () => {
         return updated;
       });
       setExito('📝 Eliminado localmente');
+      notificarCambioStock();
       setTimeout(() => setExito(null), 3000);
 
     } catch (error) {
@@ -612,6 +621,7 @@ const Inversiones = () => {
         setExito(resultado.sincronizadas > 0
           ? `✅ ${resultado.sincronizadas} operaciones sincronizadas`
           : '✅ Todo sincronizado');
+        notificarCambioStock();
       } else {
         setExito(`⚠️ ${resultado.sincronizadas} sincronizadas, ${resultado.errores.length} errores`);
       }
