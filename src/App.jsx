@@ -14,9 +14,9 @@ import Proveedores from './views/Proveedores';
 import Arqueos from './views/Arqueos';
 import ReportesMensuales from './views/ReportesMensuales';
 import RutaProtegida from './components/RutaProtegida';
+import Chatbot from './components/Chatbot/Chatbot'; // ✅ NUEVO IMPORT
 import { iniciarEscuchaOffline, sincronizarOperaciones } from './services/OfflineService';
 import './App.css';
-
 
 function App() {
   useEffect(() => {
@@ -47,8 +47,8 @@ function App() {
         <Route path="/abonos" element={<RutaProtegida><Abonos /></RutaProtegida>} />
         <Route path="/ventas" element={<RutaProtegida><Ventas /></RutaProtegida>} />
         <Route path="/proveedores" element={<RutaProtegida><Proveedores /></RutaProtegida>} />
-         <Route path="/arqueos" element={<RutaProtegida><Arqueos /></RutaProtegida>} />
-          <Route path="/reportesmensuales" element={<RutaProtegida><ReportesMensuales /></RutaProtegida>} />
+        <Route path="/arqueos" element={<RutaProtegida><Arqueos /></RutaProtegida>} />
+        <Route path="/reportesmensuales" element={<RutaProtegida><ReportesMensuales /></RutaProtegida>} />
 
         {/* ===== RUTAS SOLO ADMIN ===== */}
         <Route
@@ -79,6 +79,9 @@ function App() {
         {/* ===== CUALQUIER OTRA RUTA → INICIO ===== */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+      {/* ✅ CHATBOT FLOTANTE - Disponible en toda la app */}
+      <Chatbot />
     </BrowserRouter>
   );
 }
