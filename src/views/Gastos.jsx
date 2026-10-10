@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../database/supabase';
 import Encabezado from '../components/Encabezado';
-import TablaGastos from '../components/gastos/Tablagastos';
-import ModalAgregarGasto from '../components/gastos/ModalAgregargastos';
-import ModalEditarGasto from '../components/gastos/ModalEditargastos';
-import ModalEliminarGasto from '../components/gastos/ModalEliminargastos';
+import TablaGastos from '../components/gastos/TablaGastos';
+import ModalAgregarGasto from '../components/gastos/ModalAgregarGastos';
+import ModalEditarGasto from '../components/gastos/ModalEditarGastos';
+import ModalEliminarGasto from '../components/gastos/ModalEliminarGastos';
 import { agregarOperacion, sincronizarOperaciones, obtenerOperacionesPendientes } from '../services/OfflineService';
 import './Gastos.css';
 
