@@ -428,14 +428,14 @@ function Gastos() {
         />
       </div>
 
-      <ModalAgregarGasto
+      <ModalAgregarGastos
         isOpen={modalAgregar}
         onClose={cerrarModales}
         onSave={crearGasto}
         loading={loading}
       />
 
-      <ModalEditarGasto
+      <ModalEditarGastos
         isOpen={modalEditar}
         onClose={cerrarModales}
         onSave={actualizarGasto}
@@ -443,7 +443,7 @@ function Gastos() {
         loading={loading}
       />
 
-      <ModalEliminarGasto
+      <ModalEliminarGastos
         isOpen={modalEliminar}
         onClose={cerrarModales}
         onConfirm={eliminarGasto}
