@@ -15,7 +15,7 @@ const TablaGastos = ({ gastos, loading, onEditar, onEliminar }) => {
     return (
       <div className="tabla-vacia">
         <i className="fas fa-inbox"></i>
-        <p>No hay gastos registrados</p>
+        <p>No hay gastos registrados en este momento</p>
         <span>Haz clic en "Agregar" para crear un nuevo gasto</span>
       </div>
     );
