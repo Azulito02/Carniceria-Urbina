@@ -130,7 +130,7 @@ const PREFIJOS = {
 const RESPUESTAS_VARIADAS = {
   SALUDO: [
     '¡Pío pío! 🐥 ¿En qué te ayudo hoy?',
-    '¡Hola humano! 👋 ¿Qué necesita mi carnicería favorita?',
+    '¡Hola humano o vendedor! 👋 ¿Qué necesita mi carnicería favorita?',
     '¡Pío pío! 🐣 ¿Qué averiguamos hoy?',
     '¡Hey! 🐥 Aquí ando listo para lo que sea.'
   ],
