@@ -38,7 +38,7 @@ const ModalEditarGastos = ({ isOpen, onClose, onSave, gasto, loading }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>Editar Gasto</h3>
+          <h3>Editar Gastos</h3>
           <button className="modal-close" onClick={onClose}>
             <i className="fas fa-times"></i>
           </button>
