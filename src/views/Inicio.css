@@ -1,10 +1,8 @@
-/* Inicio.css - Con colores de marca */
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* ==========================================
+   CARNICERÍA URBINA - INICIO
+   Diseño responsive para usuario y admin
+========================================== */
 
 .inicio-container {
   min-height: 100vh;
@@ -15,64 +13,138 @@
 
 .inicio-content {
   flex: 1;
-  padding: 16px 20px 80px;
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  width: 100%;
+  padding: 20px 24px 80px;
+  min-width: 0;
+}
+
+/* ===== ENCABEZADO DEL CONTENIDO ===== */
+
+.inicio-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.status-indicator.online {
+  color: #26763a;
+}
+
+.status-indicator.offline {
+  color: #b42318;
+}
+
+.btn-sincronizar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 16px;
+  background: #8B1E1E;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-sincronizar:hover:not(:disabled) {
+  background: #6b1515;
+}
+
+.btn-sincronizar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ===== BIENVENIDA ===== */
+
 .welcome-section {
   background: linear-gradient(135deg, #8B1E1E, #6b1515);
   color: white;
-  padding: 20px 24px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 15px rgba(139, 30, 30, 0.25);
+  padding: 24px 28px;
+  border-radius: 14px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 15px rgba(139, 30, 30, 0.2);
 }
 
 .welcome-text h2 {
-  font-size: 22px;
-  font-weight: 600;
-  margin: 0 0 4px 0;
+  font-size: 25px;
+  font-weight: 700;
+  margin: 0 0 5px;
 }
 
 .welcome-text p {
-  font-size: 16px;
-  font-weight: 500;
-  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0 0 5px;
   color: #FBAC3E;
 }
 
 .welcome-text span {
-  font-size: 13px;
-  opacity: 0.8;
+  display: block;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* ===== MÓDULOS ===== */
+
 .modulos-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .modulo-card {
-  background: white;
-  border-radius: 12px;
-  padding: 14px 16px;
+  background: #ffffff;
+  border: 1px solid #f0e8e6;
+  border-left: 4px solid #8B1E1E;
+  border-radius: 13px;
+  padding: 18px;
+  min-height: 100px;
+  min-width: 0;
+
   display: flex;
   align-items: center;
   gap: 14px;
+
   cursor: pointer;
-  transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border-left: 4px solid #8B1E1E;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .modulo-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 
 .modulo-card:active {
@@ -80,315 +152,337 @@
 }
 
 .modulo-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   color: white;
-  font-size: 18px;
+  font-size: 23px;
   flex-shrink: 0;
 }
 
 .modulo-info {
   flex: 1;
+  min-width: 0;
 }
 
 .modulo-info h3 {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
   color: #2c3e50;
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .modulo-info span {
-  font-size: 11px;
-  color: #B1B3B6;
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: #666666;
 }
 
 .modulo-arrow {
-  color: #D8A9A0;
-  font-size: 14px;
+  font-size: 15px;
+  color: #b78a83;
+  flex-shrink: 0;
 }
 
-/* ===== RESUMEN ===== */
+/* ===== RESUMEN GENERAL ===== */
+
 .resumen-section {
   background: white;
-  border-radius: 12px;
-  padding: 16px 20px;
+  border-radius: 14px;
+  padding: 20px 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .resumen-section h3 {
-  font-size: 16px;
+  font-size: 19px;
+  font-weight: 700;
   color: #8B1E1E;
-  margin: 0 0 16px 0;
-  font-weight: 600;
+  margin: 0 0 18px;
 }
 
 .resumen-cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .resumen-card {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 16px;
+  min-width: 0;
+  min-height: 84px;
+
   background: #faf7f6;
-  border-radius: 10px;
+  border: 1px solid #f3eae8;
   border-left: 3px solid #8B1E1E;
+  border-radius: 11px;
 }
 
 .resumen-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 46px;
+  height: 46px;
+  border-radius: 11px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   color: white;
-  font-size: 17px;
+  font-size: 19px;
   flex-shrink: 0;
 }
 
 .resumen-info {
   display: flex;
   flex-direction: column;
+  gap: 5px;
+  min-width: 0;
 }
 
 .resumen-label {
-  font-size: 11px;
-  color: #B1B3B6;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555555;
 }
 
 .resumen-valor {
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 700;
   color: #2c3e50;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
 }
 
-/* ===== NAVEGACIÓN INFERIOR ===== */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: white;
-  display: flex;
-  justify-content: space-around;
-  padding: 8px 0 14px 0;
-  border-top: 2px solid #f0e8e6;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
-  z-index: 1000;
-}
+/* ===== TARJETAS CLICABLES ===== */
 
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  background: none;
-  border: none;
-  color: #B1B3B6;
-  font-size: 10px;
+.resumen-card-click {
   cursor: pointer;
-  padding: 4px 16px;
-  transition: all 0.3s ease;
-  position: relative;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
-.nav-item i {
-  font-size: 20px;
-  transition: all 0.3s ease;
-}
-
-.nav-item:hover {
-  color: #8B1E1E;
-}
-
-.nav-item:hover i {
+.resumen-card-click:hover {
+  background: #fff8f0;
   transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(139, 30, 30, 0.12);
 }
 
-.nav-item.active {
-  color: #8B1E1E;
+.resumen-card-click:active {
+  transform: scale(0.98);
 }
 
-.nav-item.active::after {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 28px;
-  height: 3px;
-  background: #8B1E1E;
-  border-radius: 0 0 3px 3px;
+/* ===== ACCESIBILIDAD ===== */
+
+.modulo-card:focus-visible,
+.resumen-card-click:focus-visible,
+.btn-sincronizar:focus-visible {
+  outline: 3px solid #FBAC3E;
+  outline-offset: 3px;
 }
 
-.nav-item.active i {
-  color: #FBAC3E;
-}
+/* ===== TABLETS ===== */
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .inicio-content {
-    padding: 12px 14px 75px;
-  }
-
-  .welcome-text h2 {
-    font-size: 18px;
-  }
-
-  .welcome-text p {
-    font-size: 14px;
+    padding: 16px 18px 75px;
   }
 
   .modulos-grid {
-    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
   }
 
   .modulo-card {
-    padding: 12px 14px;
+    padding: 16px;
+    min-height: 96px;
   }
 
   .modulo-icon {
-    width: 36px;
-    height: 36px;
-    font-size: 16px;
-  }
-
-  .modulo-info h3 {
-    font-size: 13px;
+    width: 48px;
+    height: 48px;
+    font-size: 21px;
   }
 
   .resumen-cards {
     grid-template-columns: 1fr;
-  }
-
-  .resumen-card {
-    padding: 10px 14px;
-  }
-
-  .resumen-valor {
-    font-size: 16px;
-  }
-
-  .bottom-nav {
-    padding: 6px 0 12px 0;
-  }
-
-  .nav-item {
-    font-size: 9px;
-    padding: 2px 10px;
-  }
-
-  .nav-item i {
-    font-size: 18px;
+    gap: 12px;
   }
 }
 
-@media (max-width: 480px) {
+/* ===== CELULARES ===== */
+
+@media (max-width: 600px) {
   .inicio-content {
-    padding: 10px 10px 70px;
+    padding: 12px 12px 75px;
   }
 
-  .welcome-section {
-    padding: 16px 18px;
+  .inicio-header {
+    margin-bottom: 12px;
   }
 
-  .welcome-text h2 {
-    font-size: 16px;
-  }
-
-  .welcome-text p {
-    font-size: 13px;
-  }
-
-  .welcome-text span {
-    font-size: 11px;
-  }
-
-  .modulos-grid {
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
     gap: 8px;
   }
 
+  .status-indicator {
+    font-size: 12px;
+  }
+
+  .btn-sincronizar {
+    font-size: 12px;
+    padding: 9px 12px;
+  }
+
+  .welcome-section {
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+  }
+
+  .welcome-text h2 {
+    font-size: 21px;
+  }
+
+  .welcome-text p {
+    font-size: 16px;
+  }
+
+  .welcome-text span {
+    font-size: 13px;
+  }
+
+  .modulos-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
   .modulo-card {
-    padding: 10px 12px;
+    min-height: 130px;
+    padding: 14px 10px;
+
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
     gap: 10px;
+
+    border-left: 3px solid #8B1E1E;
   }
 
   .modulo-icon {
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
-    border-radius: 8px;
+    width: 50px;
+    height: 50px;
+    font-size: 23px;
+    border-radius: 12px;
+  }
+
+  .modulo-info {
+    flex: initial;
+    width: 100%;
   }
 
   .modulo-info h3 {
-    font-size: 12px;
+    font-size: 15px;
+    line-height: 1.3;
   }
 
   .modulo-info span {
-    font-size: 10px;
+    font-size: 12px;
+    margin-top: 4px;
   }
 
   .modulo-arrow {
-    font-size: 12px;
+    display: none;
   }
 
   .resumen-section {
-    padding: 12px 14px;
+    padding: 16px;
   }
 
   .resumen-section h3 {
-    font-size: 14px;
+    font-size: 17px;
+    margin-bottom: 14px;
   }
 
-  .resumen-card {
-    padding: 8px 12px;
+  .resumen-cards {
+    grid-template-columns: 1fr;
     gap: 10px;
   }
 
+  .resumen-card {
+    padding: 12px;
+    min-height: 72px;
+  }
+
   .resumen-icon {
-    width: 34px;
-    height: 34px;
-    font-size: 15px;
+    width: 44px;
+    height: 44px;
+    font-size: 19px;
   }
 
   .resumen-label {
-    font-size: 10px;
+    font-size: 13px;
   }
 
   .resumen-valor {
-    font-size: 15px;
+    font-size: 17px;
+  }
+}
+
+/* ===== CELULARES MUY PEQUEÑOS ===== */
+
+@media (max-width: 360px) {
+  .modulos-grid {
+    gap: 9px;
   }
 
-  .bottom-nav {
-    padding: 4px 0 10px 0;
+  .modulo-card {
+    padding: 12px 6px;
+    min-height: 120px;
   }
 
-  .nav-item {
-    font-size: 8px;
-    padding: 2px 8px;
+  .modulo-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 20px;
   }
 
-  .nav-item i {
-    font-size: 16px;
+  .modulo-info h3 {
+    font-size: 14px;
+  }
+
+  .modulo-info span {
+    font-size: 12px;
+  }
+
+  .welcome-text h2 {
+    font-size: 19px;
   }
 }
 
 /* ===== ANIMACIONES ===== */
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -396,7 +490,7 @@
 }
 
 .modulo-card {
-  animation: fadeInUp 0.4s ease forwards;
+  animation: fadeInUp 0.35s ease both;
 }
 
 .modulo-card:nth-child(1) { animation-delay: 0.05s; }
@@ -411,31 +505,18 @@
 .modulo-card:nth-child(10) { animation-delay: 0.50s; }
 
 .resumen-card {
-  animation: fadeInUp 0.4s ease forwards;
-  animation-delay: 0.3s;
-  opacity: 0;
-}
-/* ===== Pegar al final de Inicio.css ===== */
-
-/* Las tarjetas de resumen ahora son clicables */
-.resumen-card-click {
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  animation: fadeInUp 0.35s ease both;
 }
 
-.resumen-card-click:hover {
-  background: #fff8f0;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(139, 30, 30, 0.12);
-}
+/* Respetar usuarios que prefieren menos animación */
+@media (prefers-reduced-motion: reduce) {
+  .modulo-card,
+  .resumen-card {
+    animation: none;
+  }
 
-.resumen-card-click:active {
-  transform: scale(0.98);
-}
-
-/* Foco visible al navegar con teclado */
-.modulo-card:focus-visible,
-.resumen-card-click:focus-visible {
-  outline: 3px solid rgba(251, 172, 62, 0.7);
-  outline-offset: 2px;
+  .modulo-card,
+  .resumen-card-click {
+    transition: none;
+  }
 }
