@@ -1,5 +1,7 @@
+
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
 import Inicio from './views/Inicio';
 import Productos from './views/Productos';
 import Inventario from './views/Inventario';
@@ -13,44 +15,128 @@ import Login from './views/Login';
 import Proveedores from './views/Proveedores';
 import Arqueos from './views/Arqueos';
 import ReportesMensuales from './views/ReportesMensuales';
+
 import RutaProtegida from './components/RutaProtegida';
-import Chatbot from './components/Chatbot/Chatbot'; // ✅ NUEVO IMPORT
-import { iniciarEscuchaOffline, sincronizarOperaciones } from './services/OfflineService';
+import Chatbot from './components/Chatbot/Chatbot';
+
+import {
+  iniciarEscuchaOffline,
+  sincronizarOperaciones
+} from './services/OfflineService';
+
 import './App.css';
 
 function App() {
   useEffect(() => {
     const cleanup = iniciarEscuchaOffline();
 
+    let temporizador;
+
     if (navigator.onLine) {
-      setTimeout(() => {
-        sincronizarOperaciones().then(() => {
-          console.log('✅ Sincronización inicial completada');
-        });
+      temporizador = setTimeout(() => {
+        sincronizarOperaciones()
+          .then(() => {
+            console.log('✅ Sincronización inicial completada');
+          })
+          .catch((error) => {
+            console.error('Error de sincronización:', error);
+          });
       }, 3000);
     }
 
-    return cleanup;
+    return () => {
+      clearTimeout(temporizador);
+
+      if (typeof cleanup === 'function') {
+        cleanup();
+      }
+    };
   }, []);
 
   return (
     <BrowserRouter>
       <Routes>
+
         {/* ===== RUTA PÚBLICA ===== */}
+
         <Route path="/login" element={<Login />} />
 
-        {/* ===== RUTAS PARA TODOS (admin y usuario) ===== */}
-        <Route path="/" element={<RutaProtegida><Inicio /></RutaProtegida>} />
-        <Route path="/productos" element={<RutaProtegida><Productos /></RutaProtegida>} />
-        <Route path="/clientes" element={<RutaProtegida><Clientes /></RutaProtegida>} />
-        <Route path="/creditos" element={<RutaProtegida><Creditos /></RutaProtegida>} />
-        <Route path="/abonos" element={<RutaProtegida><Abonos /></RutaProtegida>} />
-        <Route path="/ventas" element={<RutaProtegida><Ventas /></RutaProtegida>} />
-        <Route path="/proveedores" element={<RutaProtegida><Proveedores /></RutaProtegida>} />
-        <Route path="/arqueos" element={<RutaProtegida><Arqueos /></RutaProtegida>} />
-        <Route path="/reportesmensuales" element={<RutaProtegida><ReportesMensuales /></RutaProtegida>} />
+        {/* ===== RUTAS PARA TODOS ===== */}
+
+        <Route
+          path="/"
+          element={
+            <RutaProtegida>
+              <Inicio />
+            </RutaProtegida>
+          }
+        />
+
+        <Route
+          path="/productos"
+          element={
+            <RutaProtegida>
+              <Productos />
+            </RutaProtegida>
+          }
+        />
+
+        <Route
+          path="/clientes"
+          element={
+            <RutaProtegida>
+              <Clientes />
+            </RutaProtegida>
+          }
+        />
+
+        <Route
+          path="/creditos"
+          element={
+            <RutaProtegida>
+              <Creditos />
+            </RutaProtegida>
+          }
+        />
+
+        <Route
+          path="/abonos"
+          element={
+            <RutaProtegida>
+              <Abonos />
+            </RutaProtegida>
+          }
+        />
+
+        <Route
+          path="/ventas"
+          element={
+            <RutaProtegida>
+              <Ventas />
+            </RutaProtegida>
+          }
+        />
+
+        <Route
+          path="/proveedores"
+          element={
+            <RutaProtegida>
+              <Proveedores />
+            </RutaProtegida>
+          }
+        />
+
+        <Route
+          path="/arqueos"
+          element={
+            <RutaProtegida>
+              <Arqueos />
+            </RutaProtegida>
+          }
+        />
 
         {/* ===== RUTAS SOLO ADMIN ===== */}
+
         <Route
           path="/inventario"
           element={
@@ -59,6 +145,7 @@ function App() {
             </RutaProtegida>
           }
         />
+
         <Route
           path="/inversiones"
           element={
@@ -67,6 +154,7 @@ function App() {
             </RutaProtegida>
           }
         />
+
         <Route
           path="/gastos"
           element={
@@ -76,12 +164,29 @@ function App() {
           }
         />
 
-        {/* ===== CUALQUIER OTRA RUTA → INICIO ===== */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* REPORTES EXCLUSIVOS DEL ADMIN */}
+
+        <Route
+          path="/reportesmensuales"
+          element={
+            <RutaProtegida rolesPermitidos={['admin']}>
+              <ReportesMensuales />
+            </RutaProtegida>
+          }
+        />
+
+        {/* ===== RUTA NO ENCONTRADA ===== */}
+
+        <Route
+          path="*"
+          element={<Navigate to="/" replace />}
+        />
+
       </Routes>
 
-      {/* ✅ CHATBOT FLOTANTE - Disponible en toda la app */}
+      {/* CHATBOT FLOTANTE */}
       <Chatbot />
+
     </BrowserRouter>
   );
 }
