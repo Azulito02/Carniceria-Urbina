@@ -6,7 +6,7 @@ const TablaGastos = ({ gastos, loading, onEditar, onEliminar }) => {
     return (
       <div className="tabla-loading">
         <div className="spinner"></div>
-        <p>Cargando gastos...</p>
+        <p>Cargando gastos.....</p>
       </div>
     );
   }
