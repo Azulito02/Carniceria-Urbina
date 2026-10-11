@@ -1,6 +1,12 @@
 
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation
+} from 'react-router-dom';
 
 import Inicio from './views/Inicio';
 import Productos from './views/Productos';
@@ -19,6 +25,8 @@ import ReportesMensuales from './views/ReportesMensuales';
 import RutaProtegida from './components/RutaProtegida';
 import Chatbot from './components/Chatbot/Chatbot';
 
+import { useAuth } from './context/AuthContext';
+
 import {
   iniciarEscuchaOffline,
   sincronizarOperaciones
@@ -26,40 +34,33 @@ import {
 
 import './App.css';
 
-function App() {
-  useEffect(() => {
-    const cleanup = iniciarEscuchaOffline();
+/* ===== CHATBOT SOLO PARA USUARIOS AUTENTICADOS ===== */
 
-    let temporizador;
+function ChatbotProtegido() {
+  const { user, loading } = useAuth();
+  const location = useLocation();
 
-    if (navigator.onLine) {
-      temporizador = setTimeout(() => {
-        sincronizarOperaciones()
-          .then(() => {
-            console.log('✅ Sincronización inicial completada');
-          })
-          .catch((error) => {
-            console.error('Error de sincronización:', error);
-          });
-      }, 3000);
-    }
+  // No mostrar IA en el login ni sin sesión iniciada
+  if (loading || !user || location.pathname === '/login') {
+    return null;
+  }
 
-    return () => {
-      clearTimeout(temporizador);
+  return <Chatbot />;
+}
 
-      if (typeof cleanup === 'function') {
-        cleanup();
-      }
-    };
-  }, []);
+/* ===== CONTENIDO PRINCIPAL ===== */
 
+function ContenidoApp() {
   return (
-    <BrowserRouter>
+    <>
       <Routes>
 
         {/* ===== RUTA PÚBLICA ===== */}
 
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/login"
+          element={<Login />}
+        />
 
         {/* ===== RUTAS PARA TODOS ===== */}
 
@@ -164,8 +165,6 @@ function App() {
           }
         />
 
-        {/* REPORTES EXCLUSIVOS DEL ADMIN */}
-
         <Route
           path="/reportesmensuales"
           element={
@@ -184,9 +183,44 @@ function App() {
 
       </Routes>
 
-      {/* CHATBOT FLOTANTE */}
-      <Chatbot />
+      {/* IA visible únicamente con sesión activa */}
+      <ChatbotProtegido />
+    </>
+  );
+}
 
+/* ===== APLICACIÓN ===== */
+
+function App() {
+  useEffect(() => {
+    const cleanup = iniciarEscuchaOffline();
+
+    let temporizador;
+
+    if (navigator.onLine) {
+      temporizador = setTimeout(() => {
+        sincronizarOperaciones()
+          .then(() => {
+            console.log('✅ Sincronización inicial completada');
+          })
+          .catch((error) => {
+            console.error('Error de sincronización:', error);
+          });
+      }, 3000);
+    }
+
+    return () => {
+      clearTimeout(temporizador);
+
+      if (typeof cleanup === 'function') {
+        cleanup();
+      }
+    };
+  }, []);
+
+  return (
+    <BrowserRouter>
+      <ContenidoApp />
     </BrowserRouter>
   );
 }
