@@ -1,24 +1,34 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../database/supabase';
 import Encabezado from '../components/Encabezado';
 import TablaGastos from '../components/gastos/TablaGastos';
-import ModalAgregarGasto from '../components/gastos/ModalAgregarGastos';
-import ModalEditarGasto from '../components/gastos/ModalEditarGastos';
-import ModalEliminarGasto from '../components/gastos/ModalEliminarGastos';
-import { agregarOperacion, sincronizarOperaciones, obtenerOperacionesPendientes } from '../services/OfflineService';
+
+import ModalAgregarGastos from '../components/gastos/ModalAgregarGastos';
+import ModalEditarGastos from '../components/gastos/ModalEditarGastos';
+import ModalEliminarGastos from '../components/gastos/ModalEliminarGastos';
+
+import {
+  agregarOperacion,
+  sincronizarOperaciones,
+  obtenerOperacionesPendientes
+} from '../services/OfflineService';
+
 import './Gastos.css';
 
 function Gastos() {
   const navigate = useNavigate();
 
   // ===== ESTADO PRINCIPAL =====
+
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [syncError, setSyncError] = useState(null);
   const [conectado, setConectado] = useState(navigator.onLine);
 
   // ===== ESTADOS LOCALES =====
+
   const [gastosFiltrados, setGastosFiltrados] = useState([]);
   const [modalAgregar, setModalAgregar] = useState(false);
   const [modalEditar, setModalEditar] = useState(false);
@@ -30,8 +40,10 @@ function Gastos() {
   const [busqueda, setBusqueda] = useState('');
 
   // ===== FUNCIÓN PARA CARGAR GASTOS =====
+
   const cargarGastos = async () => {
     setLoading(true);
+
     try {
       const { data, error } = await supabase
         .from('gastos')
@@ -39,6 +51,7 @@ function Gastos() {
         .order('descripcion', { ascending: true });
 
       if (error) throw error;
+
       console.log('📦 Gastos cargados:', data);
       setGastos(data || []);
       setSyncError(null);
@@ -51,13 +64,16 @@ function Gastos() {
   };
 
   // ===== CARGAR DATOS AL INICIO =====
+
   useEffect(() => {
     cargarGastos();
 
     const handleOnline = () => setConectado(true);
     const handleOffline = () => setConectado(false);
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -65,29 +81,37 @@ function Gastos() {
   }, []);
 
   // ===== CONTAR OPERACIONES PENDIENTES =====
+
   useEffect(() => {
     const contar = () => {
       const ops = obtenerOperacionesPendientes();
       setOperacionesPendientes(ops.length);
     };
+
     contar();
+
     const interval = setInterval(contar, 5000);
+
     return () => clearInterval(interval);
   }, []);
 
   // ===== FILTRAR GASTOS =====
+
   useEffect(() => {
     filtrarGastos();
   }, [busqueda, gastos]);
 
   const filtrarGastos = () => {
     let filtrados = [...gastos];
+
     if (busqueda.trim() !== '') {
       const lower = busqueda.toLowerCase().trim();
+
       filtrados = filtrados.filter(g =>
         g.descripcion?.toLowerCase().includes(lower)
       );
     }
+
     setGastosFiltrados(filtrados);
   };
 
@@ -96,12 +120,14 @@ function Gastos() {
   };
 
   // ===== CREAR GASTO =====
+
   const crearGasto = async (formData) => {
     try {
       if (!formData.descripcion?.trim()) {
         setError('La descripción es obligatoria');
         return false;
       }
+
       if (!formData.monto || parseFloat(formData.monto) === 0) {
         setError('El monto es obligatorio y no puede ser cero');
         return false;
@@ -131,22 +157,28 @@ function Gastos() {
           setTimeout(() => setExito(null), 3000);
           return true;
         }
+
         return false;
       }
 
       const idLocal = `local_${Date.now()}`;
+
       agregarOperacion({
         tipo: 'INSERT',
         tabla: 'gastos',
         datos: nuevoGasto
       });
 
-      setGastos(prev => [...prev, { ...nuevoGasto, id: idLocal, _local: true }]);
+      setGastos(prev => [
+        ...prev,
+        { ...nuevoGasto, id: idLocal, _local: true }
+      ]);
+
       setModalAgregar(false);
       setExito('📝 Guardado localmente. Se sincronizará con internet.');
       setTimeout(() => setExito(null), 4000);
-      return true;
 
+      return true;
     } catch (err) {
       console.error('Error:', err);
       setError('Error inesperado');
@@ -155,12 +187,14 @@ function Gastos() {
   };
 
   // ===== ACTUALIZAR GASTO =====
+
   const actualizarGasto = async (id, formData) => {
     try {
       if (!id || !formData.descripcion?.trim()) {
         setError('Datos inválidos');
         return false;
       }
+
       if (!formData.monto || parseFloat(formData.monto) === 0) {
         setError('El monto es obligatorio y no puede ser cero');
         return false;
@@ -172,13 +206,17 @@ function Gastos() {
       };
 
       if (typeof id === 'string' && id.startsWith('local_')) {
-        setGastos(prev => prev.map(g =>
-          g.id === id ? { ...g, ...datos } : g
-        ));
+        setGastos(prev =>
+          prev.map(g =>
+            g.id === id ? { ...g, ...datos } : g
+          )
+        );
+
         setModalEditar(false);
         setGastoSeleccionado(null);
         setExito('📝 Actualizado localmente');
         setTimeout(() => setExito(null), 3000);
+
         return true;
       }
 
@@ -200,8 +238,10 @@ function Gastos() {
           setGastoSeleccionado(null);
           setExito('✅ Gasto actualizado');
           setTimeout(() => setExito(null), 3000);
+
           return true;
         }
+
         return false;
       }
 
@@ -211,13 +251,19 @@ function Gastos() {
         datos: datos,
         id_registro: id
       });
-      setGastos(prev => prev.map(g => g.id === id ? { ...g, ...datos } : g));
+
+      setGastos(prev =>
+        prev.map(g =>
+          g.id === id ? { ...g, ...datos } : g
+        )
+      );
+
       setModalEditar(false);
       setGastoSeleccionado(null);
       setExito('📝 Actualizado localmente');
       setTimeout(() => setExito(null), 3000);
-      return true;
 
+      return true;
     } catch (err) {
       console.error('Error:', err);
       setError('Error: ' + err.message);
@@ -226,6 +272,7 @@ function Gastos() {
   };
 
   // ===== ELIMINAR GASTO =====
+
   const eliminarGasto = async (id) => {
     try {
       if (typeof id === 'string' && id.startsWith('local_')) {
@@ -234,6 +281,7 @@ function Gastos() {
         setGastoSeleccionado(null);
         setExito('🗑️ Eliminado localmente');
         setTimeout(() => setExito(null), 3000);
+
         return true;
       }
 
@@ -253,6 +301,7 @@ function Gastos() {
         setGastoSeleccionado(null);
         setExito('🗑️ Gasto eliminado');
         setTimeout(() => setExito(null), 3000);
+
         return true;
       }
 
@@ -261,13 +310,14 @@ function Gastos() {
         tabla: 'gastos',
         id_registro: id
       });
+
       setGastos(prev => prev.filter(g => g.id !== id));
       setModalEliminar(false);
       setGastoSeleccionado(null);
       setExito('📝 Eliminado localmente');
       setTimeout(() => setExito(null), 3000);
-      return true;
 
+      return true;
     } catch (err) {
       console.error('Error:', err);
       setError('Error inesperado');
@@ -276,6 +326,7 @@ function Gastos() {
   };
 
   // ===== SINCRONIZAR MANUAL =====
+
   const sincronizarManual = async () => {
     if (!conectado) {
       setError('Sin internet');
@@ -284,13 +335,19 @@ function Gastos() {
 
     try {
       setExito('🔄 Sincronizando...');
+
       await sincronizarOperaciones();
       await cargarGastos();
 
       const ops = obtenerOperacionesPendientes();
       setOperacionesPendientes(ops.length);
 
-      setExito(ops.length === 0 ? '✅ Sincronizado' : `⏳ ${ops.length} pendientes`);
+      setExito(
+        ops.length === 0
+          ? '✅ Sincronizado'
+          : `⏳ ${ops.length} pendientes`
+      );
+
       setTimeout(() => setExito(null), 3000);
     } catch (err) {
       setError('Error: ' + err.message);
@@ -298,6 +355,7 @@ function Gastos() {
   };
 
   // ===== ABRIR MODALES =====
+
   const abrirAgregar = () => {
     setModalAgregar(true);
     setError(null);
@@ -308,6 +366,7 @@ function Gastos() {
       setError('Gasto no válido');
       return;
     }
+
     setGastoSeleccionado(gasto);
     setModalEditar(true);
     setError(null);
@@ -329,11 +388,13 @@ function Gastos() {
 
   const totalGastos = gastosFiltrados.length;
 
-  // ===== RENDER =====
+  // ===== PANTALLA DE CARGA =====
+
   if (loading) {
     return (
       <div className="gastos-container">
         <Encabezado />
+
         <div className="gastos-content">
           <div className="loading-spinner">
             <i className="fas fa-spinner fa-spin"></i>
@@ -343,6 +404,8 @@ function Gastos() {
       </div>
     );
   }
+
+  // ===== PANTALLA PRINCIPAL =====
 
   return (
     <div className="gastos-container">
@@ -354,21 +417,46 @@ function Gastos() {
             <h1>💰 Gastos</h1>
             <p>Registro de gastos de la carnicería</p>
           </div>
+
           <div className="header-actions">
-            <span className={`status-indicator ${conectado ? 'online' : 'offline'}`}>
-              <i className={`fas ${conectado ? 'fa-wifi' : 'fa-wifi-slash'}`}></i>
+            <span
+              className={`status-indicator ${
+                conectado ? 'online' : 'offline'
+              }`}
+            >
+              <i
+                className={`fas ${
+                  conectado ? 'fa-wifi' : 'fa-wifi-slash'
+                }`}
+              ></i>
               {conectado ? ' En línea' : ' Sin conexión'}
             </span>
+
             {operacionesPendientes > 0 && (
               <span className="pendientes-indicator">
-                <i className="fas fa-clock"></i> {operacionesPendientes} pendientes
+                <i className="fas fa-clock"></i>
+                {' '}
+                {operacionesPendientes} pendientes
               </span>
             )}
-            <button className="btn-sincronizar" onClick={sincronizarManual} disabled={!conectado}>
-              <i className="fas fa-sync"></i> Sincronizar
+
+            <button
+              className="btn-sincronizar"
+              onClick={sincronizarManual}
+              disabled={!conectado}
+            >
+              <i className="fas fa-sync"></i>
+              {' '}
+              Sincronizar
             </button>
-            <button className="btn-agregar" onClick={abrirAgregar}>
-              <i className="fas fa-plus"></i> Agregar
+
+            <button
+              className="btn-agregar"
+              onClick={abrirAgregar}
+            >
+              <i className="fas fa-plus"></i>
+              {' '}
+              Agregar
             </button>
           </div>
         </div>
@@ -377,7 +465,11 @@ function Gastos() {
           <div className="gastos-error">
             <i className="fas fa-exclamation-circle"></i>
             <span>{syncError || error}</span>
-            <button onClick={() => setError(null)} className="error-close">
+
+            <button
+              onClick={() => setError(null)}
+              className="error-close"
+            >
               <i className="fas fa-times"></i>
             </button>
           </div>
@@ -387,7 +479,11 @@ function Gastos() {
           <div className="gastos-exito">
             <i className="fas fa-check-circle"></i>
             <span>{exito}</span>
-            <button onClick={() => setExito(null)} className="exito-close">
+
+            <button
+              onClick={() => setExito(null)}
+              className="exito-close"
+            >
               <i className="fas fa-times"></i>
             </button>
           </div>
@@ -397,6 +493,7 @@ function Gastos() {
           <div className="buscador-fila">
             <div className="buscador-campo">
               <i className="fas fa-search"></i>
+
               <input
                 type="text"
                 placeholder="Buscar por descripción..."
@@ -405,16 +502,25 @@ function Gastos() {
                 className="buscador-input"
               />
             </div>
+
             {busqueda && (
-              <button className="btn-limpiar-busqueda" onClick={limpiarFiltros}>
-                <i className="fas fa-times-circle"></i> Limpiar
+              <button
+                className="btn-limpiar-busqueda"
+                onClick={limpiarFiltros}
+              >
+                <i className="fas fa-times-circle"></i>
+                {' '}
+                Limpiar
               </button>
             )}
           </div>
+
           <div className="buscador-resultados">
             <span>
-              <strong>{totalGastos}</strong> gastos
-              {gastos.length !== gastosFiltrados.length && 
+              <strong>{totalGastos}</strong>
+              {' '}
+              gastos
+              {gastos.length !== gastosFiltrados.length &&
                 ` (de ${gastos.length})`}
             </span>
           </div>
@@ -427,6 +533,8 @@ function Gastos() {
           onEliminar={abrirEliminar}
         />
       </div>
+
+      {/* ===== MODALES ===== */}
 
       <ModalAgregarGastos
         isOpen={modalAgregar}
@@ -451,24 +559,45 @@ function Gastos() {
         loading={loading}
       />
 
+      {/* ===== NAVEGACIÓN ===== */}
+
       <div className="bottom-nav">
-        <button className="nav-item" onClick={() => navigate('/')}>
+        <button
+          className="nav-item"
+          onClick={() => navigate('/')}
+        >
           <i className="fas fa-home"></i>
           <span>Inicio</span>
         </button>
-        <button className="nav-item" onClick={() => navigate('/productos')}>
+
+        <button
+          className="nav-item"
+          onClick={() => navigate('/productos')}
+        >
           <i className="fas fa-box"></i>
           <span>Productos</span>
         </button>
-        <button className="nav-item" onClick={() => navigate('/clientes')}>
+
+        <button
+          className="nav-item"
+          onClick={() => navigate('/clientes')}
+        >
           <i className="fas fa-users"></i>
           <span>Clientes</span>
         </button>
-        <button className="nav-item active" onClick={() => navigate('/gastos')}>
+
+        <button
+          className="nav-item active"
+          onClick={() => navigate('/gastos')}
+        >
           <i className="fas fa-money-bill-wave"></i>
           <span>Gastos</span>
         </button>
-        <button className="nav-item" onClick={() => navigate('/ventas')}>
+
+        <button
+          className="nav-item"
+          onClick={() => navigate('/ventas')}
+        >
           <i className="fas fa-cash-register"></i>
           <span>Ventas</span>
         </button>

@@ -1,133 +1,441 @@
-.modal-overlay {
+
+/* ============================================
+   CARNICERÍA URBINA
+   MODAL ELIMINAR GASTO
+   DISEÑO UNIFICADO Y RESPONSIVE
+============================================ */
+
+/* ===== FONDO DE LA VENTANA ===== */
+
+.gastos-container .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  z-index: 10000;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease;
+
+  width: 100%;
+  min-height: 100dvh;
+  padding: 16px;
+
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(3px);
+
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
-.modal-content {
-  background-color: white;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  animation: slideDown 0.3s ease;
+.gastos-container .modal-overlay,
+.gastos-container .modal-overlay * {
+  box-sizing: border-box;
 }
 
-.modal-header {
+/* ===== CONTENEDOR PRINCIPAL ===== */
+
+.gastos-container .modal-overlay > .modal-content {
+  width: 100%;
+  max-width: 480px;
+  min-width: 0;
+  max-height: calc(100dvh - 32px);
+
+  margin: auto;
+  padding: 0;
+
+  background: #ffffff;
+  border: 1px solid #e9ddda;
+  border-radius: 16px;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.22);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===== ENCABEZADO ===== */
+
+.gastos-container .modal-overlay .modal-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
-  border-bottom: 1px solid #e9ecef;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 19px 24px;
+
+  background: #ffffff !important;
+  color: #8b1e1e !important;
+
+  border-bottom: 1px solid #e9ddda;
 }
 
-.modal-header h3 {
-  margin: 0;
-  font-size: 20px;
-  color: #212529;
+/* ===== TÍTULO ===== */
+
+.gastos-container .modal-overlay .modal-header h3 {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  flex: 1;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  color: #8b1e1e !important;
+  background: none !important;
+  background-image: none !important;
+
+  -webkit-text-fill-color: #8b1e1e !important;
+
+  font-family: inherit;
+  font-size: 22px !important;
+  font-weight: 750 !important;
+  line-height: 1.35;
+
+  text-shadow: none !important;
+  overflow-wrap: anywhere;
 }
 
-.modal-close {
-  background: none;
-  border: none;
+/* ===== BOTÓN CERRAR ===== */
+
+.gastos-container .modal-overlay .modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+
+  padding: 0;
+
+  background: #faf4f3;
+  color: #8b1e1e;
+
+  border: 1px solid #e9ddda;
+  border-radius: 10px;
+
   font-size: 20px;
+  line-height: 1;
+
   cursor: pointer;
-  color: #6c757d;
-  transition: color 0.2s;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
-.modal-close:hover {
-  color: #dc3545;
+.gastos-container .modal-overlay .modal-close:hover {
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
-.modal-body {
-  padding: 20px;
+/* ===== CUERPO DE LA VENTANA ===== */
+
+.gastos-container .modal-overlay .modal-body {
+  display: block;
+  width: 100%;
+  min-width: 0;
+
+  padding: 24px;
+
+  background: #ffffff;
 }
 
-.mensaje-eliminar {
+/* ===== MENSAJE DE CONFIRMACIÓN ===== */
+
+.gastos-container .modal-overlay .mensaje-eliminar {
+  margin: 0 0 16px;
+
+  color: #374151;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.65;
+
+  overflow-wrap: anywhere;
+}
+
+.gastos-container .modal-overlay .mensaje-eliminar strong {
+  color: #8b1e1e;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
+/* ===== MONTO DEL GASTO ===== */
+
+.gastos-container .modal-overlay .monto-eliminar {
+  display: block;
+
+  margin: 0 0 18px;
+  padding: 15px 17px;
+
+  background: #faf7f6;
+  color: #8b1e1e;
+
+  border: 1px solid #eadedb;
+  border-radius: 11px;
+
   font-size: 16px;
-  margin-bottom: 10px;
+  font-weight: 750;
+  line-height: 1.5;
+
+  overflow-wrap: anywhere;
 }
 
-.monto-eliminar {
-  font-weight: 500;
-  margin: 10px 0;
-  color: #dc3545;
-}
+/* ===== ADVERTENCIA ===== */
 
-.advertencia {
-  font-size: 14px;
-  color: #6c757d;
-  margin-top: 15px;
-}
-
-.modal-footer {
-  padding: 15px 20px;
-  border-top: 1px solid #e9ecef;
+.gastos-container .modal-overlay .advertencia {
   display: flex;
-  justify-content: flex-end;
+  align-items: flex-start;
   gap: 10px;
+
+  margin: 0;
+  padding: 13px 15px;
+
+  background: #fef2f2;
+  color: #991b1b;
+
+  border: 1px solid #fecaca;
+  border-left: 4px solid #dc2626;
+  border-radius: 10px;
+
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.55;
+
+  overflow-wrap: anywhere;
 }
 
-.btn-cancelar,
-.btn-eliminar-confirm {
-  padding: 8px 20px;
-  border-radius: 5px;
-  border: none;
+/* ===== PIE DE LA VENTANA ===== */
+
+.gastos-container .modal-overlay .modal-footer {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1.5fr);
+
+  align-items: stretch;
+  gap: 12px;
+
+  width: 100%;
+  padding: 18px 24px 22px;
+
+  background: #faf7f6;
+  border-top: 1px solid #e9ddda;
+}
+
+/* ===== ESTILOS GENERALES DE BOTONES ===== */
+
+.gastos-container .modal-overlay .btn-cancelar,
+.gastos-container .modal-overlay .btn-eliminar-confirm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+
+  padding: 12px 15px;
+
+  border-radius: 10px;
+
+  font-family: inherit;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+
   cursor: pointer;
-  transition: background-color 0.2s;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
-.btn-cancelar {
-  background-color: #e9ecef;
-  color: #495057;
+/* ===== CANCELAR ===== */
+
+.gastos-container .modal-overlay .btn-cancelar {
+  background: #f3efed;
+  color: #374151;
+
+  border: 1px solid #d9ceca;
 }
 
-.btn-cancelar:hover:not(:disabled) {
-  background-color: #dee2e6;
+.gastos-container .modal-overlay .btn-cancelar:hover:not(:disabled) {
+  background: #e9e0dd;
 }
 
-.btn-eliminar-confirm {
-  background-color: #dc3545;
-  color: white;
+/* ===== CONFIRMAR ELIMINACIÓN ===== */
+
+.gastos-container .modal-overlay .btn-eliminar-confirm {
+  background: #b91c1c;
+  color: #ffffff;
+
+  border: 1px solid #b91c1c;
 }
 
-.btn-eliminar-confirm:hover:not(:disabled) {
-  background-color: #c82333;
+.gastos-container .modal-overlay .btn-eliminar-confirm:hover:not(:disabled) {
+  background: #991b1b;
+  border-color: #991b1b;
+
+  transform: translateY(-1px);
 }
 
-.btn-cancelar:disabled,
-.btn-eliminar-confirm:disabled {
-  opacity: 0.6;
+/* ===== BOTONES DESHABILITADOS ===== */
+
+.gastos-container .modal-overlay .btn-cancelar:disabled,
+.gastos-container .modal-overlay .btn-eliminar-confirm:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
+  transform: none;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+/* ===== INDICADOR DE CARGA ===== */
+
+.gastos-container .modal-overlay .btn-eliminar-confirm .fa-spinner {
+  font-size: 16px;
+}
+
+/* ============================================
+   TABLETS
+============================================ */
+
+@media (max-width: 768px) {
+
+  .gastos-container .modal-overlay {
+    padding: 12px;
   }
-  to {
-    opacity: 1;
+
+  .gastos-container .modal-overlay > .modal-content {
+    max-height: calc(100dvh - 24px);
+    border-radius: 14px;
+  }
+
+  .gastos-container .modal-overlay .modal-header {
+    padding: 17px 18px;
+  }
+
+  .gastos-container .modal-overlay .modal-header h3 {
+    font-size: 20px !important;
+  }
+
+  .gastos-container .modal-overlay .modal-body {
+    padding: 20px 18px;
+  }
+
+  .gastos-container .modal-overlay .modal-footer {
+    padding: 16px 18px 19px;
   }
 }
 
-@keyframes slideDown {
-  from {
-    transform: translateY(-20px);
-    opacity: 0;
+/* ============================================
+   CELULARES
+============================================ */
+
+@media (max-width: 480px) {
+
+  .gastos-container .modal-overlay {
+    padding: 8px;
   }
-  to {
-    transform: translateY(0);
-    opacity: 1;
+
+  .gastos-container .modal-overlay > .modal-content {
+    max-width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+    border-radius: 12px;
+  }
+
+  /* ENCABEZADO */
+
+  .gastos-container .modal-overlay .modal-header {
+    gap: 10px;
+    padding: 14px 16px;
+  }
+
+  .gastos-container .modal-overlay .modal-header h3 {
+    font-size: 19px !important;
+  }
+
+  /* CERRAR */
+
+  .gastos-container .modal-overlay .modal-close {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  /* CUERPO */
+
+  .gastos-container .modal-overlay .modal-body {
+    padding: 17px 15px;
+  }
+
+  .gastos-container .modal-overlay .mensaje-eliminar {
+    font-size: 14px;
+  }
+
+  .gastos-container .modal-overlay .monto-eliminar {
+    padding: 13px;
+    font-size: 15px;
+  }
+
+  .gastos-container .modal-overlay .advertencia {
+    padding: 12px;
+    font-size: 12px;
+  }
+
+  /* BOTONES */
+
+  .gastos-container .modal-overlay .modal-footer {
+    gap: 9px;
+    padding: 15px;
+  }
+
+  .gastos-container .modal-overlay .btn-cancelar,
+  .gastos-container .modal-overlay .btn-eliminar-confirm {
+    min-height: 48px;
+    padding: 11px 8px;
+    font-size: 13px;
+  }
+}
+
+/* ============================================
+   PANTALLAS MUY PEQUEÑAS
+============================================ */
+
+@media (max-width: 350px) {
+
+  .gastos-container .modal-overlay .modal-header h3 {
+    font-size: 17px !important;
+  }
+
+  .gastos-container .modal-overlay .modal-body {
+    padding: 14px 12px;
+  }
+
+  .gastos-container .modal-overlay .modal-footer {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px;
+  }
+}
+
+/* ===== ACCESIBILIDAD ===== */
+
+.gastos-container .modal-overlay button:focus-visible {
+  outline: 3px solid #fbac3e;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gastos-container .modal-overlay,
+  .gastos-container .modal-overlay * {
+    animation: none !important;
+    transition: none !important;
   }
 }

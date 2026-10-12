@@ -1,183 +1,458 @@
-/* ModalEditarProducto.css */
+
+/* ==========================================
+   CARNICERÍA URBINA
+   MODAL EDITAR PRODUCTO
+   DISEÑO UNIFICADO Y RESPONSIVE
+========================================== */
+
+/* ===== FONDO DEL MODAL ===== */
 
 .modal-editar-overlay {
   position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  background: rgba(0, 0, 0, 0.7) !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
+  inset: 0 !important;
   z-index: 99999 !important;
-  animation: fadeIn 0.3s ease !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 100%;
+  min-height: 100dvh;
+  padding: 16px !important;
+
+  background: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(3px);
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  box-sizing: border-box;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
+/* ===== VENTANA PRINCIPAL ===== */
 
 .modal-editar-content {
-  background: white !important;
-  border-radius: 12px !important;
-  max-width: 500px !important;
-  width: 90% !important;
-  max-height: 90vh !important;
+  width: 100% !important;
+  max-width: 520px !important;
+  min-width: 0;
+
+  max-height: calc(100dvh - 32px) !important;
+  margin: auto !important;
+  padding: 0 !important;
+
+  background: #ffffff !important;
+
+  border: 1px solid #e9ddda !important;
+  border-radius: 16px !important;
+
   overflow-y: auto !important;
-  animation: slideUp 0.3s ease !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+  overflow-x: hidden !important;
+
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.22) !important;
+
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 }
 
-@keyframes slideUp {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+.modal-editar-content,
+.modal-editar-content * {
+  box-sizing: border-box;
 }
+
+/* ===== ENCABEZADO ===== */
 
 .modal-editar-header {
   display: flex !important;
-  justify-content: space-between !important;
   align-items: center !important;
+  justify-content: space-between !important;
+
+  gap: 14px;
   padding: 20px 24px !important;
-  border-bottom: 1px solid #e9ecef !important;
+
+  background: #ffffff !important;
+
+  border-bottom: 1px solid #e9ddda !important;
 }
+
+/* ===== TÍTULO VISIBLE ===== */
 
 .modal-editar-header h2 {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  flex: 1;
+  min-width: 0;
+
   margin: 0 !important;
-  font-size: 20px !important;
-  color: #2c3e50 !important;
+  padding: 0 !important;
+
+  color: #8b1e1e !important;
+  background: none !important;
+  background-image: none !important;
+
+  background-clip: border-box !important;
+  -webkit-background-clip: border-box !important;
+  -webkit-text-fill-color: #8b1e1e !important;
+
+  font-family: inherit;
+  font-size: 22px !important;
+  font-weight: 750 !important;
+  line-height: 1.35 !important;
+
+  overflow-wrap: anywhere;
+  text-shadow: none !important;
 }
 
+/* ===== BOTÓN CERRAR ===== */
+
 .modal-editar-close {
-  background: none !important;
-  border: none !important;
-  font-size: 28px !important;
-  color: #6c757d !important;
-  cursor: pointer !important;
-  padding: 0 8px !important;
-  transition: color 0.2s !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  flex-shrink: 0;
+
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+
+  padding: 0 !important;
+
+  background: #faf4f3 !important;
+  color: #8b1e1e !important;
+
+  border: 1px solid #e9ddda !important;
+  border-radius: 10px !important;
+
+  font-size: 24px !important;
+  line-height: 1 !important;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .modal-editar-close:hover {
-  color: #dc3545 !important;
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
 }
+
+/* ===== FORMULARIO ===== */
 
 .modal-editar-content form {
+  width: 100%;
+  min-width: 0;
+
   padding: 24px !important;
+  margin: 0;
+
+  box-sizing: border-box;
 }
 
+/* ===== GRUPOS DE CAMPOS ===== */
+
 .modal-editar-field {
-  margin-bottom: 16px !important;
+  width: 100%;
+  min-width: 0;
+
+  margin-bottom: 18px !important;
 }
+
+.modal-editar-field:last-of-type {
+  margin-bottom: 0 !important;
+}
+
+/* ===== ETIQUETAS ===== */
 
 .modal-editar-field label {
   display: block !important;
-  font-weight: 500 !important;
+
+  margin-bottom: 8px !important;
+
+  color: #374151 !important;
+
+  font-family: inherit;
   font-size: 14px !important;
-  color: #495057 !important;
-  margin-bottom: 6px !important;
+  font-weight: 700 !important;
+  line-height: 1.4;
 }
+
+/* ===== INPUT Y SELECT ===== */
 
 .modal-editar-field input,
 .modal-editar-field select {
+  display: block;
+
   width: 100% !important;
-  padding: 10px 12px !important;
-  border: 1px solid #ced4da !important;
-  border-radius: 6px !important;
-  font-size: 14px !important;
-  box-sizing: border-box !important;
-  transition: border-color 0.2s !important;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 48px;
+
+  padding: 11px 14px !important;
+
+  background: #ffffff !important;
+  color: #263238 !important;
+
+  border: 1.5px solid #d9ceca !important;
+  border-radius: 10px !important;
+
+  font-family: inherit;
+  font-size: 16px !important;
+  line-height: 1.4;
+
+  box-sizing: border-box;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
+
+/* ===== CAMPOS ENFOCADOS ===== */
 
 .modal-editar-field input:focus,
 .modal-editar-field select:focus {
   outline: none !important;
-  border-color: #007bff !important;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1) !important;
+
+  border-color: #8b1e1e !important;
+  box-shadow: 0 0 0 3px rgba(139, 30, 30, 0.1) !important;
 }
+
+.modal-editar-field input::placeholder {
+  color: #9ca3af;
+}
+
+/* ===== CAMPOS DESHABILITADOS ===== */
+
+.modal-editar-field input:disabled,
+.modal-editar-field select:disabled {
+  background: #f3f4f6 !important;
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* ===== BOTONES INFERIORES ===== */
 
 .modal-editar-buttons {
-  display: flex !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+
+  align-items: stretch;
   gap: 12px !important;
+
   margin-top: 24px !important;
-  justify-content: flex-end !important;
+  padding-top: 18px;
+
+  border-top: 1px solid #eee6e3;
 }
 
-.btn-editar-cancelar {
-  padding: 10px 24px !important;
-  background: #f8f9fa !important;
-  color: #495057 !important;
-  border: 1px solid #ced4da !important;
-  border-radius: 6px !important;
+/* ===== ESTILO BASE DE BOTONES ===== */
+
+.btn-editar-cancelar,
+.btn-editar-guardar {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 100% !important;
+  min-width: 0;
+  min-height: 48px;
+
+  padding: 12px 15px !important;
+
+  border-radius: 10px !important;
+
+  font-family: inherit;
   font-size: 14px !important;
-  cursor: pointer !important;
-  transition: all 0.2s !important;
+  font-weight: 700 !important;
+  line-height: 1.3;
+
+  text-align: center;
+  white-space: normal;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* ===== CANCELAR ===== */
+
+.btn-editar-cancelar {
+  background: #f3efed !important;
+  color: #374151 !important;
+
+  border: 1px solid #d9ceca !important;
 }
 
 .btn-editar-cancelar:hover {
-  background: #e9ecef !important;
+  background: #e9e0dd !important;
 }
 
+/* ===== GUARDAR CAMBIOS ===== */
+
 .btn-editar-guardar {
-  padding: 10px 24px !important;
-  background: #007bff !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 6px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  cursor: pointer !important;
-  transition: all 0.2s !important;
+  background: #8b1e1e !important;
+  color: #ffffff !important;
+
+  border: 1px solid #8b1e1e !important;
 }
 
 .btn-editar-guardar:hover:not(:disabled) {
-  background: #0069d9 !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3) !important;
+  background: #6b1515 !important;
+  border-color: #6b1515 !important;
+
+  transform: translateY(-1px);
 }
 
+/* ===== BOTONES DESHABILITADOS ===== */
+
+.btn-editar-cancelar:disabled,
 .btn-editar-guardar:disabled {
-  opacity: 0.6 !important;
+  opacity: 0.55 !important;
   cursor: not-allowed !important;
+  transform: none !important;
 }
 
-/* Responsive */
+/* ==========================================
+   TABLETS
+========================================== */
+
 @media (max-width: 768px) {
+  .modal-editar-overlay {
+    padding: 12px !important;
+  }
+
   .modal-editar-content {
-    width: 95% !important;
-    margin: 10px !important;
+    width: 100% !important;
+    max-width: 520px !important;
+    max-height: calc(100dvh - 24px) !important;
+
+    border-radius: 14px !important;
   }
 
   .modal-editar-header {
-    padding: 16px 20px !important;
+    padding: 17px 18px !important;
   }
 
   .modal-editar-header h2 {
-    font-size: 18px !important;
+    font-size: 20px !important;
   }
 
   .modal-editar-content form {
-    padding: 20px !important;
+    padding: 20px 18px !important;
+  }
+}
+
+/* ==========================================
+   CELULARES
+========================================== */
+
+@media (max-width: 480px) {
+  .modal-editar-overlay {
+    padding: 8px !important;
   }
 
+  .modal-editar-content {
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+
+    border-radius: 12px !important;
+  }
+
+  /* ENCABEZADO */
+
+  .modal-editar-header {
+    padding: 14px 16px !important;
+  }
+
+  .modal-editar-header h2 {
+    font-size: 19px !important;
+  }
+
+  /* CERRAR */
+
+  .modal-editar-close {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+
+  /* FORMULARIO */
+
+  .modal-editar-content form {
+    padding: 17px 15px !important;
+  }
+
+  .modal-editar-field {
+    margin-bottom: 16px !important;
+  }
+
+  .modal-editar-field label {
+    font-size: 13px !important;
+  }
+
+  .modal-editar-field input,
+  .modal-editar-field select {
+    min-height: 48px;
+    padding: 11px 12px !important;
+    font-size: 16px !important;
+  }
+
+  /* BOTONES */
+
   .modal-editar-buttons {
-    flex-direction: column !important;
+    gap: 9px !important;
+    margin-top: 20px !important;
+    padding-top: 16px;
   }
 
   .btn-editar-cancelar,
   .btn-editar-guardar {
-    width: 100% !important;
-    justify-content: center !important;
+    min-height: 48px;
+    padding: 11px 8px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* ==========================================
+   CELULARES MUY PEQUEÑOS
+========================================== */
+
+@media (max-width: 350px) {
+  .modal-editar-header h2 {
+    font-size: 17px !important;
+  }
+
+  .modal-editar-content form {
+    padding: 14px 12px !important;
+  }
+
+  .modal-editar-buttons {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ===== ACCESIBILIDAD ===== */
+
+.modal-editar-content button:focus-visible,
+.modal-editar-content input:focus-visible,
+.modal-editar-content select:focus-visible {
+  outline: 3px solid #fbac3e !important;
+  outline-offset: 2px;
+}
+
+/* ===== REDUCIR ANIMACIONES ===== */
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-editar-content,
+  .modal-editar-content * {
+    animation: none !important;
+    transition: none !important;
   }
 }

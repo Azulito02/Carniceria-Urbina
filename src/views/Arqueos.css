@@ -1,400 +1,454 @@
-/* =========================================================
-   ARQUEOS DE CAJA
-   Carnicería Urbina
-   ========================================================= */
 
-* {
+/* ==========================================================
+   CARNICERÍA URBINA
+   ARQUEOS DE CAJA
+   CSS COMPLETO - ESCRITORIO, TABLET Y CELULAR
+========================================================== */
+
+.arqueos-page {
+  --vino: #8b1e1e;
+  --vino-oscuro: #6b1515;
+  --dorado: #fbac3e;
+  --fondo: #f7f8fa;
+  --blanco: #ffffff;
+  --texto: #263238;
+  --gris: #64748b;
+  --borde: #eadedb;
+}
+
+.arqueos-page,
+.arqueos-page *,
+.arqueos-page *::before,
+.arqueos-page *::after {
   box-sizing: border-box;
 }
 
-/* =========================================================
+/* ============================
    CONTENEDOR PRINCIPAL
-   ========================================================= */
+============================ */
 
 .arqueos-container {
+  width: 100%;
+  min-width: 0;
   min-height: 100vh;
-  background: #f5f6f8;
-  padding: 25px;
+  padding: 24px;
+  background: #f7f8fa;
   color: #263238;
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* =========================================================
-   HEADER
-   ========================================================= */
+.arqueos-page .arqueos-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ============================
+   ENCABEZADO
+============================ */
 
 .arqueos-header {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
-  gap: 20px;
-  margin-bottom: 25px;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 23px;
 }
 
 .arqueos-titulo {
-  margin: 0;
+  margin: 0 0 8px;
   color: #8b1e1e;
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 800;
-  letter-spacing: -0.5px;
+  line-height: 1.3;
 }
 
 .arqueos-subtitulo {
-  margin: 6px 0 12px;
-  color: #68747d;
-  font-size: 15px;
+  margin: 0 0 9px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .ultimo-arqueo-info {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  color: #68747d;
-  font-size: 13px;
+  gap: 5px;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .info-label {
-  font-weight: 600;
+  color: #64748b;
 }
 
 .info-valor {
-  color: #8b1e1e;
-  font-weight: 700;
+  color: #374151;
+  font-weight: 650;
 }
-
-/* =========================================================
-   BOTÓN ARQUEAR
-   ========================================================= */
 
 .header-buttons {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   gap: 10px;
 }
 
+/* ============================
+   BOTÓN ARQUEAR TURNO
+============================ */
+
 .btn-arquear-turno {
-  border: none;
-  border-radius: 10px;
-  padding: 13px 20px;
-  background: linear-gradient(135deg, #8b1e1e, #a82727);
-  color: white;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(139, 30, 30, 0.22);
-  transition: all 0.2s ease;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 9px;
+  min-height: 49px;
+  padding: 12px 20px;
+  background: #8b1e1e;
+  color: #ffffff;
+  border: 1px solid #8b1e1e;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .btn-arquear-turno:hover:not(:disabled) {
-  background: linear-gradient(135deg, #721818, #8b1e1e);
-  transform: translateY(-2px);
-  box-shadow: 0 7px 18px rgba(139, 30, 30, 0.28);
-}
-
-.btn-arquear-turno:active:not(:disabled) {
-  transform: translateY(0);
+  background: #6b1515;
+  border-color: #6b1515;
 }
 
 .btn-arquear-turno:disabled {
-  opacity: 0.65;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
-/* =========================================================
-   ESTADÍSTICAS
-   ========================================================= */
+/* ============================
+   TARJETAS DE ESTADÍSTICAS
+============================ */
 
 .estadisticas-arqueo {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 25px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+  margin-bottom: 23px;
 }
 
 .estadistica-card {
-  background: #ffffff;
-  border: 1px solid #e6e9ed;
-  border-radius: 13px;
-  padding: 18px;
   display: flex;
   align-items: center;
   gap: 14px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.estadistica-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.08);
+  min-width: 0;
+  min-height: 108px;
+  padding: 18px;
+  background: #ffffff;
+  border: 1px solid #eadedb;
+  border-left: 4px solid #8b1e1e;
+  border-radius: 13px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .estadistica-icono {
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  border-radius: 12px;
-  background: #fff3d6;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  background: #fff2e8;
+  border-radius: 11px;
   font-size: 22px;
 }
 
 .estadistica-contenido {
+  flex: 1;
   min-width: 0;
 }
 
 .estadistica-valor {
-  margin: 0 0 4px;
-  color: #263238;
-  font-size: 19px;
+  display: block;
+  margin-bottom: 6px;
+  color: #8b1e1e;
+  font-size: 18px;
   font-weight: 800;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
 .estadistica-label {
-  margin: 0;
-  color: #7a858d;
+  display: block;
+  color: #64748b;
   font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
-/* =========================================================
-   TABLA
-   ========================================================= */
+/* ============================
+   HISTORIAL DE ARQUEOS
+============================ */
 
 .tabla-arqueos-container {
   width: 100%;
+  min-width: 0;
 }
 
 .tabla-arqueos-card {
-  background: white;
+  width: 100%;
+  min-width: 0;
+  padding: 18px;
+  background: #ffffff;
+  border: 1px solid #eadedb;
   border-radius: 14px;
-  border: 1px solid #e3e7eb;
-  overflow: hidden;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
+/* ============================
+   INFORMACIÓN DE REGISTROS
+============================ */
+
 .tabla-controls-container {
-  min-height: 58px;
-  padding: 12px 18px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 15px;
-  background: #ffffff;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 15px;
 }
 
 .tabla-info {
-  color: #66727b;
+  margin: 0;
+  color: #374151;
   font-size: 13px;
+  font-weight: 650;
+  line-height: 1.5;
 }
 
 .tabla-info strong {
   color: #8b1e1e;
-  font-size: 15px;
 }
 
-.tabla-scroll-controls {
-  display: flex;
-  gap: 7px;
+/* ============================
+   ELIMINAR BOTONES DESPLAZAR
+============================ */
+
+.arqueos-page .tabla-scroll-controls,
+.arqueos-page .tabla-scroll-buttons,
+.arqueos-page .btn-scroll {
+  display: none !important;
 }
 
-.btn-scroll {
-  border: 1px solid #d9dee3;
-  background: #f8f9fa;
-  color: #4d5961;
-  padding: 7px 11px;
-  border-radius: 7px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.2s ease;
-}
-
-.btn-scroll:hover {
-  background: #8b1e1e;
-  color: white;
-  border-color: #8b1e1e;
-}
-
-/* =========================================================
-   SCROLL TABLA
-   ========================================================= */
+/* ============================
+   TABLA DE COMPUTADORA
+============================ */
 
 .tabla-scroll-container {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
-  border-top: 1px solid #edf0f2;
+  background: #ffffff;
+  border: 1px solid #f0e8e6;
+  border-radius: 11px;
+  scrollbar-width: thin;
+  scrollbar-color: #d4b9b0 #f8f3f1;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tabla-scroll-container::-webkit-scrollbar {
-  height: 8px;
+  height: 9px;
 }
 
 .tabla-scroll-container::-webkit-scrollbar-track {
-  background: #f1f3f4;
+  background: #f8f3f1;
+  border-radius: 8px;
 }
 
 .tabla-scroll-container::-webkit-scrollbar-thumb {
-  background: #b8bec4;
-  border-radius: 10px;
+  background: #d4b9b0;
+  border-radius: 8px;
 }
 
 .tabla-scroll-container::-webkit-scrollbar-thumb:hover {
-  background: #8b1e1e;
+  background: #a8786b;
 }
 
-/* =========================================================
-   TABLA
-   ========================================================= */
-
 .tabla-arqueos {
-  width: max-content;
-  min-width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
+  width: 100%;
+  min-width: 1350px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #ffffff;
 }
 
 .tabla-arqueos thead {
-  background: #8b1e1e;
-  color: white;
+  background: #faf7f6;
 }
 
 .tabla-arqueos th {
-  padding: 13px 12px;
+  padding: 14px 12px;
+  background: #faf7f6;
+  color: #8b1e1e;
+  border-bottom: 2px solid #eadedb;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
   text-align: center;
-  white-space: nowrap;
-  font-weight: 700;
-  font-size: 11px;
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  vertical-align: middle;
+  white-space: normal;
 }
 
 .tabla-arqueos td {
-  padding: 13px 11px;
+  padding: 15px 12px;
+  color: #263238;
+  border-bottom: 1px solid #f0e8e6;
+  font-size: 13px;
+  line-height: 1.5;
   text-align: center;
-  border-bottom: 1px solid #edf0f2;
+  vertical-align: middle;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
-.fila-arqueo {
-  background: white;
-  transition: background 0.15s ease;
+.tabla-arqueos th:first-child,
+.tabla-arqueos td:first-child {
+  min-width: 145px;
+  text-align: left;
 }
 
-.fila-arqueo:hover {
-  background: #fffaf3;
+.tabla-arqueos th:last-child,
+.tabla-arqueos td:last-child {
+  min-width: 165px;
 }
 
 .fila-arqueo:nth-child(even) {
-  background: #fafbfc;
+  background: #fdfaf9;
 }
 
-.fila-arqueo:nth-child(even):hover {
-  background: #fffaf3;
+.fila-arqueo:hover {
+  background: #fff4ef;
 }
 
-/* =========================================================
-   VALORES
-   ========================================================= */
+.fila-arqueo:last-child td {
+  border-bottom: none;
+}
+
+/* ============================
+   COLORES DE IMPORTES
+============================ */
 
 .valor-positivo {
-  color: #218838;
-  font-weight: 800;
+  color: #166534;
+  font-weight: 700;
 }
 
 .valor-credito {
-  color: #1565c0;
+  color: #92400e;
   font-weight: 700;
 }
 
 .valor-efectivo {
-  color: #00796b;
-  font-weight: 800;
-}
-
-.valor-negativo {
-  color: #c62828;
+  color: #166534;
   font-weight: 700;
 }
 
-/* =========================================================
-   BADGES
-   ========================================================= */
+.valor-negativo {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+/* ============================
+   INSIGNIAS DE PAGOS
+============================ */
 
 .badge-venta,
 .badge-abono {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  border-radius: 6px;
-  padding: 5px 7px;
-  font-weight: 700;
-  font-size: 11px;
+  gap: 5px;
+  max-width: 100%;
+  padding: 5px 8px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
 }
 
 .badge-venta.efectivo,
 .badge-abono.efectivo {
-  color: #176b3a;
-  background: #e7f6ed;
+  background: #dcfce7;
+  color: #166534;
 }
 
 .badge-venta.tarjeta,
 .badge-abono.tarjeta {
-  color: #1558a6;
-  background: #e8f1ff;
+  background: #fff3e0;
+  color: #92400e;
 }
 
 .badge-venta.transferencia,
 .badge-abono.transferencia {
-  color: #5c3b91;
-  background: #f0eaff;
+  background: #e0f2fe;
+  color: #075985;
 }
 
 .badge-caja {
-  display: inline-block;
-  min-width: 100px;
-  padding: 6px 9px;
-  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: 800;
 }
 
 .badge-caja.positivo {
-  color: #176b3a;
-  background: #e6f7ed;
+  background: #dcfce7;
+  color: #166534;
 }
 
 .badge-caja.negativo {
-  color: #b42318;
-  background: #fdeaea;
+  background: #fee2e2;
+  color: #991b1b;
 }
 
-/* =========================================================
-   ACCIONES
-   ========================================================= */
+/* ============================
+   BOTONES EXCEL Y PDF
+============================ */
 
 .acciones-container {
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .btn-accion {
-  border: none;
-  border-radius: 6px;
-  padding: 7px 9px;
-  cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 700;
-  transition: all 0.2s ease;
+  gap: 8px;
+  min-width: 76px;
+  min-height: 41px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .btn-accion:disabled {
@@ -403,242 +457,577 @@
 }
 
 .btn-excel {
-  color: #166534;
   background: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
 }
 
 .btn-excel:hover:not(:disabled) {
   background: #bbf7d0;
-  transform: translateY(-1px);
 }
 
 .btn-pdf {
-  color: #b42318;
   background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
 }
 
 .btn-pdf:hover:not(:disabled) {
   background: #fecaca;
-  transform: translateY(-1px);
 }
 
 .btn-icon {
-  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
 }
 
 .btn-text {
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 750;
 }
 
-/* =========================================================
-   ESTADOS
-   ========================================================= */
+/* ============================
+   ESTADOS SIN REGISTROS
+============================ */
 
-.cargando-mensaje {
-  height: 180px;
-  color: #68747d;
-  text-align: center !important;
-}
-
-.sin-registros {
-  height: 150px;
-  color: #7a858d;
-  text-align: center !important;
+.cargando-mensaje,
+.sin-registros,
+.sin-resultados-mobile {
+  padding: 35px 20px;
+  color: #64748b;
+  text-align: center;
   font-size: 14px;
+  line-height: 1.6;
 }
 
 .spinner,
 .spinner-small,
 .spinner-mini {
-  border-radius: 50%;
-  border-style: solid;
-  border-color: #e1e5e8;
+  display: inline-block;
+  border: 3px solid #f1d9d3;
   border-top-color: #8b1e1e;
-  animation: girar 0.8s linear infinite;
+  border-radius: 50%;
+  animation: arqueo-girar 0.8s linear infinite;
 }
 
 .spinner {
-  width: 32px;
-  height: 32px;
-  border-width: 4px;
-  margin: 0 auto 10px;
+  width: 30px;
+  height: 30px;
 }
 
 .spinner-small {
-  width: 17px;
-  height: 17px;
-  border-width: 2px;
-  border-color: rgba(255,255,255,0.4);
-  border-top-color: white;
+  width: 21px;
+  height: 21px;
 }
 
 .spinner-mini {
-  width: 12px;
-  height: 12px;
+  width: 15px;
+  height: 15px;
   border-width: 2px;
 }
 
-@keyframes girar {
+@keyframes arqueo-girar {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* =========================================================
-   MODAL
-   ========================================================= */
+/* ============================
+   BUSCADOR
+============================ */
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(20, 25, 30, 0.68);
-  backdrop-filter: blur(4px);
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  animation: aparecer 0.2s ease;
-}
-
-@keyframes aparecer {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-container {
+.buscador-mobile {
   width: 100%;
-  max-width: 1050px;
-  max-height: 94vh;
-  background: white;
-  border-radius: 16px;
+  margin-bottom: 19px;
+}
+
+.buscador-mobile-container {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.buscador-mobile-container::before {
+  content: "\f002";
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  color: #8b1e1e;
+  font-family: "Font Awesome 6 Free", "Font Awesome 5 Free";
+  font-size: 16px;
+  font-weight: 900;
+  pointer-events: none;
+}
+
+.buscador-mobile-input {
+  display: block;
+  width: 100%;
+  min-height: 51px;
+  padding: 12px 46px 12px 43px;
+  background: #ffffff;
+  color: #263238;
+  border: 1.5px solid #d9ceca;
+  border-radius: 11px;
+  font-family: inherit;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.buscador-mobile-input:focus {
+  outline: none;
+  border-color: #8b1e1e;
+  box-shadow: 0 0 0 3px rgba(139, 30, 30, 0.1);
+}
+
+.buscador-mobile-limpiar {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #faf4f3;
+  color: #8b1e1e;
+  border: 1px solid #eadedb;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* ============================
+   TARJETAS DE HISTORIAL MÓVIL
+============================ */
+
+.tabla-mobile-view {
+  width: 100%;
+  min-width: 0;
+}
+
+.arqueo-card-mobile {
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 14px;
+  background: #ffffff;
+  border: 1px solid #eadedb;
+  border-left: 4px solid #8b1e1e;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: subirModal 0.25s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.arqueo-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  background: #faf7f6;
+  border-bottom: 1px solid #eadedb;
+}
+
+.arqueo-fecha-mobile {
   display: flex;
   flex-direction: column;
+  gap: 5px;
+  min-width: 0;
 }
 
-@keyframes subirModal {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.fecha-dia {
+  color: #8b1e1e;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.4;
 }
 
-.modal-header {
-  background: linear-gradient(135deg, #8b1e1e, #a82727);
-  color: white;
-  min-height: 65px;
-  padding: 15px 22px;
-  display: flex;
+.fecha-usuario {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.arqueo-estado-mobile {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-}
-
-.modal-titulo {
-  margin: 0;
-  font-size: 20px;
+  justify-content: center;
+  flex-shrink: 0;
+  min-height: 27px;
+  padding: 5px 9px;
+  border-radius: 18px;
+  font-size: 11px;
   font-weight: 800;
 }
 
-.modal-cerrar {
-  border: none;
-  background: rgba(255, 255, 255, 0.13);
-  color: white;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  font-size: 26px;
-  line-height: 1;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.arqueo-estado-mobile.exacto {
+  background: #dcfce7;
+  color: #166534;
 }
 
-.modal-cerrar:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: rotate(90deg);
+.arqueo-estado-mobile.sobrante {
+  background: #e0f2fe;
+  color: #075985;
 }
 
-.modal-body {
-  padding: 22px;
-  overflow-y: auto;
+.arqueo-estado-mobile.faltante {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
-.modal-body::-webkit-scrollbar {
-  width: 7px;
+.arqueo-resumen-mobile {
+  padding: 14px;
 }
 
-.modal-body::-webkit-scrollbar-thumb {
-  background: #c6cbd0;
+.resumen-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.resumen-row:last-child {
+  margin-bottom: 0;
+}
+
+.resumen-col {
+  min-width: 0;
+  padding: 13px;
+  background: #faf7f6;
+  border: 1px solid #f0e8e6;
   border-radius: 10px;
 }
 
-/* =========================================================
+.resumen-label-mobile {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 7px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.resumen-valor-mobile {
+  display: block;
+  color: #263238;
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.resumen-valor-mobile.positivo,
+.resumen-valor-mobile.efectivo {
+  color: #166534;
+}
+
+.resumen-valor-mobile.negativo {
+  color: #b91c1c;
+}
+
+/* ============================
+   DETALLES DE ARQUEO MÓVIL
+============================ */
+
+.arqueo-detalle-mobile {
+  padding: 0 14px 14px;
+}
+
+.detalle-grid-mobile {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.detalle-item-mobile {
+  min-width: 0;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #eadedb;
+  border-radius: 10px;
+}
+
+.detalle-item-mobile.full-width {
+  grid-column: 1 / -1;
+}
+
+.detalle-label-mobile {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 7px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.detalle-valor-mobile {
+  display: block;
+  color: #263238;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.detalle-valor-mobile.positivo,
+.detalle-valor-mobile.efectivo {
+  color: #166534;
+}
+
+.detalle-valor-mobile.tarjeta {
+  color: #92400e;
+}
+
+.detalle-valor-mobile.transferencia {
+  color: #075985;
+}
+
+.detalle-valor-mobile.credito {
+  color: #a16207;
+}
+
+.detalle-valor-mobile.negativo {
+  color: #b91c1c;
+}
+
+/* ============================
+   EXPORTACIONES MÓVILES
+============================ */
+
+.detalle-actions-mobile {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.detalle-action-btn-mobile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 47px;
+  padding: 11px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.detalle-action-btn-mobile.excel {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.detalle-action-btn-mobile.pdf {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+/* ============================
+   RESUMEN INFERIOR MÓVIL
+============================ */
+
+.resumen-mobile {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px;
+  background: #faf7f6;
+  border-top: 1px solid #eadedb;
+}
+
+.resumen-mobile-item {
+  min-width: 0;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #eadedb;
+  border-radius: 10px;
+}
+
+.resumen-mobile-label {
+  display: block;
+  margin-bottom: 7px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.resumen-mobile-value {
+  display: block;
+  color: #263238;
+  font-size: 15px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.resumen-mobile-value.positivo {
+  color: #166534;
+}
+
+.resumen-mobile-value.negativo {
+  color: #b91c1c;
+}
+
+/* ============================
+   MODAL ARQUEO DE TURNO
+============================ */
+
+.arqueos-page .modal-overlay,
+.modal-overlay:has(> .arqueo-modal) {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(20, 25, 30, 0.68);
+  backdrop-filter: blur(4px);
+  overflow-y: auto;
+}
+
+.arqueos-page .modal-container,
+.modal-container.arqueo-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 950px);
+  min-width: 0;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  background: #ffffff;
+  border: 1px solid #eadedb;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.arqueos-page .modal-header,
+.arqueo-modal > .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  min-height: 64px;
+  padding: 16px 22px;
+  background: #ffffff;
+  border-bottom: 1px solid #eadedb;
+}
+
+.arqueos-page .modal-titulo,
+.arqueo-modal .modal-titulo {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  color: #8b1e1e !important;
+  background: none !important;
+  -webkit-text-fill-color: #8b1e1e !important;
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.arqueos-page .modal-cerrar,
+.arqueo-modal .modal-cerrar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  background: #faf4f3;
+  color: #8b1e1e;
+  border: 1px solid #eadedb;
+  border-radius: 10px;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.arqueos-page .modal-cerrar:hover,
+.arqueo-modal .modal-cerrar:hover {
+  background: #fee2e2;
+}
+
+.arqueos-page .modal-body,
+.arqueo-modal > .modal-body {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  padding: 22px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* ============================
    PERÍODO
-   ========================================================= */
+============================ */
 
 .periodo-info {
-  background: #f7f8fa;
-  border: 1px solid #e5e8eb;
-  border-radius: 9px;
-  padding: 11px 14px;
-  margin-bottom: 20px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  background: #faf7f6;
+  border: 1px solid #eadedb;
+  border-radius: 10px;
 }
 
 .periodo-texto {
-  margin: 0;
-  font-size: 12px;
-  color: #68747d;
+  color: #374151;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 .periodo-texto strong {
   color: #8b1e1e;
 }
 
-/* =========================================================
+/* ============================
    RESUMEN DEL MODAL
-   ========================================================= */
+============================ */
 
 .resumen-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
 }
 
 .resumen-columna {
-  border: 1px solid #e5e8eb;
+  min-width: 0;
+  padding: 17px;
+  background: #faf7f6;
+  border: 1px solid #eadedb;
   border-radius: 12px;
-  padding: 18px;
-  background: #fff;
 }
 
 .resumen-subtitulo {
-  margin: 0 0 14px;
-  padding-bottom: 9px;
-  border-bottom: 2px solid #f0f1f2;
+  margin: 0 0 13px;
+  padding-bottom: 10px;
   color: #8b1e1e;
-  font-size: 13px;
+  border-bottom: 1px solid #eadedb;
+  font-size: 14px;
   font-weight: 800;
 }
 
 .resumen-item {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 5px 10px;
-  padding: 9px 0;
-  border-bottom: 1px dashed #e4e7e9;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee6e3;
 }
 
 .resumen-item:last-child {
@@ -646,174 +1035,185 @@
 }
 
 .resumen-label {
-  color: #526069;
-  font-size: 13px;
+  flex: 1;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .resumen-valor {
-  font-size: 14px;
+  color: #263238;
+  font-size: 13px;
   font-weight: 800;
   text-align: right;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
 .resumen-valor.positivo {
-  color: #218838;
+  color: #166534;
 }
 
 .resumen-valor.tarjeta {
-  color: #1565c0;
+  color: #92400e;
 }
 
 .resumen-valor.transferencia {
-  color: #6a3d9a;
+  color: #075985;
 }
 
 .resumen-valor.credito {
-  color: #1565c0;
+  color: #a16207;
 }
 
 .resumen-valor.negativo {
-  color: #c62828;
+  color: #b91c1c;
 }
 
 .resumen-cantidad {
-  grid-column: 1 / -1;
-  color: #8a959c;
+  display: block;
+  color: #64748b;
   font-size: 11px;
+  text-align: right;
 }
-
-/* =========================================================
-   CÁLCULO
-   ========================================================= */
 
 .resumen-separador {
   height: 1px;
-  background: #e4e7e9;
-  margin: 18px 0;
+  margin: 13px 0;
+  background: #eadedb;
 }
 
+/* ============================
+   CÁLCULOS DEL ARQUEO
+============================ */
+
 .resumen-calculo {
-  border-radius: 10px;
-  background: #f8fafb;
-  border: 1px solid #e2e7ea;
-  padding: 15px;
+  padding: 17px;
+  margin-top: 18px;
+  background: #ffffff;
+  border: 1px solid #eadedb;
+  border-radius: 12px;
 }
 
 .calculo-titulo {
-  margin: 0 0 12px;
+  margin: 0 0 13px;
   color: #8b1e1e;
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 800;
 }
 
 .calculo-item {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 15px;
-  padding: 7px 0;
-  color: #526069;
-  font-size: 12px;
+  gap: 12px;
+  padding: 9px 0;
+  color: #374151;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .calculo-item span:last-child {
-  color: #263238;
-  font-weight: 700;
+  text-align: right;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
 }
 
 .calculo-subtotal,
 .calculo-total {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 15px;
-  padding: 10px 0;
-  margin-top: 4px;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .calculo-subtotal {
-  border-top: 1px solid #dfe4e7;
-  border-bottom: 1px solid #dfe4e7;
-}
-
-.calculo-subtotal span:first-child,
-.calculo-total span:first-child {
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.subtotal-valor {
-  color: #00796b;
-  font-weight: 800;
+  border-top: 1px dashed #eadedb;
 }
 
 .calculo-total {
-  margin-top: 5px;
-  padding: 12px;
-  border-radius: 8px;
-  background: #e8f5ee;
+  padding: 14px;
+  background: #8b1e1e;
+  color: #ffffff;
+  border-radius: 9px;
 }
 
-.calculo-total span:first-child {
-  color: #176b3a;
+.subtotal-valor {
+  color: #8b1e1e;
+}
+
+.calculo-total .subtotal-valor,
+.calculo-total .neto-esperado {
+  color: #fbac3e;
 }
 
 .neto-esperado {
-  color: #176b3a;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 900;
+  font-variant-numeric: tabular-nums;
 }
 
-/* =========================================================
+/* ============================
    EFECTIVO CONTADO
-   ========================================================= */
+============================ */
 
 .efectivo-contado {
   margin-top: 18px;
-  padding: 15px;
-  border-radius: 10px;
+  padding: 17px;
   background: #fff9ed;
   border: 1px solid #f2d99c;
+  border-radius: 11px;
 }
 
 .contado-label {
   display: block;
+  margin-bottom: 9px;
   color: #8b1e1e;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
-  margin-bottom: 8px;
 }
 
 .contado-input-container {
   display: flex;
   align-items: stretch;
-  background: white;
+  min-width: 0;
+  background: #ffffff;
   border: 2px solid #d5dadd;
-  border-radius: 9px;
+  border-radius: 10px;
   overflow: hidden;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .contado-input-container:focus-within {
   border-color: #8b1e1e;
-  box-shadow: 0 0 0 3px rgba(139, 30, 30, 0.08);
+  box-shadow: 0 0 0 3px rgba(139, 30, 30, 0.1);
 }
 
 .contado-prefijo {
   display: flex;
   align-items: center;
-  padding: 0 13px;
+  padding: 0 14px;
   background: #f2f4f5;
   color: #526069;
-  font-weight: 800;
   border-right: 1px solid #dfe3e5;
+  font-size: 17px;
+  font-weight: 800;
 }
 
 .contado-input {
+  flex: 1;
+  display: block;
   width: 100%;
-  border: none;
-  outline: none;
+  min-width: 0;
+  min-height: 51px;
   padding: 12px;
   color: #263238;
+  background: #ffffff;
+  border: none;
+  outline: none;
+  font-family: inherit;
   font-size: 19px;
   font-weight: 800;
 }
@@ -826,61 +1226,66 @@
 
 .diferencia {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
-  padding-top: 9px;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px dashed #e1cf9f;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 750;
 }
 
 .diferencia-valor {
   font-weight: 900;
+  font-variant-numeric: tabular-nums;
 }
 
 .diferencia-valor.positivo {
-  color: #218838;
+  color: #166534;
 }
 
 .diferencia-valor.negativo {
-  color: #c62828;
+  color: #b91c1c;
 }
 
-/* =========================================================
-   ADVERTENCIA
-   ========================================================= */
+/* ============================
+   ADVERTENCIAS
+============================ */
 
 .advertencia-arqueo {
   margin-top: 20px;
-  padding: 16px;
-  border-radius: 10px;
+  padding: 17px;
   background: #fff8e6;
   border: 1px solid #f1d48b;
+  border-radius: 11px;
 }
 
 .advertencia-texto {
   margin: 0 0 14px;
   color: #795548;
   font-size: 13px;
+  line-height: 1.6;
 }
 
 .advertencia-columnas {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .advertencia-col {
-  padding: 11px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.6);
+  min-width: 0;
+  padding: 13px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid #f1dfb9;
+  border-radius: 9px;
 }
 
 .advertencia-subtitulo {
-  margin: 0 0 8px;
-  font-size: 11px;
-  font-weight: 900;
+  margin: 0 0 9px;
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .advertencia-lista {
@@ -889,8 +1294,9 @@
 }
 
 .advertencia-lista li {
-  margin: 4px 0;
-  font-size: 11px;
+  margin: 6px 0;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .eliminar-item {
@@ -904,400 +1310,138 @@
 }
 
 .advertencia-footer {
-  margin-top: 12px;
-  padding-top: 10px;
+  margin-top: 13px;
+  padding-top: 12px;
   border-top: 1px solid #ead59e;
 }
 
 .advertencia-nota {
   margin: 0;
   color: #6f6250;
-  font-size: 11px;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
-/* =========================================================
-   FOOTER MODAL
-   ========================================================= */
+/* ============================
+   BOTONES DEL MODAL
+============================ */
 
-.modal-footer {
-  padding: 14px 22px;
-  background: #f8f9fa;
-  border-top: 1px solid #e4e7e9;
+.arqueos-page .modal-footer,
+.arqueo-modal > .modal-footer {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.btn {
-  min-width: 120px;
-  border: none;
-  border-radius: 8px;
-  padding: 11px 17px;
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  justify-content: center;
   align-items: center;
-  gap: 7px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  gap: 10px;
+  padding: 16px 22px;
+  background: #faf7f6;
+  border-top: 1px solid #eadedb;
 }
 
-.btn:disabled {
+.arqueos-page .modal-footer .btn,
+.arqueo-modal .modal-footer .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 120px;
+  min-height: 48px;
+  padding: 11px 17px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.arqueos-page .modal-footer .btn:disabled,
+.arqueo-modal .modal-footer .btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
 
-.btn-secondary {
+.arqueos-page .btn-secondary,
+.arqueo-modal .btn-secondary {
   background: #e9ecef;
   color: #495057;
+  border-color: #d9ceca;
 }
 
-.btn-secondary:hover:not(:disabled) {
-  background: #dfe3e6;
-}
-
-.btn-success {
+.arqueos-page .btn-success,
+.arqueo-modal .btn-success {
   background: #218838;
-  color: white;
-  box-shadow: 0 4px 10px rgba(33, 136, 56, 0.2);
+  color: #ffffff;
+  border-color: #218838;
 }
 
-.btn-success:hover:not(:disabled) {
+.arqueos-page .btn-success:hover:not(:disabled),
+.arqueo-modal .btn-success:hover:not(:disabled) {
   background: #176b2d;
-  transform: translateY(-1px);
 }
 
-/* =========================================================
-   BÚSQUEDA MÓVIL
-   ========================================================= */
+/* ============================
+   CONTROL DE VISTAS
+============================ */
 
-.buscador-mobile {
-  margin-bottom: 15px;
-}
-
-.buscador-mobile-container {
-  position: relative;
-}
-
-.buscador-mobile-input {
-  width: 100%;
-  height: 44px;
-  padding: 0 42px 0 14px;
-  border: 1px solid #d8dde1;
-  border-radius: 9px;
-  background: white;
-  outline: none;
-  font-size: 14px;
-}
-
-.buscador-mobile-input:focus {
-  border-color: #8b1e1e;
-  box-shadow: 0 0 0 3px rgba(139, 30, 30, 0.08);
-}
-
-.buscador-mobile-limpiar {
-  position: absolute;
-  right: 7px;
-  top: 7px;
-  width: 30px;
-  height: 30px;
-  border: none;
-  border-radius: 50%;
-  background: #eee;
-  color: #555;
-  cursor: pointer;
-}
-
-/* =========================================================
-   VISTA MÓVIL
-   ========================================================= */
-
-.tabla-mobile-view {
-  padding: 12px;
-}
-
-.arqueo-card-mobile {
-  background: white;
-  border: 1px solid #e2e6e9;
-  border-radius: 12px;
-  margin-bottom: 12px;
-  overflow: hidden;
-  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.05);
-}
-
-.arqueo-card-header {
-  padding: 13px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #fafbfc;
-  border-bottom: 1px solid #e8ebed;
-}
-
-.arqueo-fecha-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.fecha-dia {
-  color: #8b1e1e;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.fecha-usuario {
-  color: #7a858d;
-  font-size: 11px;
-}
-
-.arqueo-estado-mobile {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.arqueo-estado-mobile.exacto {
-  background: #e6f7ed;
-}
-
-.arqueo-estado-mobile.sobrante {
-  background: #fff4d7;
-}
-
-.arqueo-estado-mobile.faltante {
-  background: #fdeaea;
-}
-
-.arqueo-resumen-mobile {
-  padding: 12px;
-}
-
-.resumen-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.resumen-col {
-  padding: 10px;
-  border-radius: 8px;
-  background: #f8f9fa;
-}
-
-.resumen-label-mobile {
-  display: block;
-  color: #7a858d;
-  font-size: 10px;
-  margin-bottom: 3px;
-}
-
-.resumen-valor-mobile {
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.resumen-valor-mobile.positivo {
-  color: #218838;
-}
-
-.resumen-valor-mobile.efectivo {
-  color: #00796b;
-}
-
-.resumen-valor-mobile.negativo {
-  color: #c62828;
-}
-
-.arqueo-detalle-mobile {
-  padding: 0 12px 12px;
-}
-
-.detalle-grid-mobile {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 7px;
-}
-
-.detalle-item-mobile {
-  padding: 8px;
-  border: 1px solid #e7eaec;
-  border-radius: 7px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.detalle-item-mobile.full-width {
-  grid-column: 1 / -1;
-}
-
-.detalle-label-mobile {
-  color: #7a858d;
-  font-size: 9px;
-}
-
-.detalle-valor-mobile {
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.detalle-valor-mobile.positivo {
-  color: #218838;
-}
-
-.detalle-valor-mobile.efectivo {
-  color: #00796b;
-}
-
-.detalle-valor-mobile.tarjeta {
-  color: #1565c0;
-}
-
-.detalle-valor-mobile.transferencia {
-  color: #6a3d9a;
-}
-
-.detalle-valor-mobile.credito {
-  color: #1565c0;
-}
-
-.detalle-valor-mobile.negativo {
-  color: #c62828;
-}
-
-.detalle-actions-mobile {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 7px;
-  margin-top: 10px;
-}
-
-.detalle-action-btn-mobile {
-  border: none;
-  border-radius: 7px;
-  padding: 9px;
-  font-size: 11px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.detalle-action-btn-mobile.excel {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.detalle-action-btn-mobile.pdf {
-  background: #fee2e2;
-  color: #b42318;
-}
-
-.sin-resultados-mobile {
-  text-align: center;
-  padding: 40px 15px;
-  color: #7a858d;
-  font-size: 13px;
-}
-
-/* =========================================================
-   RESUMEN MÓVIL
-   ========================================================= */
-
-.resumen-mobile {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  padding: 12px;
-  border-top: 1px solid #e3e7ea;
-  background: #fafbfc;
-}
-
-.resumen-mobile-item {
-  background: white;
-  border: 1px solid #e3e7ea;
-  border-radius: 8px;
-  padding: 9px;
-}
-
-.resumen-mobile-label {
-  display: block;
-  color: #7a858d;
-  font-size: 10px;
-  margin-bottom: 3px;
-}
-
-.resumen-mobile-value {
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.resumen-mobile-value.positivo {
-  color: #218838;
-}
-
-.resumen-mobile-value.negativo {
-  color: #c62828;
-}
-
-/* =========================================================
-   VISIBILIDAD
-   ========================================================= */
-
-.mobile-only {
+.arqueos-page .mobile-only {
   display: none;
 }
 
-.desktop-only {
+.arqueos-page .desktop-only {
   display: block;
 }
 
-/* =========================================================
-   RESPONSIVE TABLET
-   ========================================================= */
+/* ============================
+   TABLETS
+============================ */
 
-@media (max-width: 1000px) {
+@media (max-width: 1100px) {
   .arqueos-container {
-    padding: 18px;
+    padding: 19px;
   }
 
   .estadisticas-arqueo {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .resumen-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .modal-container {
-    max-width: 850px;
+  .advertencia-columnas {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-/* =========================================================
-   RESPONSIVE MÓVIL
-   ========================================================= */
+/* ============================
+   CELULARES
+============================ */
 
 @media (max-width: 700px) {
+  .arqueos-page .arqueos-container,
   .arqueos-container {
-    padding: 12px;
+    padding: 14px 12px 90px;
   }
 
-  .desktop-only {
+  /* MOSTRAR SOLO LA VISTA MÓVIL */
+
+  .arqueos-page .desktop-only {
     display: none !important;
   }
 
-  .mobile-only {
-    display: block;
+  .arqueos-page .mobile-only {
+    display: block !important;
   }
 
+  /* ENCABEZADO */
+
   .arqueos-header {
-    display: block;
-    margin-bottom: 15px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 18px;
   }
 
   .arqueos-titulo {
@@ -1305,55 +1449,127 @@
   }
 
   .arqueos-subtitulo {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .header-buttons {
-    margin-top: 12px;
+    width: 100%;
   }
 
   .btn-arquear-turno {
     width: 100%;
-    min-height: 46px;
+    min-height: 49px;
   }
 
-  .tabla-controls-container {
-    padding: 10px 12px;
+  /* ESTADÍSTICAS */
+
+  .arqueos-page .estadisticas-arqueo.desktop-only,
+  .estadisticas-arqueo {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 19px;
   }
 
-  .tabla-scroll-controls {
-    display: none;
+  .estadistica-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    min-height: 127px;
+    padding: 13px;
   }
+
+  .estadistica-icono {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
+  }
+
+  .estadistica-valor {
+    font-size: 15px;
+  }
+
+  .estadistica-label {
+    font-size: 11px;
+  }
+
+  /* HISTORIAL */
 
   .tabla-arqueos-card {
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .arqueos-page .tabla-controls-container,
+  .arqueos-page .tabla-scroll-container.desktop-only,
+  .arqueos-page .tabla-arqueos.desktop-only {
+    display: none !important;
+  }
+
+  .arqueos-page .tabla-mobile-view.mobile-only {
+    display: block !important;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .arqueos-page .resumen-mobile.mobile-only {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 12px;
+    border: 1px solid #eadedb;
     border-radius: 11px;
   }
 
-  .modal-overlay {
-    padding: 0;
-    align-items: flex-end;
+  /* TARJETAS */
+
+  .arqueo-card-mobile {
+    margin-bottom: 12px;
   }
 
-  .modal-container {
-    max-height: 96vh;
-    border-radius: 16px 16px 0 0;
+  .arqueo-card-header {
+    padding: 13px;
   }
 
-  .modal-header {
+  .arqueo-resumen-mobile {
+    padding: 12px;
+  }
+
+  .resumen-valor-mobile {
+    font-size: 14px;
+  }
+
+  /* MODAL */
+
+  .modal-overlay:has(> .arqueo-modal) {
+    align-items: center;
+    padding: 8px;
+  }
+
+  .modal-container.arqueo-modal {
+    max-width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+    border-radius: 12px;
+  }
+
+  .arqueo-modal > .modal-header {
     min-height: 58px;
-    padding: 12px 15px;
+    padding: 13px 15px;
   }
 
-  .modal-titulo {
-    font-size: 17px;
+  .arqueo-modal .modal-titulo {
+    font-size: 18px;
   }
 
-  .modal-body {
+  .arqueo-modal > .modal-body {
     padding: 14px;
   }
 
-  .resumen-grid {
-    grid-template-columns: 1fr;
+  .resumen-grid,
+  .advertencia-columnas {
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
   }
 
@@ -1361,71 +1577,98 @@
     padding: 13px;
   }
 
-  .advertencia-columnas {
-    grid-template-columns: 1fr;
+  .arqueo-modal > .modal-footer {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    padding: 13px;
   }
 
-  .modal-footer {
-    padding: 11px 14px;
-  }
-
-  .modal-footer .btn {
-    flex: 1;
+  .arqueo-modal .modal-footer .btn {
     min-width: 0;
-  }
-
-  .periodo-texto {
-    line-height: 1.5;
-  }
-
-  .contado-input {
-    font-size: 18px;
+    width: 100%;
+    padding: 11px 8px;
+    font-size: 13px;
   }
 }
 
-/* =========================================================
-   TELÉFONOS PEQUEÑOS
-   ========================================================= */
+/* ============================
+   CELULARES PEQUEÑOS
+============================ */
 
 @media (max-width: 400px) {
+  .arqueos-page .arqueos-container,
   .arqueos-container {
-    padding: 8px;
+    padding: 10px 9px 85px;
   }
 
   .arqueos-titulo {
     font-size: 21px;
   }
 
-  .tabla-controls-container {
-    min-height: 48px;
+  .estadistica-card {
+    padding: 11px;
   }
 
-  .tabla-info {
-    font-size: 11px;
+  .estadistica-valor {
+    font-size: 14px;
   }
 
-  .detalle-grid-mobile {
-    grid-template-columns: 1fr;
+  .resumen-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 
-  .detalle-item-mobile.full-width {
-    grid-column: auto;
-  }
-
-  .resumen-mobile {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .modal-body {
+  .resumen-col {
     padding: 10px;
   }
 
-  .modal-footer {
-    gap: 6px;
+  .resumen-valor-mobile {
+    font-size: 12px;
   }
 
-  .btn {
-    padding: 10px 8px;
+  .detalle-grid-mobile {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .detalle-item-mobile {
+    padding: 10px;
+  }
+
+  .detalle-valor-mobile {
     font-size: 12px;
+  }
+
+  .resumen-mobile-value {
+    font-size: 13px;
+  }
+
+  .arqueo-modal > .modal-body {
+    padding: 11px;
+  }
+
+  .arqueo-modal > .modal-footer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ============================
+   ACCESIBILIDAD
+============================ */
+
+.arqueos-page button:focus-visible,
+.arqueos-page input:focus-visible,
+.arqueo-modal button:focus-visible,
+.arqueo-modal input:focus-visible {
+  outline: 3px solid #fbac3e;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arqueos-page *,
+  .arqueo-modal * {
+    animation: none !important;
+    transition: none !important;
   }
 }

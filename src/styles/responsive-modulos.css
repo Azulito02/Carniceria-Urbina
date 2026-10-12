@@ -1,0 +1,561 @@
+
+/* ============================================
+   CARNICERÍA URBINA
+   MEJORAS RESPONSIVE DE MÓDULOS
+============================================ */
+
+:root {
+  --urbina-rojo: #8B1E1E;
+  --urbina-rojo-oscuro: #6b1515;
+  --urbina-dorado: #FBAC3E;
+  --urbina-fondo: #f5f0ef;
+  --urbina-borde: #e9ddda;
+  --urbina-texto: #2c3e50;
+}
+
+/* ============================================
+   TABLETS Y CELULARES
+============================================ */
+
+@media (max-width: 768px) {
+
+  /* CONTENEDORES */
+
+  :is(
+    .inventario-content,
+    .abonos-content,
+    .clientes-content,
+    .creditos-content,
+    .proveedores-content,
+    .productos-content,
+    .gastos-content,
+    .inversiones-content,
+    .ventas-content,
+    .reportes-container,
+    .arqueos-container
+  ) {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* ENCABEZADOS */
+
+  :is(
+    .inventario-header,
+    .abonos-header,
+    .clientes-header,
+    .creditos-header,
+    .proveedores-header,
+    .productos-header,
+    .gastos-header,
+    .inversiones-header,
+    .ventas-header,
+    .reportes-header
+  ) {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  /* BOTONES Y FILTROS */
+
+  :is(
+    .header-actions,
+    .creditos-botones-header,
+    .inversiones-botones-header,
+    .header-buttons,
+    .filtros-botones,
+    .export-buttons,
+    .buscador-fila
+  ) {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* BOTONES MÁS CÓMODOS */
+
+  :is(
+    .inventario-container,
+    .abonos-container,
+    .clientes-container,
+    .creditos-container,
+    .proveedores-container,
+    .productos-container,
+    .gastos-container,
+    .inversiones-container,
+    .ventas-container,
+    .reportes-page,
+    .arqueos-container
+  ) button {
+    min-height: 42px;
+    font-family: inherit;
+  }
+
+  /* CAMPOS DE FORMULARIO */
+
+  :is(
+    .inventario-container,
+    .abonos-container,
+    .clientes-container,
+    .creditos-container,
+    .proveedores-container,
+    .productos-container,
+    .gastos-container,
+    .inversiones-container,
+    .ventas-container,
+    .reportes-page,
+    .arqueos-container
+  ) :is(input, select, textarea) {
+    max-width: 100%;
+    font-size: 16px;
+    font-family: inherit;
+  }
+
+  /* ==========================================
+     TABLAS RESPONSIVE
+  ========================================== */
+
+  :is(
+    .tabla-abonos,
+    .clientes-table,
+    .tabla-creditos,
+    .tabla-gastos,
+    .tabla-productos,
+    .tabla-proveedores,
+    .inventario-table,
+    .tabla-facturas
+  ) {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    border: none;
+    background: transparent;
+  }
+
+  /* ENCABEZADOS OCULTOS EN MÓVIL */
+
+  :is(
+    .tabla-abonos,
+    .clientes-table,
+    .tabla-creditos,
+    .tabla-gastos,
+    .tabla-productos,
+    .tabla-proveedores,
+    .inventario-table,
+    .tabla-facturas
+  ) thead {
+    display: none;
+  }
+
+  /* CONTENEDOR DE TARJETAS */
+
+  :is(
+    .tabla-abonos,
+    .clientes-table,
+    .tabla-creditos,
+    .tabla-gastos,
+    .tabla-productos,
+    .tabla-proveedores,
+    .inventario-table,
+    .tabla-facturas
+  ) tbody {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    width: 100%;
+  }
+
+  /* FILAS COMO TARJETAS */
+
+  :is(
+    .tabla-abonos,
+    .clientes-table,
+    .tabla-creditos,
+    .tabla-gastos,
+    .tabla-productos,
+    .tabla-proveedores,
+    .inventario-table,
+    .tabla-facturas
+  ) tbody tr {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    padding: 12px;
+    background: white;
+    border: 1px solid var(--urbina-borde);
+    border-left: 4px solid var(--urbina-rojo);
+    border-radius: 12px;
+    box-shadow: 0 2px 9px rgba(0, 0, 0, 0.06);
+  }
+
+  /* DATOS DE LAS TARJETAS */
+
+  :is(
+    .tabla-abonos,
+    .clientes-table,
+    .tabla-creditos,
+    .tabla-gastos,
+    .tabla-productos,
+    .tabla-proveedores,
+    .inventario-table,
+    .tabla-facturas
+  ) tbody td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-width: 0;
+    padding: 9px 0;
+    border: none;
+    border-bottom: 1px solid #f1ecea;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+
+  :is(
+    .tabla-abonos,
+    .clientes-table,
+    .tabla-creditos,
+    .tabla-gastos,
+    .tabla-productos,
+    .tabla-proveedores,
+    .inventario-table,
+    .tabla-facturas
+  ) tbody td:last-child {
+    border-bottom: none;
+  }
+
+  /* ETIQUETAS */
+
+  :is(
+    .tabla-abonos,
+    .clientes-table,
+    .tabla-creditos,
+    .tabla-gastos,
+    .tabla-productos,
+    .tabla-proveedores,
+    .inventario-table,
+    .tabla-facturas
+  ) tbody td::before {
+    font-weight: 650;
+    flex: 0 0 39%;
+    text-align: left;
+    color: #6d4640;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  /* REGISTROS VACÍOS */
+
+  :is(
+    .tabla-abonos,
+    .clientes-table,
+    .tabla-creditos,
+    .tabla-gastos,
+    .tabla-productos,
+    .tabla-proveedores,
+    .inventario-table,
+    .tabla-facturas
+  ) tbody td[colspan] {
+    display: block;
+    text-align: center;
+  }
+
+  :is(
+    .tabla-abonos,
+    .clientes-table,
+    .tabla-creditos,
+    .tabla-gastos,
+    .tabla-productos,
+    .tabla-proveedores,
+    .inventario-table,
+    .tabla-facturas
+  ) tbody td[colspan]::before {
+    display: none;
+  }
+
+  /* ==========================================
+     ETIQUETAS DE CLIENTES
+  ========================================== */
+
+  .clientes-table td:nth-child(1)::before {
+    content: "#";
+  }
+
+  .clientes-table td:nth-child(2)::before {
+    content: "Nombre";
+  }
+
+  .clientes-table td:nth-child(3)::before {
+    content: "Dirección";
+  }
+
+  .clientes-table td:nth-child(4)::before {
+    content: "Acciones";
+  }
+
+  /* ==========================================
+     ETIQUETAS DE PROVEEDORES
+  ========================================== */
+
+  .tabla-proveedores td:nth-child(1)::before {
+    content: "#";
+  }
+
+  .tabla-proveedores td:nth-child(2)::before {
+    content: "Empresa";
+  }
+
+  .tabla-proveedores td:nth-child(3)::before {
+    content: "Vendedor";
+  }
+
+  .tabla-proveedores td:nth-child(4)::before {
+    content: "Categorías";
+  }
+
+  .tabla-proveedores td:nth-child(5)::before {
+    content: "Acciones";
+  }
+
+  /* ==========================================
+     ETIQUETAS DE CRÉDITOS
+  ========================================== */
+
+  .tabla-creditos td:nth-child(1)::before {
+    content: "ID";
+  }
+
+  .tabla-creditos td:nth-child(2)::before {
+    content: "Cliente";
+  }
+
+  .tabla-creditos td:nth-child(3)::before {
+    content: "Fecha inicio";
+  }
+
+  .tabla-creditos td:nth-child(4)::before {
+    content: "Vencimiento";
+  }
+
+  .tabla-creditos td:nth-child(5)::before {
+    content: "Total";
+  }
+
+  .tabla-creditos td:nth-child(6)::before {
+    content: "Pagado";
+  }
+
+  .tabla-creditos td:nth-child(7)::before {
+    content: "Saldo";
+  }
+
+  .tabla-creditos td:nth-child(8)::before {
+    content: "Estado";
+  }
+
+  .tabla-creditos td:nth-child(9)::before {
+    content: "Acciones";
+  }
+
+  /* ==========================================
+     ETIQUETAS DE ABONOS
+  ========================================== */
+
+  .tabla-abonos td:nth-child(1)::before {
+    content: "ID";
+  }
+
+  .tabla-abonos td:nth-child(2)::before {
+    content: "Cliente";
+  }
+
+  .tabla-abonos td:nth-child(3)::before {
+    content: "Monto";
+  }
+
+  .tabla-abonos td:nth-child(4)::before {
+    content: "Método";
+  }
+
+  .tabla-abonos td:nth-child(5)::before {
+    content: "Banco";
+  }
+
+  .tabla-abonos td:nth-child(6)::before {
+    content: "Fecha";
+  }
+
+  .tabla-abonos td:nth-child(7)::before {
+    content: "Acciones";
+  }
+
+  /* ==========================================
+     ETIQUETAS DE INVENTARIO
+  ========================================== */
+
+  .inventario-table td:nth-child(1)::before {
+    content: "#";
+  }
+
+  .inventario-table td:nth-child(2)::before {
+    content: "Producto";
+  }
+
+  .inventario-table td:nth-child(3)::before {
+    content: "Unidad";
+  }
+
+  .inventario-table td:nth-child(4)::before {
+    content: "Conteo";
+  }
+
+  .inventario-table td:nth-child(5)::before {
+    content: "Stock actual";
+  }
+
+  .inventario-table td:nth-child(6)::before {
+    content: "Fecha conteo";
+  }
+
+  .inventario-table td:nth-child(7)::before {
+    content: "Acciones";
+  }
+
+  /* ==========================================
+     ETIQUETAS DE PRODUCTOS
+  ========================================== */
+
+  .tabla-productos td:nth-child(1)::before {
+    content: "Producto";
+  }
+
+  .tabla-productos td:nth-child(2)::before {
+    content: "Categoría";
+  }
+
+  .tabla-productos td:nth-child(3)::before {
+    content: "Marca";
+  }
+
+  .tabla-productos td:nth-child(4)::before {
+    content: "Unidad";
+  }
+
+  .tabla-productos td:nth-child(5)::before {
+    content: "Acciones";
+  }
+
+  /* ==========================================
+     ETIQUETAS DE GASTOS
+  ========================================== */
+
+  .tabla-gastos td:nth-child(1)::before {
+    content: "#";
+  }
+
+  .tabla-gastos td:nth-child(2)::before {
+    content: "Descripción";
+  }
+
+  .tabla-gastos td:nth-child(3)::before {
+    content: "Monto";
+  }
+
+  .tabla-gastos td:nth-child(4)::before {
+    content: "Fecha";
+  }
+
+  .tabla-gastos td:nth-child(5)::before {
+    content: "Acciones";
+  }
+
+  /* ==========================================
+     ETIQUETAS DE REPORTES
+  ========================================== */
+
+  .tabla-facturas td:nth-child(1)::before {
+    content: "Fecha";
+  }
+
+  .tabla-facturas td:nth-child(2)::before {
+    content: "Tipo";
+  }
+
+  .tabla-facturas td:nth-child(3)::before {
+    content: "Detalle";
+  }
+
+  .tabla-facturas td:nth-child(4)::before {
+    content: "Método";
+  }
+
+  .tabla-facturas td:nth-child(5)::before {
+    content: "Monto";
+  }
+
+  /* ==========================================
+     VENTAS Y ARQUEOS
+  ========================================== */
+
+  :is(
+    .tabla-scroll-venta,
+    .tabla-scroll-container,
+    .tabla-venta-container,
+    .tabla-arqueos-container
+  ) {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tabla-venta {
+    min-width: 600px;
+  }
+
+  /* ==========================================
+     VENTANAS EMERGENTES
+  ========================================== */
+
+  [class*="modal-content"],
+  [class*="modal-contenido"],
+  [class*="modal-body"] {
+    max-width: min(96vw, 720px);
+    box-sizing: border-box;
+  }
+}
+
+/* ============================================
+   CELULARES MUY PEQUEÑOS
+============================================ */
+
+@media (max-width: 400px) {
+  :is(
+    .tabla-abonos,
+    .clientes-table,
+    .tabla-creditos,
+    .tabla-gastos,
+    .tabla-productos,
+    .tabla-proveedores,
+    .inventario-table,
+    .tabla-facturas
+  ) tbody tr {
+    padding: 9px;
+  }
+
+  :is(
+    .tabla-abonos,
+    .clientes-table,
+    .tabla-creditos,
+    .tabla-gastos,
+    .tabla-productos,
+    .tabla-proveedores,
+    .inventario-table,
+    .tabla-facturas
+  ) tbody td {
+    gap: 7px;
+    font-size: 13px;
+  }
+}

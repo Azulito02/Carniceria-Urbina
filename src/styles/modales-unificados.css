@@ -1,0 +1,715 @@
+
+/* ==============================================
+   CARNICERÍA URBINA
+   DISEÑO UNIFICADO DE FORMULARIOS Y VENTANAS
+   AGREGAR / EDITAR / ELIMINAR
+============================================== */
+
+:root {
+  --cu-primary: #8b1e1e;
+  --cu-primary-hover: #6b1515;
+  --cu-gold: #fbac3e;
+  --cu-border: #e9ddda;
+  --cu-background: #ffffff;
+  --cu-surface: #faf7f6;
+  --cu-text: #263238;
+  --cu-muted: #64748b;
+}
+
+/* ==============================================
+   FONDO DE LAS VENTANAS
+============================================== */
+
+:is(
+  .modal-overlay,
+  .modal-agregar-overlay,
+  .modal-editar-overlay,
+  .modal-eliminar-overlay
+) {
+  box-sizing: border-box;
+  padding: 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+:is(
+  .modal-overlay,
+  .modal-agregar-overlay,
+  .modal-editar-overlay,
+  .modal-eliminar-overlay
+) *,
+:is(
+  .modal-overlay,
+  .modal-agregar-overlay,
+  .modal-editar-overlay,
+  .modal-eliminar-overlay
+) *::before,
+:is(
+  .modal-overlay,
+  .modal-agregar-overlay,
+  .modal-editar-overlay,
+  .modal-eliminar-overlay
+) *::after {
+  box-sizing: border-box;
+}
+
+/* ==============================================
+   VENTANAS PRINCIPALES
+============================================== */
+
+:is(
+  .modal-overlay > .modal-content,
+  .modal-agregar-overlay > .modal-agregar-content,
+  .modal-editar-overlay > .modal-editar-content,
+  .modal-eliminar-overlay > .modal-eliminar-content
+) {
+  width: min(100%, 600px);
+  min-width: 0;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+
+  background: var(--cu-background);
+  border: 1px solid var(--cu-border);
+  border-radius: 16px;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.22);
+
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ==============================================
+   ENCABEZADOS UNIFICADOS
+============================================== */
+
+:is(
+  .modal-overlay .modal-header,
+  .modal-agregar-overlay .modal-agregar-header,
+  .modal-editar-overlay .modal-editar-header
+) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  min-width: 0;
+  padding: 17px 22px;
+
+  background: #ffffff !important;
+  color: var(--cu-primary) !important;
+
+  border-bottom: 1px solid var(--cu-border);
+}
+
+/* ==============================================
+   TÍTULOS SIEMPRE VISIBLES
+============================================== */
+
+:is(
+  .modal-overlay .modal-header,
+  .modal-agregar-overlay .modal-agregar-header,
+  .modal-editar-overlay .modal-editar-header
+) :is(h1, h2, h3, .modal-titulo) {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  flex: 1;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  color: var(--cu-primary) !important;
+  background: none !important;
+  background-image: none !important;
+
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  -webkit-text-fill-color: var(--cu-primary) !important;
+
+  font-family: inherit;
+  font-size: 22px !important;
+  font-weight: 750 !important;
+  line-height: 1.35 !important;
+
+  text-shadow: none !important;
+  overflow-wrap: anywhere;
+}
+
+/* ABONOS Y OTROS MODALES CON TÍTULO DIRECTO */
+
+.modal-overlay > .modal-content > h2:first-child,
+.modal-overlay > .modal-content > h3:first-child {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  margin: 0 0 18px;
+  color: var(--cu-primary) !important;
+  background: none !important;
+
+  -webkit-text-fill-color: var(--cu-primary) !important;
+
+  font-size: 22px !important;
+  font-weight: 750 !important;
+  line-height: 1.35;
+}
+
+/* ==============================================
+   BOTONES DE CERRAR
+============================================== */
+
+:is(
+  .modal-close,
+  .modal-cerrar,
+  .modal-agregar-close,
+  .modal-editar-close
+) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+
+  padding: 8px;
+
+  background: #faf4f3;
+  color: var(--cu-primary);
+
+  border: 1px solid var(--cu-border);
+  border-radius: 10px;
+
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+}
+
+:is(
+  .modal-close,
+  .modal-cerrar,
+  .modal-agregar-close,
+  .modal-editar-close
+):hover {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ==============================================
+   CUERPO DEL FORMULARIO
+============================================== */
+
+:is(
+  .modal-overlay,
+  .modal-agregar-overlay,
+  .modal-editar-overlay
+) :is(
+  .modal-body,
+  .form-group,
+  .form-grupo,
+  .campo,
+  .modal-field,
+  .modal-agregar-field,
+  .modal-editar-field
+) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+:is(
+  .modal-overlay,
+  .modal-agregar-overlay,
+  .modal-editar-overlay
+) :is(
+  .form-group,
+  .form-grupo,
+  .campo,
+  .modal-field,
+  .modal-agregar-field,
+  .modal-editar-field
+) {
+  margin-bottom: 16px;
+}
+
+/* ==============================================
+   ETIQUETAS DE FORMULARIOS
+============================================== */
+
+:is(
+  .modal-overlay,
+  .modal-agregar-overlay,
+  .modal-editar-overlay
+) :is(
+  .form-label,
+  .form-group label,
+  .form-grupo label,
+  .campo label,
+  .modal-field label,
+  .modal-agregar-field label,
+  .modal-editar-field label
+) {
+  display: block;
+  margin-bottom: 7px;
+
+  color: #374151;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+/* ==============================================
+   INPUTS, SELECT Y TEXTAREA
+============================================== */
+
+:is(
+  .modal-overlay,
+  .modal-agregar-overlay,
+  .modal-editar-overlay
+) :is(
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea
+) {
+  max-width: 100%;
+  min-width: 0;
+  min-height: 46px;
+
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+:is(
+  .modal-overlay,
+  .modal-agregar-overlay,
+  .modal-editar-overlay
+) :is(
+  .form-input,
+  .form-select,
+  .form-textarea,
+  .form-group input:not([type="checkbox"]),
+  .form-group select,
+  .form-group textarea,
+  .campo input,
+  .campo select,
+  .modal-agregar-field input,
+  .modal-agregar-field select,
+  .modal-editar-field input,
+  .modal-editar-field select
+) {
+  border: 1.5px solid #ddd1cd;
+  border-radius: 10px;
+
+  background-color: #ffffff;
+  color: var(--cu-text);
+}
+
+:is(
+  .modal-overlay,
+  .modal-agregar-overlay,
+  .modal-editar-overlay
+) textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+/* ENFOQUE DE LOS CAMPOS */
+
+:is(
+  .modal-overlay,
+  .modal-agregar-overlay,
+  .modal-editar-overlay
+) :is(input, select, textarea):focus {
+  border-color: var(--cu-primary);
+}
+
+/* CAMPOS DESHABILITADOS */
+
+:is(
+  .modal-overlay,
+  .modal-agregar-overlay,
+  .modal-editar-overlay
+) :is(input, select, textarea):disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+/* ==============================================
+   FILAS DE FORMULARIOS
+============================================== */
+
+:is(
+  .modal-overlay,
+  .modal-agregar-overlay,
+  .modal-editar-overlay
+) :is(
+  .form-row,
+  .form-grupo-doble
+) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* ==============================================
+   SECCIONES DE ACCIONES
+============================================== */
+
+:is(
+  .modal-footer,
+  .modal-buttons,
+  .modal-actions,
+  .modal-agregar-buttons,
+  .modal-editar-buttons,
+  .modal-eliminar-buttons
+) {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+
+  min-width: 0;
+  gap: 10px;
+}
+
+/* ==============================================
+   BOTONES UNIFICADOS
+============================================== */
+
+:is(
+  .modal-footer,
+  .modal-buttons,
+  .modal-actions,
+  .modal-agregar-buttons,
+  .modal-editar-buttons,
+  .modal-eliminar-buttons
+) button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 46px;
+  max-width: 100%;
+  padding: 11px 17px;
+
+  border-radius: 10px;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+
+  text-align: center;
+  white-space: normal;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* BOTONES PARA GUARDAR */
+
+:is(
+  .modal-footer,
+  .modal-buttons,
+  .modal-actions,
+  .modal-agregar-buttons,
+  .modal-editar-buttons
+) :is(
+  .btn-guardar,
+  .btn-modal-guardar,
+  .btn-agregar-guardar,
+  .btn-editar-guardar,
+  button[type="submit"]
+) {
+  background: var(--cu-primary);
+  border-color: var(--cu-primary);
+  color: #ffffff;
+}
+
+/* BOTONES PARA CANCELAR */
+
+:is(
+  .modal-footer,
+  .modal-buttons,
+  .modal-actions,
+  .modal-agregar-buttons,
+  .modal-editar-buttons
+) :is(
+  .btn-cancelar,
+  .btn-modal-cancelar,
+  .btn-agregar-cancelar,
+  .btn-editar-cancelar
+) {
+  background: #f1ecea;
+  border-color: #ded2cf;
+  color: #374151;
+}
+
+/* ELIMINAR */
+
+:is(
+  .modal-footer,
+  .modal-buttons,
+  .modal-actions,
+  .modal-eliminar-buttons
+) :is(
+  .btn-eliminar-confirmar,
+  .btn-confirmar-eliminar
+) {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  color: #ffffff;
+}
+
+/* BOTONES DESHABILITADOS */
+
+:is(
+  .modal-overlay,
+  .modal-agregar-overlay,
+  .modal-editar-overlay,
+  .modal-eliminar-overlay
+) button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ==============================================
+   MENSAJES DE ERROR
+============================================== */
+
+:is(
+  .modal-error,
+  .form-error,
+  .error-local
+) {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+/* ==============================================
+   TABLETS Y CELULARES
+============================================== */
+
+@media (max-width: 768px) {
+
+  :is(
+    .modal-overlay,
+    .modal-agregar-overlay,
+    .modal-editar-overlay,
+    .modal-eliminar-overlay
+  ) {
+    padding: 10px;
+  }
+
+  :is(
+    .modal-overlay > .modal-content,
+    .modal-agregar-overlay > .modal-agregar-content,
+    .modal-editar-overlay > .modal-editar-content,
+    .modal-eliminar-overlay > .modal-eliminar-content
+  ) {
+    width: 100%;
+    max-width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    border-radius: 12px;
+  }
+
+  /* ENCABEZADOS */
+
+  :is(
+    .modal-overlay .modal-header,
+    .modal-agregar-overlay .modal-agregar-header,
+    .modal-editar-overlay .modal-editar-header
+  ) {
+    padding: 15px 16px;
+  }
+
+  :is(
+    .modal-overlay .modal-header,
+    .modal-agregar-overlay .modal-agregar-header,
+    .modal-editar-overlay .modal-editar-header
+  ) :is(h1, h2, h3, .modal-titulo) {
+    font-size: 19px !important;
+  }
+
+  /* FORMULARIOS DE DOS COLUMNAS */
+
+  :is(
+    .modal-overlay,
+    .modal-agregar-overlay,
+    .modal-editar-overlay
+  ) :is(
+    .form-row,
+    .form-grupo-doble
+  ) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* CAMPOS */
+
+  :is(
+    .modal-overlay,
+    .modal-agregar-overlay,
+    .modal-editar-overlay
+  ) :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    select
+  ) {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  /* BOTONES */
+
+  :is(
+    .modal-footer,
+    .modal-buttons,
+    .modal-actions,
+    .modal-agregar-buttons,
+    .modal-editar-buttons,
+    .modal-eliminar-buttons
+  ) {
+    gap: 9px;
+  }
+
+  :is(
+    .modal-footer,
+    .modal-buttons,
+    .modal-actions,
+    .modal-agregar-buttons,
+    .modal-editar-buttons,
+    .modal-eliminar-buttons
+  ) button {
+    min-height: 48px;
+    font-size: 13px;
+  }
+}
+
+/* ==============================================
+   CELULARES PEQUEÑOS
+============================================== */
+
+@media (max-width: 420px) {
+
+  :is(
+    .modal-overlay,
+    .modal-agregar-overlay,
+    .modal-editar-overlay,
+    .modal-eliminar-overlay
+  ) {
+    padding: 8px;
+  }
+
+  :is(
+    .modal-overlay > .modal-content,
+    .modal-agregar-overlay > .modal-agregar-content,
+    .modal-editar-overlay > .modal-editar-content,
+    .modal-eliminar-overlay > .modal-eliminar-content
+  ) {
+    max-width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+
+  /* TÍTULOS */
+
+  :is(
+    .modal-overlay .modal-header,
+    .modal-agregar-overlay .modal-agregar-header,
+    .modal-editar-overlay .modal-editar-header
+  ) :is(h1, h2, h3, .modal-titulo) {
+    font-size: 18px !important;
+  }
+
+  /* ACCIONES EN DOS COLUMNAS */
+
+  :is(
+    .modal-footer,
+    .modal-buttons,
+    .modal-actions,
+    .modal-agregar-buttons,
+    .modal-editar-buttons,
+    .modal-eliminar-buttons
+  ) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  :is(
+    .modal-footer,
+    .modal-buttons,
+    .modal-actions,
+    .modal-agregar-buttons,
+    .modal-editar-buttons,
+    .modal-eliminar-buttons
+  ) button {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 7px;
+    font-size: 12px;
+  }
+}
+
+/* ==============================================
+   CELULARES MUY PEQUEÑOS
+============================================== */
+
+@media (max-width: 340px) {
+
+  :is(
+    .modal-footer,
+    .modal-buttons,
+    .modal-actions,
+    .modal-agregar-buttons,
+    .modal-editar-buttons,
+    .modal-eliminar-buttons
+  ) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ==============================================
+   ACCESIBILIDAD
+============================================== */
+
+:is(
+  .modal-overlay,
+  .modal-agregar-overlay,
+  .modal-editar-overlay,
+  .modal-eliminar-overlay
+) :is(
+  button,
+  input,
+  select,
+  textarea
+):focus-visible {
+  outline: 3px solid var(--cu-gold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  :is(
+    .modal-overlay,
+    .modal-agregar-overlay,
+    .modal-editar-overlay,
+    .modal-eliminar-overlay
+  ) * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

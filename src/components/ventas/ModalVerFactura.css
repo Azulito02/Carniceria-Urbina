@@ -1,237 +1,457 @@
-/* ModalVerFactura.css - Vista previa de factura */
-/* Todo va dentro de .modal-factura-ver para no chocar con otros modales */
 
-.modal-content.modal-factura-ver {
-  --vino: #8B1E1E;
-  --vino-osc: #6b1515;
-  --ambar: #FBAC3E;
-  --borde: #eadfdc;
-  --suave: #7d7f82;
+/* ============================================
+   CARNICERÍA URBINA
+   VENTAS - VER FACTURA
+   DISEÑO RESPONSIVE Y UNIFICADO
+============================================ */
 
-  max-width: 680px;
-  width: 94%;
+/* ===== VENTANA PRINCIPAL ===== */
+
+.modal-overlay > .modal-content.modal-factura-ver {
+  --vino: #8b1e1e;
+  --vino-oscuro: #6b1515;
+  --dorado: #fbac3e;
+  --borde: #eadedb;
+  --texto: #263238;
+  --secundario: #64748b;
+
+  width: min(100%, 720px);
+  max-width: calc(100vw - 32px);
+  min-width: 0;
+  max-height: calc(100dvh - 32px);
+
+  margin: auto;
+  padding: 0;
+
+  background: #ffffff;
+  border: 1px solid var(--borde);
+  border-radius: 16px;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.22);
+  -webkit-overflow-scrolling: touch;
 }
 
-/* ===== ESTADOS: CARGANDO / SIN FACTURA ===== */
+.modal-factura-ver,
+.modal-factura-ver *,
+.modal-factura-ver *::before,
+.modal-factura-ver *::after {
+  box-sizing: border-box;
+}
+
+/* ===== ENCABEZADO ===== */
+
+.modal-factura-ver > .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 18px 22px;
+
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--borde);
+}
+
+/* ===== TÍTULO ===== */
+
+.modal-factura-ver > .modal-header .modal-titulo {
+  display: block !important;
+  flex: 1;
+  min-width: 0;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  background: none !important;
+  background-image: none !important;
+  color: #8b1e1e !important;
+  -webkit-text-fill-color: #8b1e1e !important;
+
+  font-size: 22px !important;
+  font-weight: 750 !important;
+  line-height: 1.35;
+
+  text-shadow: none !important;
+  overflow-wrap: anywhere;
+}
+
+.modal-factura-ver > .modal-header .modal-titulo i {
+  margin-right: 7px;
+  color: #ad741c;
+  -webkit-text-fill-color: #ad741c;
+}
+
+/* ===== BOTÓN CERRAR ===== */
+
+.modal-factura-ver > .modal-header .modal-cerrar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+
+  padding: 8px;
+
+  background: #faf4f3;
+  color: #8b1e1e;
+
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+
+  font-size: 19px;
+  cursor: pointer;
+}
+
+.modal-factura-ver > .modal-header .modal-cerrar:hover {
+  background: #fee2e2;
+}
+
+/* ===== CUERPO ===== */
+
+.modal-factura-ver > .modal-body {
+  width: 100%;
+  min-width: 0;
+  padding: 22px;
+
+  background: #ffffff;
+}
+
+/* ===== CARGANDO / SIN FACTURA ===== */
+
 .modal-factura-ver .loading-facturas,
 .modal-factura-ver .sin-facturas {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 48px 20px;
+  justify-content: center;
+  gap: 12px;
+
+  min-height: 190px;
+  padding: 35px 18px;
+
   text-align: center;
-  color: var(--suave);
+  color: var(--secundario);
 }
 
 .modal-factura-ver .loading-facturas i,
 .modal-factura-ver .sin-facturas i {
-  font-size: 44px;
-  color: #D8A9A0;
+  color: #d8a9a0;
+  font-size: 42px;
+}
+
+.modal-factura-ver .loading-facturas i {
+  color: var(--vino);
 }
 
 .modal-factura-ver .loading-facturas p,
 .modal-factura-ver .sin-facturas p {
   margin: 0;
-  font-size: 15px;
-  font-weight: 600;
   color: var(--vino);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.5;
 }
 
-/* ===== BOTÓN PDF DESTACADO ===== */
+/* ===== DESCARGAR PDF DESTACADO ===== */
+
 .modal-factura-ver .accion-pdf-destacada {
   margin-bottom: 20px;
 }
 
 .modal-factura-ver .btn-descargar-pdf-grande {
-  width: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 16px 24px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--vino) 0%, #a82a2a 100%);
-  color: #fff;
+  gap: 10px;
+
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 18px;
+
+  background: var(--vino);
+  color: #ffffff;
+
+  border: 1px solid var(--vino);
+  border-radius: 11px;
+
   font-family: inherit;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.4;
+  text-align: center;
+
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(139, 30, 30, 0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .modal-factura-ver .btn-descargar-pdf-grande i {
-  font-size: 20px;
-  color: var(--ambar);
+  color: var(--dorado);
+  font-size: 19px;
 }
 
 .modal-factura-ver .btn-descargar-pdf-grande:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 22px rgba(139, 30, 30, 0.4);
+  background: var(--vino-oscuro);
+  transform: translateY(-1px);
 }
 
 .modal-factura-ver .btn-descargar-pdf-grande:disabled {
-  opacity: 0.7;
+  opacity: 0.55;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* ===== HOJA DE FACTURA ===== */
+
 .modal-factura-ver .factura-preview {
+  width: 100%;
+  min-width: 0;
+
+  padding: 23px;
+
   background: #fffdfc;
   border: 1px solid var(--borde);
   border-top: 5px solid var(--vino);
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 12px rgba(139, 30, 30, 0.08);
+
+  box-shadow: 0 2px 12px rgba(139, 30, 30, 0.07);
 }
 
+/* ===== DATOS DEL NEGOCIO ===== */
+
 .modal-factura-ver .factura-header-preview {
-  text-align: center;
   padding-bottom: 16px;
   margin-bottom: 16px;
+
   border-bottom: 2px dashed var(--borde);
+  text-align: center;
 }
 
 .modal-factura-ver .factura-header-preview h3 {
-  margin: 0 0 8px;
+  margin: 0 0 9px;
+  color: var(--vino);
+
   font-size: 22px;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  color: var(--vino);
+  line-height: 1.3;
+  letter-spacing: 0.04em;
 }
 
 .modal-factura-ver .factura-header-preview p {
-  margin: 2px 0;
+  margin: 4px 0;
+  color: var(--secundario);
   font-size: 13px;
-  color: var(--suave);
+  line-height: 1.5;
 }
 
-.modal-factura-ver .factura-header-preview p:first-of-type {
+.modal-factura-ver
+.factura-header-preview p:first-of-type {
+  color: var(--texto);
   font-size: 15px;
   font-weight: 700;
-  color: #2c2c2c;
 }
+
+/* ===== DATOS DEL CLIENTE ===== */
 
 .modal-factura-ver .factura-cliente-preview {
-  background: #faf7f6;
-  border-left: 4px solid var(--ambar);
-  border-radius: 8px;
-  padding: 12px 16px;
   margin-bottom: 18px;
+  padding: 14px 16px;
+
+  background: #faf7f6;
+  border-left: 4px solid var(--dorado);
+  border-radius: 9px;
+
+  color: var(--texto);
   font-size: 14px;
-  line-height: 1.6;
-  color: #333;
+  line-height: 1.7;
+
+  overflow-wrap: anywhere;
 }
 
-.modal-factura-ver .factura-cliente-preview strong { color: var(--vino); }
+.modal-factura-ver .factura-cliente-preview strong {
+  color: var(--vino);
+}
 
-/* ===== TABLA DE PRODUCTOS ===== */
+/* ===== TABLA DE PRODUCTOS EN COMPUTADORA ===== */
+
 .modal-factura-ver .tabla-factura-preview {
   width: 100%;
+  margin: 0 0 18px;
+
   border-collapse: collapse;
+  background: #ffffff;
+
   font-size: 14px;
-  margin-bottom: 16px;
+}
+
+.modal-factura-ver .tabla-factura-preview thead {
+  background: #faf7f6;
 }
 
 .modal-factura-ver .tabla-factura-preview th {
-  padding: 10px 8px;
-  text-align: left;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--vino);
+  padding: 12px 10px;
+
   background: #faf7f6;
+  color: var(--vino);
   border-bottom: 2px solid var(--borde);
+
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.4;
+  text-align: left;
+  text-transform: uppercase;
 }
 
 .modal-factura-ver .tabla-factura-preview td {
-  padding: 10px 8px;
-  border-bottom: 1px solid #f3ebe9;
-  color: #333;
+  padding: 12px 10px;
+
+  color: var(--texto);
+  border-bottom: 1px solid #f1e9e6;
+
+  font-size: 14px;
+  line-height: 1.5;
+  vertical-align: top;
 }
 
-.modal-factura-ver .tabla-factura-preview tbody tr:nth-child(even) {
+.modal-factura-ver
+.tabla-factura-preview tbody tr:nth-child(even) {
   background: #fdfaf9;
 }
 
-.modal-factura-ver .tabla-factura-preview th:nth-child(2),
-.modal-factura-ver .tabla-factura-preview td:nth-child(2) {
+.modal-factura-ver
+.tabla-factura-preview td:first-child {
+  overflow-wrap: anywhere;
+}
+
+.modal-factura-ver
+.tabla-factura-preview :is(
+  th:nth-child(2),
+  td:nth-child(2)
+) {
   text-align: center;
 }
 
-.modal-factura-ver .tabla-factura-preview th:nth-child(3),
-.modal-factura-ver .tabla-factura-preview td:nth-child(3),
-.modal-factura-ver .tabla-factura-preview th:nth-child(4),
-.modal-factura-ver .tabla-factura-preview td:nth-child(4) {
+.modal-factura-ver
+.tabla-factura-preview :is(
+  th:nth-child(3),
+  td:nth-child(3),
+  th:nth-child(4),
+  td:nth-child(4)
+) {
   text-align: right;
   white-space: nowrap;
 }
 
-.modal-factura-ver .tabla-factura-preview td:nth-child(4) {
-  font-weight: 700;
+.modal-factura-ver
+.tabla-factura-preview td:nth-child(4) {
   color: var(--vino);
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
 }
 
-/* ===== TOTAL ===== */
+/* ===== TOTAL DE FACTURA ===== */
+
 .modal-factura-ver .factura-total-preview {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 14px 20px;
+  justify-content: space-between;
+  gap: 14px;
+
+  padding: 15px 18px;
+
   background: var(--vino);
-  color: #fff;
+  color: #ffffff;
   border-radius: 10px;
+
   font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-weight: 750;
+  line-height: 1.4;
 }
 
-.modal-factura-ver .factura-total-preview span:last-child {
+.modal-factura-ver
+.factura-total-preview span:last-child {
+  color: var(--dorado);
   font-size: 24px;
-  letter-spacing: 0;
-  color: var(--ambar);
+  font-weight: 800;
+
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
 /* ===== MÉTODO DE PAGO ===== */
+
 .modal-factura-ver .factura-metodo-preview {
-  margin-top: 16px;
+  margin-top: 18px;
+
+  color: var(--texto);
   font-size: 14px;
-  color: #333;
+  line-height: 1.6;
+
   text-transform: capitalize;
+  overflow-wrap: anywhere;
 }
 
-.modal-factura-ver .factura-metodo-preview strong { color: var(--vino); }
+.modal-factura-ver
+.factura-metodo-preview strong {
+  color: var(--vino);
+}
+
+/* ===== DESGLOSE DE PAGO ===== */
 
 .modal-factura-ver .factura-desglose-preview {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 9px;
+
+  margin-top: 12px;
 }
 
-.modal-factura-ver .factura-desglose-preview span {
-  padding: 6px 14px;
-  border-radius: 20px;
+.modal-factura-ver
+.factura-desglose-preview span {
+  display: inline-flex;
+  align-items: center;
+
+  max-width: 100%;
+  padding: 8px 12px;
+
   background: #f5f0ef;
+  color: #444444;
+
   border: 1px solid var(--borde);
+  border-radius: 18px;
+
   font-size: 13px;
-  font-weight: 600;
-  color: #444;
+  font-weight: 650;
+  line-height: 1.4;
+
+  overflow-wrap: anywhere;
 }
 
-.modal-factura-ver .factura-desglose-preview .vuelto {
+.modal-factura-ver
+.factura-desglose-preview .vuelto {
   background: #e8f5e9;
-  border-color: #b7dfba;
   color: #2e7d32;
+  border-color: #b7dfba;
 }
 
 /* ===== INFORMACIÓN DEL CRÉDITO ===== */
+
 .modal-factura-ver .factura-credito-info {
-  margin-top: 18px;
-  padding: 16px 18px;
+  margin-top: 20px;
+  padding: 18px;
+
   background: #fffaf2;
   border: 1px solid #f3d9a8;
   border-radius: 12px;
@@ -241,104 +461,511 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #f3d9a8;
-  font-size: 13px;
-  letter-spacing: 0.04em;
+
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+
   color: var(--vino);
+  border-bottom: 1px solid #f3d9a8;
+
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
 }
 
-.modal-factura-ver .credito-titulo i { color: var(--ambar); font-size: 18px; }
+.modal-factura-ver .credito-titulo i {
+  color: #ad741c;
+  font-size: 18px;
+}
 
 .modal-factura-ver .credito-item {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 0;
+  gap: 14px;
+
+  padding: 8px 0;
+
   font-size: 14px;
+  line-height: 1.5;
 }
 
-.modal-factura-ver .credito-item span { color: var(--suave); }
-.modal-factura-ver .credito-item strong { color: #2c2c2c; }
+.modal-factura-ver .credito-item span {
+  flex: 1;
+  min-width: 0;
+  color: #64748b;
+}
+
+.modal-factura-ver .credito-item strong {
+  min-width: 0;
+
+  color: #263238;
+  font-weight: 750;
+  text-align: right;
+
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
 
 .modal-factura-ver .credito-detalle {
-  background: #fff;
+  padding: 10px 15px;
+
+  background: #ffffff;
   border: 1px solid var(--borde);
   border-radius: 10px;
-  padding: 8px 14px;
 }
 
-.modal-factura-ver .credito-detalle .credito-item + .credito-item {
+.modal-factura-ver
+.credito-detalle .credito-item + .credito-item {
   border-top: 1px dashed var(--borde);
 }
 
 .modal-factura-ver .credito-saldo {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 
-.modal-factura-ver .credito-saldo span { font-weight: 700; color: var(--vino); }
-.modal-factura-ver .credito-saldo strong { font-size: 18px; }
+.modal-factura-ver .credito-saldo span {
+  color: var(--vino);
+  font-weight: 750;
+}
 
-/* ===== SALDO ANTERIOR EN FACTURA ===== */
+.modal-factura-ver .credito-saldo strong {
+  font-size: 18px;
+}
+
+/* ===== SALDO ANTERIOR ===== */
+
 .modal-factura-ver .credito-saldo-anterior {
-  padding: 8px 12px;
+  padding: 10px 12px;
+
   background: #fff3e0;
+  border-left: 3px solid #fbac3e;
   border-radius: 8px;
-  border-left: 3px solid var(--ambar);
 }
 
-.modal-factura-ver .credito-saldo-anterior span {
-  color: #e65100;
-  font-weight: 600;
-}
-
+.modal-factura-ver .credito-saldo-anterior span,
 .modal-factura-ver .credito-saldo-anterior strong {
-  color: #e65100;
+  color: #a4510b;
   font-weight: 700;
 }
 
 .modal-factura-ver .credito-divisor {
   height: 1px;
+  margin: 13px 0;
   background: #f0e8e6;
-  margin: 12px 0;
 }
 
-/* ===== AVISO SALDO PENDIENTE ===== */
+/* ===== AVISO DE SALDO PENDIENTE ===== */
+
 .modal-factura-ver .aviso-saldo-pendiente {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin-top: 14px;
-  padding: 12px 16px;
+
+  margin-top: 15px;
+  padding: 13px 15px;
+
   background: #fde8e8;
-  border-left: 4px solid var(--vino);
-  border-radius: 8px;
-  font-size: 14px;
   color: var(--vino);
+
+  border-left: 4px solid var(--vino);
+  border-radius: 9px;
+
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
-.modal-factura-ver .aviso-saldo-pendiente i { font-size: 18px; margin-top: 1px; }
-
-/* ===== PIE DEL MODAL ===== */
-.modal-factura-ver .modal-footer .btn-modal-cancelar,
-.modal-factura-ver .modal-footer .btn-modal-guardar {
-  padding: 12px 26px;
+.modal-factura-ver .aviso-saldo-pendiente i {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  font-size: 18px;
 }
 
-/* ===== MÓVIL ===== */
+/* ===== BOTONES INFERIORES ===== */
+
+.modal-factura-ver > .modal-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  gap: 12px;
+
+  padding: 18px 22px;
+
+  background: #faf7f6;
+  border-top: 1px solid var(--borde);
+}
+
+.modal-factura-ver
+> .modal-footer .btn-modal-cancelar,
+.modal-factura-ver
+> .modal-footer .btn-modal-guardar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 11px 15px;
+
+  border-radius: 10px;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.4;
+  text-align: center;
+
+  cursor: pointer;
+}
+
+.modal-factura-ver
+> .modal-footer .btn-modal-cancelar {
+  background: #f3efed;
+  color: #374151;
+  border: 1px solid #d9ceca;
+}
+
+.modal-factura-ver
+> .modal-footer .btn-modal-guardar {
+  background: var(--vino);
+  color: #ffffff;
+  border: 1px solid var(--vino);
+}
+
+.modal-factura-ver
+> .modal-footer .btn-modal-guardar:hover:not(:disabled) {
+  background: var(--vino-oscuro);
+}
+
+.modal-factura-ver
+> .modal-footer button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   TABLETS
+============================================ */
+
+@media (max-width: 768px) {
+  .modal-overlay > .modal-content.modal-factura-ver {
+    width: 100%;
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+    border-radius: 14px;
+  }
+
+  .modal-factura-ver > .modal-header {
+    padding: 16px 18px;
+  }
+
+  .modal-factura-ver
+  > .modal-header .modal-titulo {
+    font-size: 20px !important;
+  }
+
+  .modal-factura-ver > .modal-body {
+    padding: 18px;
+  }
+
+  .modal-factura-ver .factura-preview {
+    padding: 18px;
+  }
+
+  .modal-factura-ver > .modal-footer {
+    padding: 16px 18px;
+  }
+}
+
+/* ============================================
+   CELULARES: PRODUCTOS COMO TARJETAS
+============================================ */
+
 @media (max-width: 600px) {
-  .modal-factura-ver .factura-preview { padding: 16px 12px; }
-  .modal-factura-ver .factura-header-preview h3 { font-size: 18px; }
+  .modal-overlay > .modal-content.modal-factura-ver {
+    max-width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+    border-radius: 12px;
+  }
 
-  .modal-factura-ver .tabla-factura-preview { font-size: 12px; }
-  .modal-factura-ver .tabla-factura-preview th,
-  .modal-factura-ver .tabla-factura-preview td { padding: 8px 4px; }
+  /* ENCABEZADO */
 
-  .modal-factura-ver .factura-total-preview span:last-child { font-size: 20px; }
+  .modal-factura-ver > .modal-header {
+    gap: 10px;
+    padding: 14px;
+  }
 
-  .modal-factura-ver .modal-footer { flex-direction: column-reverse; }
-  .modal-factura-ver .modal-footer button { width: 100%; justify-content: center; }
+  .modal-factura-ver
+  > .modal-header .modal-titulo {
+    font-size: 18px !important;
+  }
+
+  .modal-factura-ver
+  > .modal-header .modal-cerrar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  /* CUERPO */
+
+  .modal-factura-ver > .modal-body {
+    padding: 13px;
+  }
+
+  .modal-factura-ver
+  .btn-descargar-pdf-grande {
+    min-height: 50px;
+    padding: 12px;
+    font-size: 13px;
+  }
+
+  /* VISTA PREVIA */
+
+  .modal-factura-ver .factura-preview {
+    padding: 14px 12px;
+    border-radius: 10px;
+  }
+
+  .modal-factura-ver
+  .factura-header-preview h3 {
+    font-size: 18px;
+  }
+
+  .modal-factura-ver
+  .factura-header-preview p {
+    font-size: 12px;
+  }
+
+  .modal-factura-ver
+  .factura-cliente-preview {
+    padding: 12px;
+    font-size: 13px;
+  }
+
+  /* TABLA COMO TARJETAS */
+
+  .modal-factura-ver .tabla-factura-preview {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+
+    margin-bottom: 18px;
+    background: transparent;
+  }
+
+  .modal-factura-ver
+  .tabla-factura-preview thead {
+    display: none !important;
+  }
+
+  .modal-factura-ver
+  .tabla-factura-preview tbody {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 11px;
+    width: 100%;
+  }
+
+  .modal-factura-ver
+  .tabla-factura-preview tbody tr {
+    display: block !important;
+    width: 100%;
+    min-width: 0;
+    padding: 12px !important;
+
+    background: #ffffff !important;
+    border: 1px solid var(--borde);
+    border-left: 4px solid var(--vino);
+    border-radius: 10px;
+  }
+
+  .modal-factura-ver
+  .tabla-factura-preview tbody td {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+
+    width: 100% !important;
+    min-width: 0;
+    height: auto;
+    padding: 9px 0 !important;
+
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid #f1e9e6 !important;
+
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: right !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+
+  .modal-factura-ver
+  .tabla-factura-preview tbody td:last-child {
+    border-bottom: none !important;
+  }
+
+  /* ETIQUETAS DE CADA PRODUCTO */
+
+  .modal-factura-ver
+  .tabla-factura-preview tbody td::before {
+    display: block;
+    flex: 0 0 34%;
+    min-width: 0;
+
+    color: #70463f;
+    font-size: 12px;
+    font-weight: 750;
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  .modal-factura-ver
+  .tabla-factura-preview td:nth-child(1)::before {
+    content: "Producto";
+  }
+
+  .modal-factura-ver
+  .tabla-factura-preview td:nth-child(2)::before {
+    content: "Cantidad";
+  }
+
+  .modal-factura-ver
+  .tabla-factura-preview td:nth-child(3)::before {
+    content: "Precio";
+  }
+
+  .modal-factura-ver
+  .tabla-factura-preview td:nth-child(4)::before {
+    content: "Total";
+  }
+
+  /* TOTAL */
+
+  .modal-factura-ver .factura-total-preview {
+    gap: 10px;
+    padding: 14px 13px;
+    font-size: 14px;
+  }
+
+  .modal-factura-ver
+  .factura-total-preview span:last-child {
+    font-size: 21px;
+    text-align: right;
+  }
+
+  /* PAGOS */
+
+  .modal-factura-ver
+  .factura-desglose-preview {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modal-factura-ver
+  .factura-desglose-preview span {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 9px;
+  }
+
+  /* CRÉDITOS */
+
+  .modal-factura-ver
+  .factura-credito-info {
+    padding: 13px;
+  }
+
+  .modal-factura-ver
+  .credito-detalle {
+    padding: 8px 11px;
+  }
+
+  .modal-factura-ver
+  .credito-item {
+    gap: 10px;
+    font-size: 12px;
+  }
+
+  .modal-factura-ver
+  .credito-saldo strong {
+    font-size: 16px;
+  }
+
+  /* BOTONES INFERIORES */
+
+  .modal-factura-ver > .modal-footer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 9px;
+    padding: 13px;
+  }
+
+  .modal-factura-ver
+  > .modal-footer button {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px;
+    font-size: 13px;
+  }
+}
+
+/* ============================================
+   CELULARES MUY PEQUEÑOS
+============================================ */
+
+@media (max-width: 360px) {
+  .modal-factura-ver > .modal-body {
+    padding: 10px;
+  }
+
+  .modal-factura-ver
+  .factura-preview {
+    padding: 12px 9px;
+  }
+
+  .modal-factura-ver
+  .tabla-factura-preview tbody tr {
+    padding: 10px !important;
+  }
+
+  .modal-factura-ver
+  .tabla-factura-preview tbody td {
+    gap: 8px !important;
+    font-size: 12px;
+  }
+
+  .modal-factura-ver
+  .tabla-factura-preview tbody td::before {
+    flex-basis: 36%;
+    font-size: 11px;
+  }
+
+  .modal-factura-ver
+  .factura-total-preview span:last-child {
+    font-size: 19px;
+  }
+}
+
+/* ===== ACCESIBILIDAD ===== */
+
+.modal-factura-ver
+:is(button, input, select):focus-visible {
+  outline: 3px solid #fbac3e;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-factura-ver,
+  .modal-factura-ver * {
+    animation: none !important;
+    transition: none !important;
+  }
 }

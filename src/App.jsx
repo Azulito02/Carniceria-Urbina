@@ -1,5 +1,6 @@
 
 import React, { useEffect } from 'react';
+
 import {
   BrowserRouter,
   Routes,
@@ -33,36 +34,33 @@ import {
 } from './services/OfflineService';
 
 import './App.css';
+import './styles/responsive-modulos.css';
+import './styles/modales-unificados.css';
 
-/* ===== CHATBOT SOLO PARA USUARIOS AUTENTICADOS ===== */
+/* ===== CHATBOT SOLO CON SESIÓN ===== */
 
 function ChatbotProtegido() {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  // No mostrar IA en el login ni sin sesión iniciada
-  if (loading || !user || location.pathname === '/login') {
+  if (
+    loading ||
+    !user ||
+    location.pathname === '/login'
+  ) {
     return null;
   }
 
   return <Chatbot />;
 }
 
-/* ===== CONTENIDO PRINCIPAL ===== */
+/* ===== RUTAS DEL SISTEMA ===== */
 
 function ContenidoApp() {
   return (
     <>
       <Routes>
-
-        {/* ===== RUTA PÚBLICA ===== */}
-
-        <Route
-          path="/login"
-          element={<Login />}
-        />
-
-        {/* ===== RUTAS PARA TODOS ===== */}
+        <Route path="/login" element={<Login />} />
 
         <Route
           path="/"
@@ -136,7 +134,7 @@ function ContenidoApp() {
           }
         />
 
-        {/* ===== RUTAS SOLO ADMIN ===== */}
+        {/* ===== SOLO ADMINISTRADOR ===== */}
 
         <Route
           path="/inventario"
@@ -180,16 +178,15 @@ function ContenidoApp() {
           path="*"
           element={<Navigate to="/" replace />}
         />
-
       </Routes>
 
-      {/* IA visible únicamente con sesión activa */}
+      {/* CHATBOT SOLO DESPUÉS DEL LOGIN */}
       <ChatbotProtegido />
     </>
   );
 }
 
-/* ===== APLICACIÓN ===== */
+/* ===== APLICACIÓN PRINCIPAL ===== */
 
 function App() {
   useEffect(() => {
@@ -201,10 +198,15 @@ function App() {
       temporizador = setTimeout(() => {
         sincronizarOperaciones()
           .then(() => {
-            console.log('✅ Sincronización inicial completada');
+            console.log(
+              '✅ Sincronización inicial completada'
+            );
           })
           .catch((error) => {
-            console.error('Error de sincronización:', error);
+            console.error(
+              'Error de sincronización:',
+              error
+            );
           });
       }, 3000);
     }

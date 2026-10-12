@@ -1,64 +1,68 @@
-// src/views/Creditos.jsx
-import { useState, useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../database/supabase';
 import Encabezado from '../components/Encabezado';
-import TablaCreditos from '../components/creditos/TablaCreditos';
-import ModalAgregarCredito from '../components/creditos/ModalAgregarCredito';
-import ModalEditarCredito from '../components/creditos/ModalEditarCredito';
-import ModalEliminarCredito from '../components/creditos/ModalEliminarCredito';
-import './Creditos.css';
+import TablaGastos from '../components/gastos/TablaGastos';
+import ModalAgregarGastos from '../components/gastos/ModalAgregarGastos';
+import ModalEditarGastos from '../components/gastos/ModalEditarGastos';
+import ModalEliminarGastos from '../components/gastos/ModalEliminarGastos';
+import {
+  agregarOperacion,
+  sincronizarOperaciones,
+  obtenerOperacionesPendientes
+} from '../services/OfflineService';
+import './Gastos.css';
 
-const Creditos = () => {
+function Gastos() {
   const navigate = useNavigate();
-  
-  const [creditos, setCreditos] = useState([]);
-  const [creditosFiltrados, setCreditosFiltrados] = useState([]);
-  const [clientes, setClientes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [archivando, setArchivando] = useState(false);
-  const [filtroMostrar, setFiltroMostrar] = useState('pendientes');
+
+  const [gastos, setGastos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [syncError, setSyncError] = useState(null);
   const [conectado, setConectado] = useState(navigator.onLine);
-  const [operacionesPendientes, setOperacionesPendientes] = useState(0);
+
+  const [gastosFiltrados, setGastosFiltrados] = useState([]);
+  const [modalAgregar, setModalAgregar] = useState(false);
+  const [modalEditar, setModalEditar] = useState(false);
+  const [modalEliminar, setModalEliminar] = useState(false);
+  const [gastoSeleccionado, setGastoSeleccionado] = useState(null);
   const [error, setError] = useState(null);
   const [exito, setExito] = useState(null);
-  
-  const [showAgregarModal, setShowAgregarModal] = useState(false);
-  const [showEditarModal, setShowEditarModal] = useState(false);
-  const [showEliminarModal, setShowEliminarModal] = useState(false);
-  const [creditoSeleccionado, setCreditoSeleccionado] = useState(null);
+  const [operacionesPendientes, setOperacionesPendientes] = useState(0);
+  const [busqueda, setBusqueda] = useState('');
 
-  useEffect(() => {
-    cargarDatos();
-  }, []);
+  // ===== CARGAR GASTOS =====
 
-  useEffect(() => {
-    if (creditos.length > 0 || creditos.length === 0) {
-      aplicarFiltro();
+  const cargarGastos = async () => {
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('gastos')
+        .select('*')
+        .order('descripcion', { ascending: true });
+
+      if (error) throw error;
+
+      console.log('Gastos cargados:', data);
+      setGastos(data || []);
+      setSyncError(null);
+    } catch (err) {
+      console.error('Error cargando gastos:', err);
+      setSyncError('Error al cargar los gastos: ' + err.message);
+    } finally {
+      setLoading(false);
     }
-  }, [creditos, filtroMostrar]);
+  };
 
-  // ===== CONTAR OPERACIONES PENDIENTES =====
-  useEffect(() => {
-    const contar = () => {
-      const ops = obtenerOperacionesPendientes();
-      setOperacionesPendientes(ops.length);
-    };
-    contar();
-    const interval = setInterval(contar, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  // ===== CARGAR AL INICIAR =====
 
-  // ===== DETECTAR CAMBIOS DE CONEXIÓN =====
   useEffect(() => {
-    const handleOnline = () => {
-      setConectado(true);
-      cargarDatos();
-    };
-    
-    const handleOffline = () => {
-      setConectado(false);
-    };
+    cargarGastos();
+
+    const handleOnline = () => setConectado(true);
+    const handleOffline = () => setConectado(false);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -69,445 +73,531 @@ const Creditos = () => {
     };
   }, []);
 
-  const obtenerOperacionesPendientes = () => {
-    try {
-      const data = localStorage.getItem('operaciones_pendientes_creditos');
-      return data ? JSON.parse(data) : [];
-    } catch (error) {
-      return [];
-    }
-  };
+  // ===== OPERACIONES PENDIENTES =====
 
-  const aplicarFiltro = () => {
-    let filtrados = [];
-    
-    switch (filtroMostrar) {
-      case 'pendientes':
-        filtrados = creditos.filter(credito => 
-          credito.saldo_pendiente > 0
-        );
-        break;
-      case 'completados':
-        filtrados = creditos.filter(credito => 
-          credito.saldo_pendiente === 0
-        );
-        break;
-      case 'todos':
-      default:
-        filtrados = [...creditos];
-        break;
-    }
-    
-    setCreditosFiltrados(filtrados);
-  };
-
-  const cargarDatos = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Cargar clientes
-      const { data: clientesData, error: errorClientes } = await supabase
-        .from('clientes')
-        .select('id, nombre')
-        .order('nombre');
-      
-      if (errorClientes) {
-        console.error('Error clientes:', errorClientes);
-      } else {
-        setClientes(clientesData || []);
-      }
-      
-      // Cargar créditos
-      const { data: creditosData, error: errorCreditos } = await supabase
-        .from('creditos')
-        .select(`
-          *,
-          clientes (id, nombre)
-        `)
-        .order('fecha_inicio', { ascending: false });
-      
-      if (errorCreditos) {
-        console.error('Error creditos:', errorCreditos);
-        setError('Error al cargar créditos: ' + errorCreditos.message);
-      } else {
-        const creditosProcesados = (creditosData || []).map(credito => {
-          const total = parseFloat(credito.monto_total) || 0;
-          const pagado = parseFloat(credito.monto_pagado) || 0;
-          
-          let saldo_pendiente = parseFloat(credito.saldo_pendiente);
-          if (saldo_pendiente === undefined || saldo_pendiente === null) {
-            saldo_pendiente = total - pagado;
-          }
-          
-          saldo_pendiente = Math.max(0, saldo_pendiente);
-          
-          return {
-            ...credito,
-            cliente_nombre: credito.clientes?.nombre || 'Cliente no disponible',
-            total: total,
-            monto_total: total,
-            monto_pagado: pagado,
-            saldo_pendiente: saldo_pendiente,
-            completado: saldo_pendiente === 0
-          };
-        });
-        
-        setCreditos(creditosProcesados);
-        setExito(`✅ ${creditosProcesados.length} créditos cargados`);
-        setTimeout(() => setExito(null), 3000);
-      }
-      
-    } catch (error) {
-      console.error('Error cargando datos:', error);
-      setError('Error al cargar datos: ' + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAgregarCredito = () => {
-    setShowAgregarModal(true);
-  };
-
-  const handleEditarCredito = (credito) => {
-    setCreditoSeleccionado(credito);
-    setShowEditarModal(true);
-  };
-
-  const handleEliminarCredito = (credito) => {
-    setCreditoSeleccionado(credito);
-    setShowEliminarModal(true);
-  };
-
-  const handleCerrarAgregarModal = () => {
-    setShowAgregarModal(false);
-  };
-
-  const handleCerrarEditarModal = () => {
-    setCreditoSeleccionado(null);
-    setShowEditarModal(false);
-  };
-
-  const handleCerrarEliminarModal = () => {
-    setCreditoSeleccionado(null);
-    setShowEliminarModal(false);
-  };
-
-  const handleCreditoAgregado = () => {
-    cargarDatos();
-    setShowAgregarModal(false);
-  };
-
-  const handleCreditoEditado = () => {
-    cargarDatos();
-    setShowEditarModal(false);
-  };
-
-  const handleCreditoEliminado = () => {
-    cargarDatos();
-    setShowEliminarModal(false);
-  };
-
-  const getEstadoCredito = (credito) => {
-    if (credito.estado === 'cancelado') {
-      return { texto: 'Cancelado', clase: 'estado-cancelado' };
-    }
-    
-    if (credito.saldo_pendiente === 0) {
-      return { texto: 'Pagado', clase: 'estado-completado' };
-    }
-    
-    if (credito.estado === 'vencido') {
-      return { texto: 'Vencido', clase: 'estado-vencido' };
-    }
-    
-    if (credito.fecha_fin) {
-      const hoy = new Date();
-      const fin = new Date(credito.fecha_fin);
-      const hoySinHora = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-      const finSinHora = new Date(fin.getFullYear(), fin.getMonth(), fin.getDate());
-      const diferenciaMs = finSinHora.getTime() - hoySinHora.getTime();
-      const diferenciaDias = Math.ceil(diferenciaMs / (1000 * 60 * 60 * 24));
-      
-      if (diferenciaDias < 0) {
-        return { texto: 'Vencido', clase: 'estado-vencido' };
-      } else if (diferenciaDias === 0) {
-        return { texto: 'Vence hoy', clase: 'estado-por-vencer' };
-      } else if (diferenciaDias <= 3) {
-        return { texto: `Por vencer (${diferenciaDias}d)`, clase: 'estado-por-vencer' };
-      }
-    }
-    
-    return { texto: 'Activo', clase: 'estado-activo' };
-  };
-
-  const calcularResumen = () => {
-    const totalCreditos = creditos.length;
-    const totalMonto = creditos.reduce((sum, credito) => sum + (credito.monto_total || 0), 0);
-    const totalPagado = creditos.reduce((sum, credito) => sum + (credito.monto_pagado || 0), 0);
-    
-    const creditosPendientes = creditos.filter(credito => credito.saldo_pendiente > 0).length;
-    const creditosCompletados = creditos.filter(credito => credito.saldo_pendiente === 0).length;
-    
-    const totalSaldoPendiente = creditos.reduce((sum, credito) => 
-      sum + (credito.saldo_pendiente || 0), 0);
-    
-    return {
-      totalCreditos,
-      totalMonto,
-      totalPagado,
-      creditosPendientes,
-      creditosCompletados,
-      totalSaldoPendiente
+  useEffect(() => {
+    const contar = () => {
+      const ops = obtenerOperacionesPendientes();
+      setOperacionesPendientes(ops.length);
     };
+
+    contar();
+
+    const interval = setInterval(contar, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // ===== FILTRAR GASTOS =====
+
+  useEffect(() => {
+    filtrarGastos();
+  }, [busqueda, gastos]);
+
+  const filtrarGastos = () => {
+    let filtrados = [...gastos];
+
+    if (busqueda.trim() !== '') {
+      const lower = busqueda.toLowerCase().trim();
+
+      filtrados = filtrados.filter(g =>
+        g.descripcion?.toLowerCase().includes(lower)
+      );
+    }
+
+    setGastosFiltrados(filtrados);
   };
 
-  const resumen = calcularResumen();
-
-  const handleCambiarFiltro = (nuevoFiltro) => {
-    setFiltroMostrar(nuevoFiltro);
+  const limpiarFiltros = () => {
+    setBusqueda('');
   };
 
-  const handleArchivarCompletados = async () => {
-    const creditosCompletados = creditos.filter(c => c.saldo_pendiente === 0);
-    
-    if (creditosCompletados.length === 0) {
-      alert('No hay créditos pagados para eliminar');
+  // ===== CREAR GASTO =====
+
+  const crearGasto = async (formData) => {
+    try {
+      if (!formData.descripcion?.trim()) {
+        setError('La descripción es obligatoria');
+        return false;
+      }
+
+      if (!formData.monto || parseFloat(formData.monto) === 0) {
+        setError('El monto es obligatorio y no puede ser cero');
+        return false;
+      }
+
+      const nuevoGasto = {
+        descripcion: formData.descripcion.trim(),
+        monto: parseFloat(formData.monto)
+      };
+
+      if (conectado) {
+        const { data, error } = await supabase
+          .from('gastos')
+          .insert([nuevoGasto])
+          .select();
+
+        if (error) {
+          console.error('Error:', error);
+          setError('Error al crear: ' + error.message);
+          return false;
+        }
+
+        if (data?.length > 0) {
+          await cargarGastos();
+          setModalAgregar(false);
+          setExito('✅ Gasto creado');
+          setTimeout(() => setExito(null), 3000);
+          return true;
+        }
+
+        return false;
+      }
+
+      const idLocal = `local_${Date.now()}`;
+
+      agregarOperacion({
+        tipo: 'INSERT',
+        tabla: 'gastos',
+        datos: nuevoGasto
+      });
+
+      setGastos(prev => [
+        ...prev,
+        { ...nuevoGasto, id: idLocal, _local: true }
+      ]);
+
+      setModalAgregar(false);
+      setExito('📝 Guardado localmente. Se sincronizará con internet.');
+      setTimeout(() => setExito(null), 4000);
+
+      return true;
+    } catch (err) {
+      console.error('Error:', err);
+      setError('Error inesperado');
+      return false;
+    }
+  };
+
+  // ===== ACTUALIZAR GASTO =====
+
+  const actualizarGasto = async (id, formData) => {
+    try {
+      if (!id || !formData.descripcion?.trim()) {
+        setError('Datos inválidos');
+        return false;
+      }
+
+      if (!formData.monto || parseFloat(formData.monto) === 0) {
+        setError('El monto es obligatorio y no puede ser cero');
+        return false;
+      }
+
+      const datos = {
+        descripcion: formData.descripcion.trim(),
+        monto: parseFloat(formData.monto)
+      };
+
+      if (typeof id === 'string' && id.startsWith('local_')) {
+        setGastos(prev =>
+          prev.map(g =>
+            g.id === id ? { ...g, ...datos } : g
+          )
+        );
+
+        setModalEditar(false);
+        setGastoSeleccionado(null);
+        setExito('📝 Actualizado localmente');
+        setTimeout(() => setExito(null), 3000);
+
+        return true;
+      }
+
+      if (conectado) {
+        const { data, error } = await supabase
+          .from('gastos')
+          .update(datos)
+          .eq('id', id)
+          .select();
+
+        if (error) {
+          setError('Error: ' + error.message);
+          return false;
+        }
+
+        if (data?.length > 0) {
+          await cargarGastos();
+          setModalEditar(false);
+          setGastoSeleccionado(null);
+          setExito('✅ Gasto actualizado');
+          setTimeout(() => setExito(null), 3000);
+
+          return true;
+        }
+
+        return false;
+      }
+
+      agregarOperacion({
+        tipo: 'UPDATE',
+        tabla: 'gastos',
+        datos,
+        id_registro: id
+      });
+
+      setGastos(prev =>
+        prev.map(g =>
+          g.id === id ? { ...g, ...datos } : g
+        )
+      );
+
+      setModalEditar(false);
+      setGastoSeleccionado(null);
+      setExito('📝 Actualizado localmente');
+      setTimeout(() => setExito(null), 3000);
+
+      return true;
+    } catch (err) {
+      console.error('Error:', err);
+      setError('Error: ' + err.message);
+      return false;
+    }
+  };
+
+  // ===== ELIMINAR GASTO =====
+
+  const eliminarGasto = async (id) => {
+    try {
+      if (typeof id === 'string' && id.startsWith('local_')) {
+        setGastos(prev => prev.filter(g => g.id !== id));
+        setModalEliminar(false);
+        setGastoSeleccionado(null);
+        setExito('🗑️ Eliminado localmente');
+        setTimeout(() => setExito(null), 3000);
+
+        return true;
+      }
+
+      if (conectado) {
+        const { error } = await supabase
+          .from('gastos')
+          .delete()
+          .eq('id', id);
+
+        if (error) {
+          setError('Error: ' + error.message);
+          return false;
+        }
+
+        await cargarGastos();
+
+        setModalEliminar(false);
+        setGastoSeleccionado(null);
+        setExito('🗑️ Gasto eliminado');
+        setTimeout(() => setExito(null), 3000);
+
+        return true;
+      }
+
+      agregarOperacion({
+        tipo: 'DELETE',
+        tabla: 'gastos',
+        id_registro: id
+      });
+
+      setGastos(prev => prev.filter(g => g.id !== id));
+      setModalEliminar(false);
+      setGastoSeleccionado(null);
+      setExito('📝 Eliminado localmente');
+      setTimeout(() => setExito(null), 3000);
+
+      return true;
+    } catch (err) {
+      console.error('Error:', err);
+      setError('Error inesperado');
+      return false;
+    }
+  };
+
+  // ===== SINCRONIZAR MANUALMENTE =====
+
+  const sincronizarManual = async () => {
+    if (!conectado) {
+      setError('Sin internet');
       return;
     }
-    
-    const confirmar = window.confirm(
-      `¿ELIMINAR ${creditosCompletados.length} CRÉDITOS PAGADOS?\n\n` +
-      `⚠️ Esta acción es IRREVERSIBLE. ¿Continuar?`
-    );
-    
-    if (!confirmar) return;
-    
+
     try {
-      setArchivando(true);
-      
-      const idsCompletados = creditosCompletados.map(c => c.id);
-      
-      if (idsCompletados.length > 0) {
-        const { error: errorEliminar } = await supabase
-          .from('creditos')
-          .delete()
-          .in('id', idsCompletados);
-        
-        if (errorEliminar) throw errorEliminar;
-      }
-      
-      setExito(`✅ ${creditosCompletados.length} créditos pagados eliminados`);
+      setExito('🔄 Sincronizando...');
+
+      await sincronizarOperaciones();
+      await cargarGastos();
+
+      const ops = obtenerOperacionesPendientes();
+      setOperacionesPendientes(ops.length);
+
+      setExito(
+        ops.length === 0
+          ? '✅ Sincronizado'
+          : `⏳ ${ops.length} pendientes`
+      );
+
       setTimeout(() => setExito(null), 3000);
-      cargarDatos();
-      
-    } catch (error) {
-      console.error('Error eliminando créditos:', error);
-      setError('Error al eliminar créditos: ' + error.message);
-      setTimeout(() => setError(null), 3000);
-    } finally {
-      setArchivando(false);
+    } catch (err) {
+      setError('Error: ' + err.message);
     }
   };
 
-  return (
-    <div className="creditos-container">
-      <Encabezado />
-      
-      <div className="creditos-content">
-        {/* HEADER */}
-        <div className="creditos-header">
-          <div className="creditos-titulo-container">
-            <h1 className="creditos-titulo">📋 Créditos</h1>
-            <p className="creditos-subtitulo">Gestión de créditos a clientes</p>
+  // ===== ABRIR MODALES =====
+
+  const abrirAgregar = () => {
+    setModalAgregar(true);
+    setError(null);
+  };
+
+  const abrirEditar = (gasto) => {
+    if (!gasto?.id) {
+      setError('Gasto no válido');
+      return;
+    }
+
+    setGastoSeleccionado(gasto);
+    setModalEditar(true);
+    setError(null);
+  };
+
+  const abrirEliminar = (gasto) => {
+    setGastoSeleccionado(gasto);
+    setModalEliminar(true);
+    setError(null);
+  };
+
+  const cerrarModales = () => {
+    setModalAgregar(false);
+    setModalEditar(false);
+    setModalEliminar(false);
+    setGastoSeleccionado(null);
+    setError(null);
+  };
+
+  const totalGastos = gastosFiltrados.length;
+
+  // ===== PANTALLA DE CARGA =====
+
+  if (loading) {
+    return (
+      <div className="gastos-container">
+        <Encabezado />
+
+        <div className="gastos-content">
+          <div className="loading-spinner">
+            <i className="fas fa-spinner fa-spin"></i>
+            <p>Cargando...</p>
           </div>
-          
-          <div className="creditos-botones-header">
-            <span className={`status-indicator ${conectado ? 'online' : 'offline'}`}>
-              <i className={`fas ${conectado ? 'fa-wifi' : 'fa-wifi-slash'}`}></i>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== PANTALLA PRINCIPAL =====
+
+  return (
+    <div className="gastos-container">
+      <Encabezado />
+
+      <div className="gastos-content">
+        <div className="gastos-header">
+          <div className="gastos-titulo">
+            <h1>💰 Gastos</h1>
+            <p>Registro de gastos de la carnicería</p>
+          </div>
+
+          <div className="header-actions">
+            <span
+              className={`status-indicator ${
+                conectado ? 'online' : 'offline'
+              }`}
+            >
+              <i
+                className={`fas ${
+                  conectado ? 'fa-wifi' : 'fa-wifi-slash'
+                }`}
+              ></i>
               {conectado ? ' En línea' : ' Sin conexión'}
             </span>
+
             {operacionesPendientes > 0 && (
               <span className="pendientes-indicator">
-                <i className="fas fa-clock"></i> {operacionesPendientes} pendientes
+                <i className="fas fa-clock"></i>
+                {' '}
+                {operacionesPendientes} pendientes
               </span>
             )}
+
             <button
-              onClick={handleAgregarCredito}
-              className="btn-agregar"
-              disabled={loading || archivando}
+              className="btn-sincronizar"
+              onClick={sincronizarManual}
+              disabled={!conectado}
             >
-              <i className="fas fa-plus-circle"></i>
-              Nuevo Crédito
+              <i className="fas fa-sync"></i>
+              {' '}
+              Sincronizar
+            </button>
+
+            <button
+              className="btn-agregar"
+              onClick={abrirAgregar}
+            >
+              <i className="fas fa-plus"></i>
+              {' '}
+              Agregar
             </button>
           </div>
         </div>
 
-        {/* MENSAJES */}
-        {error && (
-          <div className="creditos-error">
+        {(syncError || error) && (
+          <div className="gastos-error">
             <i className="fas fa-exclamation-circle"></i>
-            <span>{error}</span>
-            <button onClick={() => setError(null)} className="error-close">
+            <span>{syncError || error}</span>
+
+            <button
+              onClick={() => setError(null)}
+              className="error-close"
+            >
               <i className="fas fa-times"></i>
             </button>
           </div>
         )}
 
         {exito && (
-          <div className="creditos-exito">
+          <div className="gastos-exito">
             <i className="fas fa-check-circle"></i>
             <span>{exito}</span>
-            <button onClick={() => setExito(null)} className="exito-close">
+
+            <button
+              onClick={() => setExito(null)}
+              className="exito-close"
+            >
               <i className="fas fa-times"></i>
             </button>
           </div>
         )}
 
-        {/* FILTROS */}
-        <div className="filtros-creditos">
-          <div className="filtros-botones">
-            <button
-              className={`filtro-btn ${filtroMostrar === 'pendientes' ? 'active' : ''}`}
-              onClick={() => handleCambiarFiltro('pendientes')}
-              disabled={loading || archivando}
-            >
-              <span className="filtro-btn-text">
-                Pendientes <span className="filtro-btn-badge">{resumen.creditosPendientes}</span>
-              </span>
-            </button>
-            <button
-              className={`filtro-btn ${filtroMostrar === 'completados' ? 'active' : ''}`}
-              onClick={() => handleCambiarFiltro('completados')}
-              disabled={loading || archivando}
-            >
-              <span className="filtro-btn-text">
-                Pagados <span className="filtro-btn-badge">{resumen.creditosCompletados}</span>
-              </span>
-            </button>
-            <button
-              className={`filtro-btn ${filtroMostrar === 'todos' ? 'active' : ''}`}
-              onClick={() => handleCambiarFiltro('todos')}
-              disabled={loading || archivando}
-            >
-              <span className="filtro-btn-text">
-                Todos <span className="filtro-btn-badge">{resumen.totalCreditos}</span>
-              </span>
-            </button>
-          </div>
-          
-          {resumen.creditosCompletados > 0 && (
-            <button
-              onClick={handleArchivarCompletados}
-              className="btn-archivar-completados"
-              title="Eliminar créditos pagados"
-              disabled={loading || archivando}
-            >
-              {archivando ? (
-                <>
-                  <div className="spinner-small"></div>
-                  Eliminando...
-                </>
-              ) : (
-                <>
-                  <i className="fas fa-trash-alt"></i>
-                  <span className="btn-archivar-text">
-                    Eliminar Pagados <span className="btn-archivar-badge">{resumen.creditosCompletados}</span>
-                  </span>
-                </>
-              )}
-            </button>
-          )}
-        </div>
+        <div className="buscador-container">
+          <div className="buscador-fila">
+            <div className="buscador-campo">
+              <i className="fas fa-search"></i>
 
-        {/* RESUMEN - 4 TARJETAS */}
-        <div className="resumen-creditos-grid">
-          <div className="resumen-card credito-card">
-            <div className="resumen-card-content">
-              <span className="resumen-card-label">TOTAL CRÉDITOS</span>
-              <strong className="resumen-card-value">{resumen.totalCreditos}</strong>
-              <div className="resumen-card-sub">
-                <span className="resumen-sub-pendientes">{resumen.creditosPendientes} pendientes</span>
-                <span className="resumen-sub-completados">{resumen.creditosCompletados} pagados</span>
-              </div>
+              <input
+                type="text"
+                placeholder="Buscar por descripción..."
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                className="buscador-input"
+              />
             </div>
-            <div className="resumen-card-icon">📊</div>
-          </div>
-          
-          <div className="resumen-card monto-card">
-            <div className="resumen-card-content">
-              <span className="resumen-card-label">MONTO TOTAL</span>
-              <strong className="resumen-card-value">
-                C${resumen.totalMonto.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-              </strong>
-            </div>
-            <div className="resumen-card-icon">💰</div>
+
+            {busqueda && (
+              <button
+                className="btn-limpiar-busqueda"
+                onClick={limpiarFiltros}
+              >
+                <i className="fas fa-times-circle"></i>
+                {' '}
+                Limpiar
+              </button>
+            )}
           </div>
 
-          <div className="resumen-card pagado-card">
-            <div className="resumen-card-content">
-              <span className="resumen-card-label">TOTAL PAGADO</span>
-              <strong className="resumen-card-value">
-                C${resumen.totalPagado.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-              </strong>
-            </div>
-            <div className="resumen-card-icon">✅</div>
-          </div>
-          
-          <div className="resumen-card saldo-card">
-            <div className="resumen-card-content">
-              <span className="resumen-card-label">SALDO PENDIENTE</span>
-              <strong className="resumen-card-value saldo-pendiente-total">
-                C${resumen.totalSaldoPendiente.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-              </strong>
-            </div>
-            <div className="resumen-card-icon">⏳</div>
+          <div className="buscador-resultados">
+            <span>
+              <strong>{totalGastos}</strong>
+              {' '}
+              gastos
+              {gastos.length !== gastosFiltrados.length &&
+                ` (de ${gastos.length})`}
+            </span>
           </div>
         </div>
 
-        {/* TABLA DE CRÉDITOS */}
-        <TablaCreditos
-          creditos={creditosFiltrados}
+        <TablaGastos
+          gastos={gastosFiltrados}
           loading={loading}
-          onEditar={handleEditarCredito}
-          onEliminar={handleEliminarCredito}
-          getEstadoCredito={getEstadoCredito}
+          onEditar={abrirEditar}
+          onEliminar={abrirEliminar}
         />
       </div>
 
-      {/* MODALES */}
-      {showAgregarModal && (
-        <ModalAgregarCredito
-          isOpen={showAgregarModal}
-          onClose={handleCerrarAgregarModal}
-          onCreditoAgregado={handleCreditoAgregado}
-          clientes={clientes}
-        />
-      )}
+      {/* ===== MODALES ===== */}
 
-      {showEditarModal && creditoSeleccionado && (
-        <ModalEditarCredito
-          isOpen={showEditarModal}
-          onClose={handleCerrarEditarModal}
-          onCreditoEditado={handleCreditoEditado}
-          credito={creditoSeleccionado}
-          clientes={clientes}
-        />
-      )}
+      <ModalAgregarGastos
+        isOpen={modalAgregar}
+        onClose={cerrarModales}
+        onSave={crearGasto}
+        loading={loading}
+      />
 
-      {showEliminarModal && creditoSeleccionado && (
-        <ModalEliminarCredito
-          isOpen={showEliminarModal}
-          onClose={handleCerrarEliminarModal}
-          onCreditoEliminado={handleCreditoEliminado}
-          credito={creditoSeleccionado}
-        />
-      )}
+      <ModalEditarGastos
+        isOpen={modalEditar}
+        onClose={cerrarModales}
+        onSave={actualizarGasto}
+        gasto={gastoSeleccionado}
+        loading={loading}
+      />
 
-      
+      <ModalEliminarGastos
+        isOpen={modalEliminar}
+        onClose={cerrarModales}
+        onConfirm={eliminarGasto}
+        gasto={gastoSeleccionado}
+        loading={loading}
+      />
+
+      {/* ===== NAVEGACIÓN ===== */}
+
+      <div className="bottom-nav">
+        <button
+          className="nav-item"
+          onClick={() => navigate('/')}
+        >
+          <i className="fas fa-home"></i>
+          <span>Inicio</span>
+        </button>
+
+        <button
+          className="nav-item"
+          onClick={() => navigate('/productos')}
+        >
+          <i className="fas fa-box"></i>
+          <span>Productos</span>
+        </button>
+
+        <button
+          className="nav-item"
+          onClick={() => navigate('/clientes')}
+        >
+          <i className="fas fa-users"></i>
+          <span>Clientes</span>
+        </button>
+
+        <button
+          className="nav-item active"
+          onClick={() => navigate('/gastos')}
+        >
+          <i className="fas fa-money-bill-wave"></i>
+          <span>Gastos</span>
+        </button>
+
+        <button
+          className="nav-item"
+          onClick={() => navigate('/ventas')}
+        >
+          <i className="fas fa-cash-register"></i>
+          <span>Ventas</span>
+        </button>
+      </div>
     </div>
   );
-};
+}
 
-export default Creditos;
+export default Gastos;

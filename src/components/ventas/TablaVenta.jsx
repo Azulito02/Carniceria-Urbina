@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 const TablaVenta = ({
@@ -5,48 +6,74 @@ const TablaVenta = ({
   setLineasVenta,
   onAbrirModalAgregar
 }) => {
-  // Editar precio de una línea
+
+  // ===== EDITAR PRECIO DE UNA LÍNEA =====
   const editarPrecio = (id_temp, nuevoPrecio) => {
     setLineasVenta(prev =>
       prev.map(l =>
         l.id_temp === id_temp
-          ? { ...l, precio_unitario: parseFloat(nuevoPrecio) || 0, total: l.cantidad * (parseFloat(nuevoPrecio) || 0) }
+          ? {
+              ...l,
+              precio_unitario: parseFloat(nuevoPrecio) || 0,
+              total:
+                l.cantidad * (parseFloat(nuevoPrecio) || 0)
+            }
           : l
       )
     );
   };
 
-  // Editar cantidad de una línea
+  // ===== EDITAR CANTIDAD DE UNA LÍNEA =====
   const editarCantidad = (id_temp, nuevaCantidad) => {
     setLineasVenta(prev =>
       prev.map(l =>
         l.id_temp === id_temp
-          ? { ...l, cantidad: parseFloat(nuevaCantidad) || 0, total: (parseFloat(nuevaCantidad) || 0) * l.precio_unitario }
+          ? {
+              ...l,
+              cantidad: parseFloat(nuevaCantidad) || 0,
+              total:
+                (parseFloat(nuevaCantidad) || 0) *
+                l.precio_unitario
+            }
           : l
       )
     );
   };
 
-  // Eliminar línea
+  // ===== ELIMINAR PRODUCTO DE LA VENTA =====
   const eliminarLinea = (id_temp) => {
-    setLineasVenta(prev => prev.filter(l => l.id_temp !== id_temp));
+    setLineasVenta(prev =>
+      prev.filter(l => l.id_temp !== id_temp)
+    );
   };
 
-  const total = lineasVenta.reduce((sum, l) => sum + l.total, 0);
+  // ===== TOTAL DE LA VENTA =====
+  const total = lineasVenta.reduce(
+    (sum, l) => sum + l.total,
+    0
+  );
 
   return (
     <div className="tabla-venta-container">
-      {/* HEADER CON BOTÓN AGREGAR */}
+
+      {/* ===== ENCABEZADO CON ÚNICO BOTÓN ===== */}
       <div className="tabla-venta-header">
         <h3>
-          <i className="fas fa-shopping-cart"></i> Productos de la Venta
+          <i className="fas fa-shopping-cart"></i>
+          {' '}Productos de la Venta
         </h3>
-        <button className="btn-abrir-modal-agregar" onClick={onAbrirModalAgregar}>
-          <i className="fas fa-plus-circle"></i> Agregar Producto
+
+        <button
+          type="button"
+          className="btn-abrir-modal-agregar"
+          onClick={onAbrirModalAgregar}
+        >
+          <i className="fas fa-plus-circle"></i>
+          {' '}Agregar Productos
         </button>
       </div>
 
-      {/* TABLA DE LÍNEAS */}
+      {/* ===== PRODUCTOS AGREGADOS ===== */}
       {lineasVenta.length > 0 ? (
         <>
           <div className="tabla-scroll-venta">
@@ -62,71 +89,125 @@ const TablaVenta = ({
                   <th>Acciones</th>
                 </tr>
               </thead>
+
               <tbody>
                 {lineasVenta.map((linea, index) => (
                   <tr key={linea.id_temp}>
-                    <td className="numero">{index + 1}</td>
+
+                    {/* NÚMERO */}
+                    <td className="numero">
+                      {index + 1}
+                    </td>
+
+                    {/* PRODUCTO */}
                     <td className="producto">
                       {linea.nombre}
-                      {linea.marca && <span className="marca-producto"> ({linea.marca})</span>}
+
+                      {linea.marca && (
+                        <span className="marca-producto">
+                          {' '}({linea.marca})
+                        </span>
+                      )}
                     </td>
+
+                    {/* UNIDAD */}
                     <td className="unidad">
-                      <span className="unidad-badge">{linea.unidad_medida}</span>
+                      <span className="unidad-badge">
+                        {linea.unidad_medida}
+                      </span>
                     </td>
+
+                    {/* CANTIDAD EDITABLE */}
                     <td className="cantidad">
                       <input
                         type="number"
                         value={linea.cantidad}
-                        onChange={(e) => editarCantidad(linea.id_temp, e.target.value)}
+                        onChange={(e) =>
+                          editarCantidad(
+                            linea.id_temp,
+                            e.target.value
+                          )
+                        }
                         className="input-tabla"
                         step="0.01"
                         min="0"
                       />
                     </td>
+
+                    {/* PRECIO EDITABLE */}
                     <td className="precio">
                       <input
                         type="number"
                         value={linea.precio_unitario}
-                        onChange={(e) => editarPrecio(linea.id_temp, e.target.value)}
+                        onChange={(e) =>
+                          editarPrecio(
+                            linea.id_temp,
+                            e.target.value
+                          )
+                        }
                         className="input-tabla"
                         step="0.01"
                         min="0"
                       />
                     </td>
+
+                    {/* TOTAL DEL PRODUCTO */}
                     <td className="total">
-                      <strong>C${linea.total.toFixed(2)}</strong>
+                      <strong>
+                        C${linea.total.toFixed(2)}
+                      </strong>
                     </td>
+
+                    {/* ELIMINAR PRODUCTO */}
                     <td className="acciones">
                       <button
+                        type="button"
                         className="btn-eliminar-linea"
-                        onClick={() => eliminarLinea(linea.id_temp)}
-                        title="Eliminar"
+                        onClick={() =>
+                          eliminarLinea(linea.id_temp)
+                        }
+                        title="Quitar producto"
+                        aria-label={`Quitar ${linea.nombre}`}
                       >
                         <i className="fas fa-trash-alt"></i>
                       </button>
                     </td>
+
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          {/* TOTAL */}
+          {/* ===== TOTAL GENERAL ===== */}
           <div className="total-venta">
-            <span className="total-label">TOTAL:</span>
-            <span className="total-valor">C${total.toFixed(2)}</span>
+            <span className="total-label">
+              TOTAL:
+            </span>
+
+            <span className="total-valor">
+              C${total.toFixed(2)}
+            </span>
           </div>
         </>
       ) : (
+
+        /* ===== VENTA SIN PRODUCTOS ===== */
         <div className="sin-lineas">
           <i className="fas fa-shopping-cart"></i>
-          <p>No hay productos en la venta</p>
-          <span>Haz clic en "Agregar Producto" para comenzar</span>
-          <button className="btn-abrir-modal-agregar-grande" onClick={onAbrirModalAgregar}>
-            <i className="fas fa-plus-circle"></i> Agregar Producto
-          </button>
+
+          <p>
+            No hay productos en la venta
+          </p>
+
+          <span>
+            Utilizá el botón «Agregar Productos»
+            de arriba para comenzar.
+          </span>
         </div>
+
       )}
+
     </div>
   );
 };
