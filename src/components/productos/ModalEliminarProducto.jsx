@@ -246,3 +246,4 @@ const ModalEliminarProducto = ({
 };
 
 export default ModalEliminarProducto;
+ 

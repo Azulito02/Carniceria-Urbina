@@ -1,603 +1,333 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../database/supabase';
 import Encabezado from '../components/Encabezado';
-import TablaGastos from '../components/gastos/TablaGastos';
-import ModalAgregarGastos from '../components/gastos/ModalAgregarGastos';
-import ModalEditarGastos from '../components/gastos/ModalEditarGastos';
-import ModalEliminarGastos from '../components/gastos/ModalEliminarGastos';
-import {
-  agregarOperacion,
-  sincronizarOperaciones,
-  obtenerOperacionesPendientes
-} from '../services/OfflineService';
-import './Gastos.css';
 
-function Gastos() {
+import TablaCreditos from '../components/creditos/TablaCreditos';
+import ModalAgregarCredito from '../components/creditos/ModalAgregarCredito';
+import ModalEditarCredito from '../components/creditos/ModalEditarCredito';
+import ModalEliminarCredito from '../components/creditos/ModalEliminarCredito';
+
+import './Creditos.css';
+
+function Creditos() {
   const navigate = useNavigate();
 
-  const [gastos, setGastos] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [syncError, setSyncError] = useState(null);
-  const [conectado, setConectado] = useState(navigator.onLine);
+  const [creditos, setCreditos] = useState([]);
+  const [clientes, setClientes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [busqueda, setBusqueda] = useState('');
 
-  const [gastosFiltrados, setGastosFiltrados] = useState([]);
   const [modalAgregar, setModalAgregar] = useState(false);
   const [modalEditar, setModalEditar] = useState(false);
   const [modalEliminar, setModalEliminar] = useState(false);
-  const [gastoSeleccionado, setGastoSeleccionado] = useState(null);
-  const [error, setError] = useState(null);
-  const [exito, setExito] = useState(null);
-  const [operacionesPendientes, setOperacionesPendientes] = useState(0);
-  const [busqueda, setBusqueda] = useState('');
 
-  // ===== CARGAR GASTOS =====
+  const [creditoSeleccionado, setCreditoSeleccionado] =
+    useState(null);
 
-  const cargarGastos = async () => {
+  // Cargar créditos y clientes desde Supabase
+  const cargarDatos = useCallback(async () => {
     setLoading(true);
+    setError('');
 
     try {
-      const { data, error } = await supabase
-        .from('gastos')
-        .select('*')
-        .order('descripcion', { ascending: true });
+      const [creditosResp, clientesResp] = await Promise.all([
+        supabase
+          .from('creditos')
+          .select('*, clientes (id, nombre)')
+          .order('id', { ascending: false }),
 
-      if (error) throw error;
+        supabase
+          .from('clientes')
+          .select('id, nombre')
+          .order('nombre', { ascending: true })
+      ]);
 
-      console.log('Gastos cargados:', data);
-      setGastos(data || []);
-      setSyncError(null);
+      if (creditosResp.error) {
+        throw creditosResp.error;
+      }
+
+      if (clientesResp.error) {
+        throw clientesResp.error;
+      }
+
+      const creditosNormalizados = (creditosResp.data || []).map(
+        (credito) => ({
+          ...credito,
+          cliente_nombre:
+            credito.clientes?.nombre ||
+            credito.cliente?.nombre ||
+            'Cliente no disponible',
+
+          monto_total: Number(credito.monto_total || 0),
+          monto_pagado: Number(credito.monto_pagado || 0),
+          saldo_pendiente: Number(credito.saldo_pendiente || 0)
+        })
+      );
+
+      setCreditos(creditosNormalizados);
+      setClientes(clientesResp.data || []);
     } catch (err) {
-      console.error('Error cargando gastos:', err);
-      setSyncError('Error al cargar los gastos: ' + err.message);
+      console.error('Error cargando créditos:', err);
+
+      setError(
+        'No se pudieron cargar los créditos: ' +
+        (err.message || 'Error desconocido')
+      );
     } finally {
       setLoading(false);
     }
-  };
-
-  // ===== CARGAR AL INICIAR =====
-
-  useEffect(() => {
-    cargarGastos();
-
-    const handleOnline = () => setConectado(true);
-    const handleOffline = () => setConectado(false);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
   }, []);
 
-  // ===== OPERACIONES PENDIENTES =====
-
   useEffect(() => {
-    const contar = () => {
-      const ops = obtenerOperacionesPendientes();
-      setOperacionesPendientes(ops.length);
+    cargarDatos();
+  }, [cargarDatos]);
+
+  // Determinar el estado que se muestra en la tabla
+  const getEstadoCredito = (credito) => {
+    if (Number(credito.saldo_pendiente || 0) <= 0) {
+      return {
+        texto: 'Pagado',
+        clase: 'pagado'
+      };
+    }
+
+    if (
+      credito.estado === 'anulado' ||
+      credito.estado === 'cancelado'
+    ) {
+      return {
+        texto: 'Cancelado',
+        clase: 'cancelado'
+      };
+    }
+
+    const vencido =
+      credito.estado === 'vencido' ||
+      (
+        credito.fecha_fin &&
+        new Date(`${credito.fecha_fin}T23:59:59`) < new Date()
+      );
+
+    if (vencido) {
+      return {
+        texto: 'Vencido',
+        clase: 'vencido'
+      };
+    }
+
+    return {
+      texto: 'Activo',
+      clase: 'activo'
     };
-
-    contar();
-
-    const interval = setInterval(contar, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // ===== FILTRAR GASTOS =====
-
-  useEffect(() => {
-    filtrarGastos();
-  }, [busqueda, gastos]);
-
-  const filtrarGastos = () => {
-    let filtrados = [...gastos];
-
-    if (busqueda.trim() !== '') {
-      const lower = busqueda.toLowerCase().trim();
-
-      filtrados = filtrados.filter(g =>
-        g.descripcion?.toLowerCase().includes(lower)
-      );
-    }
-
-    setGastosFiltrados(filtrados);
   };
 
-  const limpiarFiltros = () => {
-    setBusqueda('');
-  };
+  // Buscar por número, cliente o estado
+  const termino = busqueda.trim().toLowerCase();
 
-  // ===== CREAR GASTO =====
+  const creditosFiltrados = creditos.filter((credito) => {
+    if (!termino) return true;
 
-  const crearGasto = async (formData) => {
-    try {
-      if (!formData.descripcion?.trim()) {
-        setError('La descripción es obligatoria');
-        return false;
-      }
+    return (
+      String(credito.id).includes(termino) ||
+      (credito.cliente_nombre || '')
+        .toLowerCase()
+        .includes(termino) ||
+      (credito.estado || '')
+        .toLowerCase()
+        .includes(termino)
+    );
+  });
 
-      if (!formData.monto || parseFloat(formData.monto) === 0) {
-        setError('El monto es obligatorio y no puede ser cero');
-        return false;
-      }
-
-      const nuevoGasto = {
-        descripcion: formData.descripcion.trim(),
-        monto: parseFloat(formData.monto)
-      };
-
-      if (conectado) {
-        const { data, error } = await supabase
-          .from('gastos')
-          .insert([nuevoGasto])
-          .select();
-
-        if (error) {
-          console.error('Error:', error);
-          setError('Error al crear: ' + error.message);
-          return false;
-        }
-
-        if (data?.length > 0) {
-          await cargarGastos();
-          setModalAgregar(false);
-          setExito('✅ Gasto creado');
-          setTimeout(() => setExito(null), 3000);
-          return true;
-        }
-
-        return false;
-      }
-
-      const idLocal = `local_${Date.now()}`;
-
-      agregarOperacion({
-        tipo: 'INSERT',
-        tabla: 'gastos',
-        datos: nuevoGasto
-      });
-
-      setGastos(prev => [
-        ...prev,
-        { ...nuevoGasto, id: idLocal, _local: true }
-      ]);
-
-      setModalAgregar(false);
-      setExito('📝 Guardado localmente. Se sincronizará con internet.');
-      setTimeout(() => setExito(null), 4000);
-
-      return true;
-    } catch (err) {
-      console.error('Error:', err);
-      setError('Error inesperado');
-      return false;
-    }
-  };
-
-  // ===== ACTUALIZAR GASTO =====
-
-  const actualizarGasto = async (id, formData) => {
-    try {
-      if (!id || !formData.descripcion?.trim()) {
-        setError('Datos inválidos');
-        return false;
-      }
-
-      if (!formData.monto || parseFloat(formData.monto) === 0) {
-        setError('El monto es obligatorio y no puede ser cero');
-        return false;
-      }
-
-      const datos = {
-        descripcion: formData.descripcion.trim(),
-        monto: parseFloat(formData.monto)
-      };
-
-      if (typeof id === 'string' && id.startsWith('local_')) {
-        setGastos(prev =>
-          prev.map(g =>
-            g.id === id ? { ...g, ...datos } : g
-          )
-        );
-
-        setModalEditar(false);
-        setGastoSeleccionado(null);
-        setExito('📝 Actualizado localmente');
-        setTimeout(() => setExito(null), 3000);
-
-        return true;
-      }
-
-      if (conectado) {
-        const { data, error } = await supabase
-          .from('gastos')
-          .update(datos)
-          .eq('id', id)
-          .select();
-
-        if (error) {
-          setError('Error: ' + error.message);
-          return false;
-        }
-
-        if (data?.length > 0) {
-          await cargarGastos();
-          setModalEditar(false);
-          setGastoSeleccionado(null);
-          setExito('✅ Gasto actualizado');
-          setTimeout(() => setExito(null), 3000);
-
-          return true;
-        }
-
-        return false;
-      }
-
-      agregarOperacion({
-        tipo: 'UPDATE',
-        tabla: 'gastos',
-        datos,
-        id_registro: id
-      });
-
-      setGastos(prev =>
-        prev.map(g =>
-          g.id === id ? { ...g, ...datos } : g
-        )
-      );
-
-      setModalEditar(false);
-      setGastoSeleccionado(null);
-      setExito('📝 Actualizado localmente');
-      setTimeout(() => setExito(null), 3000);
-
-      return true;
-    } catch (err) {
-      console.error('Error:', err);
-      setError('Error: ' + err.message);
-      return false;
-    }
-  };
-
-  // ===== ELIMINAR GASTO =====
-
-  const eliminarGasto = async (id) => {
-    try {
-      if (typeof id === 'string' && id.startsWith('local_')) {
-        setGastos(prev => prev.filter(g => g.id !== id));
-        setModalEliminar(false);
-        setGastoSeleccionado(null);
-        setExito('🗑️ Eliminado localmente');
-        setTimeout(() => setExito(null), 3000);
-
-        return true;
-      }
-
-      if (conectado) {
-        const { error } = await supabase
-          .from('gastos')
-          .delete()
-          .eq('id', id);
-
-        if (error) {
-          setError('Error: ' + error.message);
-          return false;
-        }
-
-        await cargarGastos();
-
-        setModalEliminar(false);
-        setGastoSeleccionado(null);
-        setExito('🗑️ Gasto eliminado');
-        setTimeout(() => setExito(null), 3000);
-
-        return true;
-      }
-
-      agregarOperacion({
-        tipo: 'DELETE',
-        tabla: 'gastos',
-        id_registro: id
-      });
-
-      setGastos(prev => prev.filter(g => g.id !== id));
-      setModalEliminar(false);
-      setGastoSeleccionado(null);
-      setExito('📝 Eliminado localmente');
-      setTimeout(() => setExito(null), 3000);
-
-      return true;
-    } catch (err) {
-      console.error('Error:', err);
-      setError('Error inesperado');
-      return false;
-    }
-  };
-
-  // ===== SINCRONIZAR MANUALMENTE =====
-
-  const sincronizarManual = async () => {
-    if (!conectado) {
-      setError('Sin internet');
-      return;
-    }
-
-    try {
-      setExito('🔄 Sincronizando...');
-
-      await sincronizarOperaciones();
-      await cargarGastos();
-
-      const ops = obtenerOperacionesPendientes();
-      setOperacionesPendientes(ops.length);
-
-      setExito(
-        ops.length === 0
-          ? '✅ Sincronizado'
-          : `⏳ ${ops.length} pendientes`
-      );
-
-      setTimeout(() => setExito(null), 3000);
-    } catch (err) {
-      setError('Error: ' + err.message);
-    }
-  };
-
-  // ===== ABRIR MODALES =====
-
-  const abrirAgregar = () => {
-    setModalAgregar(true);
-    setError(null);
-  };
-
-  const abrirEditar = (gasto) => {
-    if (!gasto?.id) {
-      setError('Gasto no válido');
-      return;
-    }
-
-    setGastoSeleccionado(gasto);
-    setModalEditar(true);
-    setError(null);
-  };
-
-  const abrirEliminar = (gasto) => {
-    setGastoSeleccionado(gasto);
-    setModalEliminar(true);
-    setError(null);
-  };
-
+  // Cerrar todos los modales
   const cerrarModales = () => {
     setModalAgregar(false);
     setModalEditar(false);
     setModalEliminar(false);
-    setGastoSeleccionado(null);
-    setError(null);
+    setCreditoSeleccionado(null);
   };
 
-  const totalGastos = gastosFiltrados.length;
+  // Actualizar la información después de una operación
+  const creditoGuardado = async () => {
+    cerrarModales();
+    await cargarDatos();
+  };
 
-  // ===== PANTALLA DE CARGA =====
+  const formatoMoneda = (cantidad) =>
+    Number(cantidad || 0).toLocaleString('es-NI', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
 
-  if (loading) {
-    return (
-      <div className="gastos-container">
-        <Encabezado />
-
-        <div className="gastos-content">
-          <div className="loading-spinner">
-            <i className="fas fa-spinner fa-spin"></i>
-            <p>Cargando...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ===== PANTALLA PRINCIPAL =====
+  const saldoTotal = creditos.reduce(
+    (total, credito) =>
+      total + Math.max(0, Number(credito.saldo_pendiente || 0)),
+    0
+  );
 
   return (
-    <div className="gastos-container">
+    <div className="creditos-container">
       <Encabezado />
 
-      <div className="gastos-content">
-        <div className="gastos-header">
-          <div className="gastos-titulo">
-            <h1>💰 Gastos</h1>
-            <p>Registro de gastos de la carnicería</p>
+      <main className="creditos-content">
+        <div className="creditos-header">
+          <div>
+            <h1>💳 Créditos</h1>
+            <p>
+              Administración de créditos y saldos pendientes
+              de clientes.
+            </p>
           </div>
 
-          <div className="header-actions">
-            <span
-              className={`status-indicator ${
-                conectado ? 'online' : 'offline'
-              }`}
-            >
-              <i
-                className={`fas ${
-                  conectado ? 'fa-wifi' : 'fa-wifi-slash'
-                }`}
-              ></i>
-              {conectado ? ' En línea' : ' Sin conexión'}
-            </span>
-
-            {operacionesPendientes > 0 && (
-              <span className="pendientes-indicator">
-                <i className="fas fa-clock"></i>
-                {' '}
-                {operacionesPendientes} pendientes
-              </span>
-            )}
-
+          <div className="creditos-acciones">
             <button
-              className="btn-sincronizar"
-              onClick={sincronizarManual}
-              disabled={!conectado}
+              type="button"
+              onClick={cargarDatos}
+              disabled={loading}
             >
-              <i className="fas fa-sync"></i>
-              {' '}
-              Sincronizar
+              Actualizar
             </button>
 
             <button
-              className="btn-agregar"
-              onClick={abrirAgregar}
+              type="button"
+              onClick={() => setModalAgregar(true)}
             >
-              <i className="fas fa-plus"></i>
-              {' '}
-              Agregar
+              + Nuevo crédito
             </button>
           </div>
         </div>
 
-        {(syncError || error) && (
-          <div className="gastos-error">
-            <i className="fas fa-exclamation-circle"></i>
-            <span>{syncError || error}</span>
+        {error && (
+          <div className="creditos-error" role="alert">
+            <span>{error}</span>
 
             <button
-              onClick={() => setError(null)}
-              className="error-close"
+              type="button"
+              onClick={() => setError('')}
+              aria-label="Cerrar error"
             >
-              <i className="fas fa-times"></i>
+              ✕
             </button>
           </div>
         )}
 
-        {exito && (
-          <div className="gastos-exito">
-            <i className="fas fa-check-circle"></i>
-            <span>{exito}</span>
-
-            <button
-              onClick={() => setExito(null)}
-              className="exito-close"
-            >
-              <i className="fas fa-times"></i>
-            </button>
-          </div>
-        )}
-
-        <div className="buscador-container">
-          <div className="buscador-fila">
-            <div className="buscador-campo">
-              <i className="fas fa-search"></i>
-
-              <input
-                type="text"
-                placeholder="Buscar por descripción..."
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-                className="buscador-input"
-              />
-            </div>
-
-            {busqueda && (
-              <button
-                className="btn-limpiar-busqueda"
-                onClick={limpiarFiltros}
-              >
-                <i className="fas fa-times-circle"></i>
-                {' '}
-                Limpiar
-              </button>
-            )}
+        <section className="creditos-resumen">
+          <div className="credito-resumen-card">
+            <span>Créditos registrados</span>
+            <strong>{creditos.length}</strong>
           </div>
 
-          <div className="buscador-resultados">
-            <span>
-              <strong>{totalGastos}</strong>
-              {' '}
-              gastos
-              {gastos.length !== gastosFiltrados.length &&
-                ` (de ${gastos.length})`}
-            </span>
+          <div className="credito-resumen-card">
+            <span>Saldo pendiente total</span>
+            <strong>C${formatoMoneda(saldoTotal)}</strong>
           </div>
+        </section>
+
+        <div className="creditos-buscador">
+          <label htmlFor="buscar-creditos">
+            Buscar por cliente, número o estado
+          </label>
+
+          <input
+            id="buscar-creditos"
+            type="search"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Escribe para buscar..."
+          />
+
+          <span>
+            {creditosFiltrados.length} de {creditos.length} créditos
+          </span>
         </div>
 
-        <TablaGastos
-          gastos={gastosFiltrados}
+        <TablaCreditos
+          creditos={creditosFiltrados}
           loading={loading}
-          onEditar={abrirEditar}
-          onEliminar={abrirEliminar}
+          onEditar={(credito) => {
+            setCreditoSeleccionado(credito);
+            setModalEditar(true);
+          }}
+          onEliminar={(credito) => {
+            setCreditoSeleccionado(credito);
+            setModalEliminar(true);
+          }}
+          getEstadoCredito={getEstadoCredito}
         />
-      </div>
+      </main>
 
-      {/* ===== MODALES ===== */}
-
-      <ModalAgregarGastos
+      <ModalAgregarCredito
         isOpen={modalAgregar}
         onClose={cerrarModales}
-        onSave={crearGasto}
-        loading={loading}
+        onCreditoAgregado={creditoGuardado}
+        clientes={clientes}
       />
 
-      <ModalEditarGastos
+      <ModalEditarCredito
         isOpen={modalEditar}
         onClose={cerrarModales}
-        onSave={actualizarGasto}
-        gasto={gastoSeleccionado}
-        loading={loading}
+        onCreditoEditado={creditoGuardado}
+        credito={creditoSeleccionado}
+        clientes={clientes}
       />
 
-      <ModalEliminarGastos
+      <ModalEliminarCredito
         isOpen={modalEliminar}
         onClose={cerrarModales}
-        onConfirm={eliminarGasto}
-        gasto={gastoSeleccionado}
-        loading={loading}
+        onCreditoEliminado={creditoGuardado}
+        credito={creditoSeleccionado}
       />
 
-      {/* ===== NAVEGACIÓN ===== */}
-
-      <div className="bottom-nav">
+      <nav className="bottom-nav">
         <button
+          type="button"
           className="nav-item"
           onClick={() => navigate('/')}
         >
-          <i className="fas fa-home"></i>
+          <i className="fas fa-home" />
           <span>Inicio</span>
         </button>
 
         <button
-          className="nav-item"
-          onClick={() => navigate('/productos')}
-        >
-          <i className="fas fa-box"></i>
-          <span>Productos</span>
-        </button>
-
-        <button
+          type="button"
           className="nav-item"
           onClick={() => navigate('/clientes')}
         >
-          <i className="fas fa-users"></i>
+          <i className="fas fa-users" />
           <span>Clientes</span>
         </button>
 
         <button
+          type="button"
           className="nav-item active"
-          onClick={() => navigate('/gastos')}
+          onClick={() => navigate('/creditos')}
         >
-          <i className="fas fa-money-bill-wave"></i>
-          <span>Gastos</span>
+          <i className="fas fa-credit-card" />
+          <span>Créditos</span>
         </button>
 
         <button
+          type="button"
+          className="nav-item"
+          onClick={() => navigate('/abonos')}
+        >
+          <i className="fas fa-money-bill-wave" />
+          <span>Abonos</span>
+        </button>
+
+        <button
+          type="button"
           className="nav-item"
           onClick={() => navigate('/ventas')}
         >
-          <i className="fas fa-cash-register"></i>
+          <i className="fas fa-cash-register" />
           <span>Ventas</span>
         </button>
-      </div>
+      </nav>
     </div>
   );
 }
 
-export default Gastos;
+export default Creditos;

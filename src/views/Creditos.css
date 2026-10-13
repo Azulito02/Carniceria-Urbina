@@ -1,790 +1,170 @@
 
-/* ==========================================
-   CARNICERÍA URBINA
-   CRÉDITOS - DISEÑO RESPONSIVE
-========================================== */
-
-/* ===== CONTENEDOR PRINCIPAL ===== */
-
 .creditos-container {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: #f5f0ef;
+  background: #f5f6f8;
+  padding-bottom: 75px;
 }
 
 .creditos-content {
-  flex: 1;
-  width: 100%;
-  max-width: 1400px;
-  min-width: 0;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 24px 24px 85px;
-  box-sizing: border-box;
+  padding: 24px;
 }
-
-.creditos-content,
-.creditos-content * {
-  box-sizing: border-box;
-}
-
-/* ===== ENCABEZADO ===== */
 
 .creditos-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 16px;
-  margin-bottom: 24px;
-}
-
-.creditos-titulo-container {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.creditos-titulo {
-  margin: 0;
-  color: #8B1E1E;
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.creditos-titulo i {
-  margin-right: 10px;
-  color: #FBAC3E;
-}
-
-.creditos-subtitulo {
-  margin: 6px 0 0;
-  color: #666666;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.creditos-botones-header {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
   flex-wrap: wrap;
-  gap: 10px;
+  margin-bottom: 22px;
 }
 
-/* ===== BOTÓN AGREGAR CRÉDITO ===== */
-
-.creditos-container .btn-agregar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  min-height: 46px;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 10px;
-  background: #8B1E1E;
-  color: #ffffff;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.3;
-  cursor: pointer;
-  box-shadow: 0 3px 12px rgba(139, 30, 30, 0.18);
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+.creditos-header h1 {
+  margin: 0 0 6px;
+  color: #292929;
 }
 
-.creditos-container .btn-agregar:hover:not(:disabled) {
-  background: #6b1515;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 16px rgba(139, 30, 30, 0.24);
+.creditos-header p {
+  margin: 0;
+  color: #666;
 }
 
-.creditos-container .btn-agregar i {
-  font-size: 17px;
-}
-
-.creditos-container button:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* ===== ESTADO DE CONEXIÓN ===== */
-
-.creditos-container .status-indicator,
-.creditos-container .pendientes-indicator {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  min-height: 36px;
-  padding: 8px 13px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.4;
-  white-space: nowrap;
-}
-
-.creditos-container .status-indicator.online {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.creditos-container .status-indicator.offline {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.creditos-container .pendientes-indicator {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.creditos-container .pendientes-indicator i {
-  color: #d97706;
-}
-
-/* ===== MENSAJES ===== */
-
-.creditos-error,
-.creditos-exito {
+.creditos-acciones {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  margin-bottom: 18px;
-  border-radius: 10px;
-  font-size: 14px;
-  line-height: 1.5;
-  animation: creditos-slide-down 0.25s ease;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.creditos-acciones button {
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 15px;
+  cursor: pointer;
+  background: #8b1e1e;
+  color: white;
+  font-weight: 600;
+}
+
+.creditos-acciones button:hover {
+  background: #6f1717;
+}
+
+.creditos-acciones button:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 .creditos-error {
-  background: #fee2e2;
-  border-left: 4px solid #b91c1c;
-  color: #991b1b;
-}
-
-.creditos-exito {
-  background: #dcfce7;
-  border-left: 4px solid #15803d;
-  color: #166534;
-}
-
-.creditos-error > i,
-.creditos-exito > i {
-  flex-shrink: 0;
-  font-size: 18px;
-}
-
-.creditos-error span,
-.creditos-exito span {
-  flex: 1;
-  min-width: 0;
-}
-
-.creditos-container .error-close,
-.creditos-container .exito-close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  padding: 5px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: inherit;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.creditos-container .error-close:hover,
-.creditos-container .exito-close:hover {
-  background: rgba(0, 0, 0, 0.06);
-}
-
-@keyframes creditos-slide-down {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ==========================================
-   FILTROS DE CRÉDITOS
-========================================== */
-
-.filtros-creditos {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 14px;
-  margin-bottom: 22px;
-  padding: 16px;
-  background: #ffffff;
-  border: 1px solid #f0e8e6;
-  border-radius: 13px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.filtros-botones {
-  display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 9px;
-  min-width: 0;
-}
-
-/* ===== BOTONES PENDIENTES / PAGADOS / TODOS ===== */
-
-.creditos-container .filtro-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 45px;
-  padding: 10px 16px;
-  border: 1.5px solid #e3d6d2;
-  border-radius: 10px;
-  background: #faf7f6;
-  color: #70463f;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.4;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease;
-}
-
-.creditos-container .filtro-btn:hover:not(:disabled) {
-  background: #f3e4df;
-  border-color: #8B1E1E;
-  color: #8B1E1E;
-}
-
-.creditos-container .filtro-btn.active {
-  background: #8B1E1E;
-  color: #ffffff;
-  border-color: #8B1E1E;
-}
-
-.creditos-container .filtro-btn.active:hover {
-  background: #6b1515;
-}
-
-.filtro-btn-text {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.filtro-btn-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  min-height: 23px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  background: #eadedb;
-  color: #8B1E1E;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.filtro-btn.active .filtro-btn-badge {
-  background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
-}
-
-/* ===== BOTÓN ELIMINAR PAGADOS ===== */
-
-.creditos-container .btn-archivar-completados {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  min-height: 45px;
-  padding: 10px 17px;
-  border: 1.5px solid #f3b7b7;
-  border-radius: 10px;
-  background: #fff1f1;
-  color: #b91c1c;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.4;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease;
-}
-
-.creditos-container .btn-archivar-completados:hover:not(:disabled) {
-  background: #fee2e2;
-  border-color: #dc2626;
-  transform: translateY(-2px);
-}
-
-.creditos-container .btn-archivar-completados i {
-  font-size: 15px;
-}
-
-.btn-archivar-text {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-archivar-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 22px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  background: #b91c1c;
-  color: #ffffff;
-  font-size: 11px;
-}
-
-/* ===== INDICADOR DE CARGA ===== */
-
-.spinner-small {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid #f8cccc;
-  border-top-color: #b91c1c;
-  border-radius: 50%;
-  animation: creditos-spin 0.7s linear infinite;
-}
-
-@keyframes creditos-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* ==========================================
-   TARJETAS DE RESUMEN
-========================================== */
-
-.resumen-creditos-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.creditos-container .resumen-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  min-width: 0;
-  min-height: 115px;
-  padding: 19px;
-  border-radius: 13px;
-  background: #ffffff;
-  border: 1px solid #f0e8e6;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.creditos-container .resumen-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.09);
-}
-
-.creditos-container .resumen-card-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-  gap: 7px;
-}
-
-.creditos-container .resumen-card-label {
-  display: block;
-  color: #777777;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-}
-
-.creditos-container .resumen-card-value {
-  display: block;
-  color: #8B1E1E;
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 1.3;
+  margin: 12px 0;
+  padding: 12px 15px;
+  color: #842029;
+  background: #f8d7da;
+  border-radius: 8px;
   overflow-wrap: anywhere;
 }
 
-.creditos-container .resumen-card-sub {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px 12px;
-  font-size: 12px;
-  line-height: 1.4;
+.creditos-error button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
 }
 
-.resumen-sub-pendientes {
-  color: #d97706;
+.creditos-resumen {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(220px, 1fr)
+  );
+  gap: 14px;
+  margin: 18px 0;
 }
 
-.resumen-sub-completados {
-  color: #15803d;
-}
-
-.creditos-container .resumen-card-icon {
-  flex-shrink: 0;
-  font-size: 30px;
-  line-height: 1;
-}
-
-/* ===== COLORES SEGÚN EL RESUMEN ===== */
-
-.creditos-container .credito-card {
-  border-left: 4px solid #8B1E1E;
-}
-
-.creditos-container .monto-card {
-  border-left: 4px solid #b77d24;
-}
-
-.creditos-container .pagado-card {
-  border-left: 4px solid #2e7d32;
-}
-
-.creditos-container .saldo-card {
-  border-left: 4px solid #FBAC3E;
-}
-
-.creditos-container .pagado-card .resumen-card-value {
-  color: #2e7d32;
-}
-
-.creditos-container .saldo-card .resumen-card-value {
-  color: #a86b15;
-}
-
-/* ==========================================
-   NAVEGACIÓN INFERIOR
-========================================== */
-
-.creditos-container .bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  gap: 4px;
-  min-height: 62px;
-  padding: 8px 8px 13px;
-  background: #ffffff;
-  border-top: 1px solid #eadedb;
-  box-shadow: 0 -3px 14px rgba(0, 0, 0, 0.06);
-  z-index: 1000;
-}
-
-.creditos-container .nav-item {
-  position: relative;
+.credito-resumen-card {
   display: flex;
   flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #0000000a;
+}
+
+.credito-resumen-card span {
+  color: #666;
+  font-size: 0.92rem;
+}
+
+.credito-resumen-card strong {
+  color: #8b1e1e;
+  font-size: 1.5rem;
+  overflow-wrap: anywhere;
+}
+
+.creditos-buscador {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: #777777;
-  font-family: inherit;
-  font-size: 11px;
-  cursor: pointer;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 18px 0;
+  padding: 16px;
+  background: white;
+  border-radius: 10px;
 }
 
-.creditos-container .nav-item i {
-  font-size: 20px;
+.creditos-buscador label {
+  font-weight: 600;
 }
 
-.creditos-container .nav-item:hover,
-.creditos-container .nav-item.active {
-  color: #8B1E1E;
+.creditos-buscador input {
+  flex: 1;
+  min-width: 220px;
+  padding: 10px 12px;
+  border: 1px solid #d6d6d6;
+  border-radius: 7px;
+  outline: none;
 }
 
-.creditos-container .nav-item.active i {
-  color: #b77d24;
+.creditos-buscador input:focus {
+  border-color: #8b1e1e;
+  box-shadow: 0 0 0 2px #8b1e1e20;
 }
 
-.creditos-container .nav-item.active::after {
-  content: "";
-  position: absolute;
-  top: -8px;
-  left: 50%;
-  width: 25px;
-  height: 3px;
-  background: #8B1E1E;
-  border-radius: 0 0 4px 4px;
-  transform: translateX(-50%);
+.creditos-buscador span {
+  color: #666;
+  font-size: 0.9rem;
 }
 
-/* ==========================================
-   TABLETS
-========================================== */
-
-@media (max-width: 1200px) {
-  .resumen-creditos-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 992px) {
+@media (max-width: 640px) {
   .creditos-content {
-    padding: 18px 16px 80px;
+    padding: 14px;
   }
-
-  .creditos-titulo {
-    font-size: 24px;
-  }
-
-  .creditos-container .resumen-card {
-    padding: 17px;
-  }
-
-  .creditos-container .resumen-card-value {
-    font-size: 22px;
-  }
-}
-
-/* ==========================================
-   CELULARES
-========================================== */
-
-@media (max-width: 768px) {
-  .creditos-content {
-    padding: 14px 12px 80px;
-  }
-
-  /* ENCABEZADO */
 
   .creditos-header {
+    align-items: stretch;
+  }
+
+  .creditos-acciones {
+    width: 100%;
+  }
+
+  .creditos-acciones button {
+    flex: 1;
+  }
+
+  .creditos-buscador {
+    align-items: stretch;
     flex-direction: column;
-    align-items: stretch;
-    gap: 14px;
-    margin-bottom: 18px;
   }
 
-  .creditos-titulo {
-    font-size: 22px;
-  }
-
-  .creditos-subtitulo {
-    font-size: 13px;
-  }
-
-  /* BOTONES DE ENCABEZADO */
-
-  .creditos-botones-header {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: stretch;
-    width: 100%;
-    gap: 9px;
-  }
-
-  .creditos-container .status-indicator,
-  .creditos-container .pendientes-indicator {
-    justify-content: center;
-    min-width: 0;
-    min-height: 38px;
-    text-align: center;
-    white-space: normal;
-  }
-
-  .creditos-container .btn-agregar {
-    width: 100%;
-    min-height: 48px;
-    grid-column: 1 / -1;
-    font-size: 14px;
-  }
-
-  /* FILTROS */
-
-  .filtros-creditos {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 13px;
-    margin-bottom: 18px;
-  }
-
-  .filtros-botones {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-    width: 100%;
-  }
-
-  .creditos-container .filtro-btn {
+  .creditos-buscador input {
+    box-sizing: border-box;
     width: 100%;
     min-width: 0;
-    min-height: 48px;
-    padding: 9px 5px;
-    font-size: 12px;
-  }
-
-  .filtro-btn-text {
-    gap: 5px;
-    overflow-wrap: anywhere;
-  }
-
-  .filtro-btn-badge {
-    min-width: 20px;
-    padding: 2px 6px;
-    font-size: 11px;
-  }
-
-  /* BOTÓN ELIMINAR PAGADOS */
-
-  .creditos-container .btn-archivar-completados {
-    width: 100%;
-    min-height: 48px;
-    padding: 11px;
-    font-size: 13px;
-  }
-
-  .btn-archivar-text {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  /* RESUMEN */
-
-  .resumen-creditos-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    margin-bottom: 18px;
-  }
-
-  .creditos-container .resumen-card {
-    align-items: flex-start;
-    min-height: 110px;
-    padding: 13px;
-    gap: 7px;
-  }
-
-  .creditos-container .resumen-card-label {
-    font-size: 10px;
-  }
-
-  .creditos-container .resumen-card-value {
-    font-size: 18px;
-  }
-
-  .creditos-container .resumen-card-sub {
-    font-size: 11px;
-    gap: 4px;
-  }
-
-  .creditos-container .resumen-card-icon {
-    font-size: 23px;
-  }
-}
-
-/* ==========================================
-   CELULARES PEQUEÑOS
-========================================== */
-
-@media (max-width: 420px) {
-  .creditos-content {
-    padding: 10px 10px 75px;
-  }
-
-  .creditos-titulo {
-    font-size: 20px;
-  }
-
-  .creditos-botones-header {
-    gap: 8px;
-  }
-
-  .creditos-container .filtro-btn {
-    padding: 8px 4px;
-    font-size: 11px;
-  }
-
-  .creditos-container .resumen-card {
-    padding: 11px;
-    gap: 5px;
-  }
-
-  .creditos-container .resumen-card-value {
-    font-size: 16px;
-  }
-
-  .creditos-container .resumen-card-icon {
-    font-size: 19px;
-  }
-
-  .creditos-container .resumen-card-label {
-    font-size: 10px;
-  }
-
-  .creditos-container .resumen-card-sub {
-    font-size: 10px;
-  }
-
-  .creditos-container .nav-item {
-    padding: 5px 6px;
-    font-size: 10px;
-  }
-
-  .creditos-container .nav-item i {
-    font-size: 18px;
-  }
-}
-
-/* ===== ACCESIBILIDAD ===== */
-
-.creditos-container button:focus-visible {
-  outline: 3px solid #FBAC3E;
-  outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .creditos-container *,
-  .spinner-small {
-    animation: none !important;
-    transition: none !important;
   }
 }
