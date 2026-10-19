@@ -1,9 +1,8 @@
 
-/* ============================================
-   CARNICERÍA URBINA
-   INICIO DE SESIÓN
-   DISEÑO RESPONSIVE Y UNIFICADO
-============================================ */
+/* ==========================================
+   CARNICERÍA URBINA - LOGIN
+   Diseño original + registro de usuarios
+========================================== */
 
 .login-container,
 .login-container *,
@@ -12,178 +11,110 @@
   box-sizing: border-box;
 }
 
-/* ===== CONTENEDOR PRINCIPAL ===== */
-
 .login-container {
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
-
   padding: 28px 16px;
   overflow-x: hidden;
-  overflow-y: auto;
-
   background:
-    radial-gradient(
-      circle at 12% 15%,
-      rgba(251, 172, 62, 0.12),
-      transparent 36%
-    ),
-    radial-gradient(
-      circle at 90% 90%,
-      rgba(255, 255, 255, 0.07),
-      transparent 35%
-    ),
-    linear-gradient(
-      135deg,
-      #8b1e1e 0%,
-      #6b1515 55%,
-      #4b0e0e 100%
-    );
-
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+    radial-gradient(circle at 12% 15%, rgba(251,172,62,.12), transparent 36%),
+    radial-gradient(circle at 90% 90%, rgba(255,255,255,.07), transparent 35%),
+    linear-gradient(135deg, #8b1e1e, #6b1515 55%, #4b0e0e);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
-
-/* ===== TARJETA PRINCIPAL ===== */
 
 .login-card {
   width: 100%;
   max-width: 440px;
   min-width: 0;
-
   margin: auto;
   padding: 30px 32px 27px;
-
-  background: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: #fff;
+  border: 1px solid rgba(255,255,255,.75);
   border-radius: 18px;
-
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.23);
-
-  animation: loginFadeInUp 0.35s ease-out;
+  box-shadow: 0 20px 60px rgba(0,0,0,.23);
+  animation: loginFadeInUp .35s ease-out;
 }
-
-/* ===== ENCABEZADO ===== */
 
 .login-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0;
-
   width: 100%;
-  min-width: 0;
   margin-bottom: 27px;
-
   text-align: center;
 }
-
-/* ===== LOGO ===== */
 
 .login-logo-container {
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 100%;
-  min-width: 0;
   margin-bottom: 14px;
-
-  background: transparent;
-  border: none;
-  box-shadow: none;
 }
 
 .login-logo {
   display: block;
-
   width: 190px;
   height: 190px;
   max-width: 100%;
-
   margin: 0 auto;
-  padding: 0;
-
   object-fit: contain;
-
   background: transparent;
   border: none;
-  border-radius: 0;
   box-shadow: none;
-
-  transition: transform 0.2s ease;
+  transition: transform .2s ease;
 }
 
 .login-logo:hover {
   transform: scale(1.025);
 }
 
-/* ===== NOMBRE ===== */
-
 .login-header h1 {
   max-width: 100%;
   margin: 0 0 7px;
-
   color: #8b1e1e;
   font-size: 23px;
   font-weight: 800;
-  letter-spacing: 0.7px;
+  letter-spacing: .7px;
   line-height: 1.35;
-  text-align: center;
-
   overflow-wrap: anywhere;
 }
 
-/* ===== SUBTÍTULO ===== */
-
 .login-header p {
   margin: 0;
-
   color: #64748b;
   font-size: 14px;
   font-weight: 600;
   line-height: 1.5;
 }
 
-/* ===== FORMULARIO ===== */
+/* Formulario */
 
 .login-form {
   display: flex;
   flex-direction: column;
   gap: 18px;
-
   width: 100%;
   min-width: 0;
 }
-
-/* ===== GRUPOS DE CAMPOS ===== */
 
 .login-field {
   display: flex;
   flex-direction: column;
   gap: 8px;
-
   width: 100%;
   min-width: 0;
 }
-
-/* ===== ETIQUETAS ===== */
 
 .login-field label {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-
   color: #8b1e1e;
   font-size: 14px;
   font-weight: 700;
@@ -196,34 +127,22 @@
   font-size: 15px;
 }
 
-/* ===== INPUTS ===== */
-
 .login-field input {
   display: block;
-
   width: 100%;
   max-width: 100%;
   min-width: 0;
   min-height: 49px;
-
   padding: 12px 14px;
-
   background: #faf7f6;
   color: #263238;
-
   border: 1.5px solid #ded2cf;
   border-radius: 10px;
-
   font-family: inherit;
   font-size: 16px;
   line-height: 1.4;
-
   outline: none;
-
-  transition:
-    border-color 0.2s ease,
-    background-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: border-color .2s, background-color .2s, box-shadow .2s;
 }
 
 .login-field input::placeholder {
@@ -236,90 +155,77 @@
 }
 
 .login-field input:focus {
-  background: #ffffff;
+  background: #fff;
   border-color: #8b1e1e;
-  box-shadow: 0 0 0 3px rgba(139, 30, 30, 0.11);
+  box-shadow: 0 0 0 3px rgba(139,30,30,.11);
 }
 
 .login-field input:disabled {
   background: #f3f4f6;
   color: #64748b;
-  opacity: 0.7;
+  opacity: .7;
   cursor: not-allowed;
 }
 
-/* ===== ERROR DE INICIO DE SESIÓN ===== */
+/* Mensajes */
 
-.login-error {
+.login-error,
+.login-success {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-
   width: 100%;
   min-width: 0;
   padding: 13px 14px;
-
-  background: #fef2f2;
-  color: #991b1b;
-
-  border: 1px solid #fecaca;
-  border-left: 4px solid #b91c1c;
   border-radius: 10px;
-
   font-size: 13px;
-  font-weight: 550;
   line-height: 1.5;
-
   overflow-wrap: anywhere;
 }
 
-.login-error i {
+.login-error {
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #b91c1c;
+}
+
+.login-success {
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-left: 4px solid #16a34a;
+}
+
+.login-error i,
+.login-success i {
   flex: 0 0 auto;
   margin-top: 2px;
-  font-size: 16px;
 }
 
-.login-error span {
-  flex: 1;
-  min-width: 0;
-}
-
-/* ===== BOTÓN INICIAR SESIÓN ===== */
+/* Botón principal */
 
 .login-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-
   width: 100%;
   min-width: 0;
   min-height: 52px;
-
   margin-top: 5px;
   padding: 13px 17px;
-
+  color: #fff;
   background: #8b1e1e;
-  color: #ffffff;
-
   border: 1px solid #8b1e1e;
   border-radius: 10px;
-
   font-family: inherit;
   font-size: 15px;
   font-weight: 750;
-  letter-spacing: 0.2px;
-  line-height: 1.4;
-  text-align: center;
-
+  letter-spacing: .2px;
   cursor: pointer;
-
-  box-shadow: 0 3px 12px rgba(139, 30, 30, 0.16);
-
-  transition:
-    background-color 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  box-shadow: 0 3px 12px rgba(139,30,30,.16);
+  transition: background .2s, transform .2s, box-shadow .2s;
 }
 
 .login-button i {
@@ -332,36 +238,64 @@
   background: #6b1515;
   border-color: #6b1515;
   transform: translateY(-1px);
-  box-shadow: 0 6px 17px rgba(139, 30, 30, 0.25);
-}
-
-.login-button:active:not(:disabled) {
-  transform: translateY(0);
+  box-shadow: 0 6px 17px rgba(139,30,30,.25);
 }
 
 .login-button:disabled {
-  opacity: 0.65;
+  opacity: .65;
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
 }
 
-/* ===== PIE DE LA TARJETA ===== */
+/* Enlace para cambiar entre login y registro */
+
+.login-switch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  margin-top: 22px;
+  text-align: center;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.login-switch button {
+  padding: 7px 10px;
+  color: #8b1e1e;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .2s;
+}
+
+.login-switch button:hover:not(:disabled) {
+  background: #fbf0ef;
+  text-decoration: underline;
+}
+
+.login-switch button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* Pie */
 
 .login-footer {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
-
   width: 100%;
   margin-top: 25px;
   padding-top: 18px;
-
   color: #64748b;
-
   border-top: 1px solid #eee6e3;
-
   font-size: 12px;
   font-weight: 500;
   line-height: 1.5;
@@ -374,12 +308,7 @@
   font-size: 15px;
 }
 
-.login-footer span {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-/* ===== CARGA INICIAL DE SESIÓN ===== */
+/* Pantalla de carga */
 
 .login-loading {
   display: flex;
@@ -387,24 +316,15 @@
   align-items: center;
   justify-content: center;
   gap: 14px;
-
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
-
   padding: 20px;
-
-  background: linear-gradient(
-    135deg,
-    #8b1e1e,
-    #5a1010
-  );
-
-  color: #ffffff;
+  color: #fff;
+  background: linear-gradient(135deg, #8b1e1e, #5a1010);
   font-family: inherit;
   font-size: 16px;
   font-weight: 600;
-  text-align: center;
 }
 
 .login-loading i {
@@ -412,23 +332,20 @@
   font-size: 33px;
 }
 
-/* ===== ANIMACIÓN ===== */
+/* Animación */
 
 @keyframes loginFadeInUp {
   from {
     opacity: 0;
     transform: translateY(12px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* ============================================
-   TABLETS
-============================================ */
+/* Adaptación a tabletas */
 
 @media (max-width: 768px) {
   .login-container {
@@ -437,7 +354,7 @@
 
   .login-card {
     max-width: 420px;
-    padding: 27px 27px 24px;
+    padding: 27px;
   }
 
   .login-logo {
@@ -450,29 +367,21 @@
   }
 }
 
-/* ============================================
-   CELULARES
-============================================ */
+/* Adaptación a celulares */
 
 @media (max-width: 480px) {
   .login-container {
-    align-items: safe center;
     padding: 13px 11px;
   }
 
   .login-card {
     max-width: 100%;
     padding: 23px 19px 20px;
-
     border-radius: 14px;
   }
 
   .login-header {
     margin-bottom: 23px;
-  }
-
-  .login-logo-container {
-    margin-bottom: 12px;
   }
 
   .login-logo {
@@ -482,7 +391,7 @@
 
   .login-header h1 {
     font-size: 20px;
-    letter-spacing: 0.4px;
+    letter-spacing: .4px;
   }
 
   .login-header p {
@@ -502,21 +411,18 @@
     font-size: 16px;
   }
 
-  .login-button {
-    min-height: 52px;
-    font-size: 15px;
-  }
-
   .login-footer {
     margin-top: 21px;
     padding-top: 16px;
     font-size: 11px;
   }
+
+  .login-switch {
+    margin-top: 19px;
+  }
 }
 
-/* ============================================
-   CELULARES MUY PEQUEÑOS
-============================================ */
+/* Pantallas pequeñas */
 
 @media (max-width: 360px) {
   .login-container {
@@ -535,29 +441,11 @@
   .login-header h1 {
     font-size: 18px;
   }
-
-  .login-header {
-    margin-bottom: 19px;
-  }
-
-  .login-field input {
-    padding: 11px 12px;
-  }
 }
 
-/* ============================================
-   PANTALLAS DE POCA ALTURA
-============================================ */
+/* Pantallas de poca altura */
 
 @media (max-height: 670px) {
-  .login-container {
-    align-items: flex-start;
-  }
-
-  .login-card {
-    margin: auto;
-  }
-
   .login-logo {
     width: 115px;
     height: 115px;
@@ -576,10 +464,11 @@
   }
 }
 
-/* ===== ACCESIBILIDAD ===== */
+/* Accesibilidad */
 
 .login-button:focus-visible,
-.login-field input:focus-visible {
+.login-field input:focus-visible,
+.login-switch button:focus-visible {
   outline: 3px solid #fbac3e;
   outline-offset: 2px;
 }
