@@ -3,15 +3,54 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo1.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Carnicería Urbina</title>
     
     <!-- ===== FONT AWESOME - ICONOS ===== -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="apple-touch-icon" href="/logo1.ico" />
+    
+    <!-- ESTILOS DE LA PANTALLA DE CARGA -->
+    <style>
+      #splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: #f9f9f9;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+      }
+      #splash-screen img {
+        width: 250px; /* AQUÍ CONTROLAS EL TAMAÑO DEL LOGO (puedes subirlo a 300px o 350px) */
+        height: auto;
+        margin-bottom: 15px;
+      }
+      #splash-screen h1 {
+        font-family: Arial, sans-serif;
+        color: #333;
+        font-size: 26px;
+        margin: 0;
+        font-weight: normal;
+      }
+    </style>
   </head>
   <body>
+    <!-- PANTALLA DE CARGA -->
+    <div id="splash-screen">
+      <!-- Asegúrate de que el nombre de tu archivo de imagen coincida exactamente -->
+      <img src="/logo1.ico" alt="Carnicería Urbina" />
+      <h1>Carnicería Urbina</h1>
+    </div>
+
+    <!-- CONTENEDOR DE REACT -->
     <div id="root"></div>
+    
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
