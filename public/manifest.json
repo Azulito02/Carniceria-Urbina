@@ -1,0 +1,16 @@
+{
+  "name": "Carnicería Urbina",
+  "short_name": "Urbina",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9f9f9",
+  "theme_color": "#8B0000",
+  "description": "Sistema de Gestión y Ventas Digitales",
+  "icons": [
+    {
+      "src": "/logo1.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

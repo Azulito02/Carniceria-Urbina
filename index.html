@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo1.ico" />
+    <link rel="manifest" href="/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Carnicería Urbina</title>
     
@@ -27,7 +28,7 @@
         transition: opacity 0.5s ease-out;
       }
       #splash-screen img {
-        width: 250px; /* AQUÍ CONTROLAS EL TAMAÑO DEL LOGO (puedes subirlo a 300px o 350px) */
+        width: 350px; /* ¡Subido a 350px para que se vea GIGANTE! */
         height: auto;
         margin-bottom: 15px;
       }
@@ -43,7 +44,6 @@
   <body>
     <!-- PANTALLA DE CARGA -->
     <div id="splash-screen">
-      <!-- Asegúrate de que el nombre de tu archivo de imagen coincida exactamente -->
       <img src="/logo1.ico" alt="Carnicería Urbina" />
       <h1>Carnicería Urbina</h1>
     </div>
@@ -52,5 +52,14 @@
     <div id="root"></div>
     
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- SCRIPT DEL SERVICE WORKER (Movido al final del body) -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    </script>
   </body>
 </html>
