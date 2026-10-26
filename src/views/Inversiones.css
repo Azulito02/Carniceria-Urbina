@@ -1,11 +1,14 @@
-
 /* ============================================
    CARNICERÍA URBINA
-   INVERSIONES - MEJORAS RESPONSIVE V2
-   No modifica la lógica de negocio
+   INVERSIONES - DISEÑO PREMIUM
 ============================================ */
 
 /* ===== ESTRUCTURA GENERAL ===== */
+.inversiones-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f4f6f8; 
+}
 
 .inversiones-container,
 .inversiones-container * {
@@ -14,11 +17,22 @@
 
 .inversiones-container .inversiones-content {
   width: 100%;
+  max-width: 1350px;
   min-width: 0;
+  margin: 0 auto;
+  padding: 24px 20px 60px 20px;
 }
 
+/* ===== ENCABEZADO ===== */
 .inversiones-container .inversiones-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .inversiones-container .inversiones-titulo-container {
@@ -26,8 +40,21 @@
   min-width: 0;
 }
 
-/* ===== BOTONES PRINCIPALES ===== */
+.inversiones-container .inversiones-titulo {
+  margin: 0 0 6px;
+  color: #8b1e1e;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
 
+.inversiones-container .inversiones-subtitulo {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+/* ===== BOTONES DEL HEADER ===== */
 .inversiones-container .inversiones-botones-header {
   display: flex;
   align-items: center;
@@ -35,571 +62,758 @@
   gap: 10px;
 }
 
-.inversiones-container .inversiones-botones-header
-:is(.btn-agregar, .btn-sincronizar) {
+.inversiones-container .inversiones-botones-header :is(.btn-agregar, .btn-sincronizar) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  min-height: 46px;
-  padding: 11px 17px;
-  border-radius: 10px;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
   font-size: 14px;
   font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.inversiones-container .inversiones-botones-header :is(.btn-agregar, .btn-sincronizar) i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.inversiones-container .inversiones-botones-header .btn-agregar {
+  background: linear-gradient(135deg, #a32222 0%, #8b1e1e 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(139, 30, 30, 0.2);
+}
+.inversiones-container .inversiones-botones-header .btn-agregar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(139, 30, 30, 0.3);
+}
+
+.inversiones-container .inversiones-botones-header .btn-sincronizar {
+  background: #ffffff;
+  color: #8b1e1e;
+  border: 1px solid #cbd5e1;
+}
+.inversiones-container .inversiones-botones-header .btn-sincronizar:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #8b1e1e;
+}
+
+.inversiones-container button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Indicadores */
+.inversiones-container :is(.status-indicator, .pendientes-indicator) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.inversiones-container .status-indicator.online { background: #dcfce7; color: #166534; }
+.inversiones-container .status-indicator.offline { background: #fee2e2; color: #991b1b; }
+.inversiones-container .pendientes-indicator { background: #fef3c7; color: #92400e; }
+
+/* ===== MENSAJES ERROR/ÉXITO ===== */
+.inversiones-error,
+.inversiones-exito {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.inversiones-error { background: #fee2e2; color: #991b1b; border-left: 4px solid #b91c1c; }
+.inversiones-exito { background: #dcfce7; color: #166534; border-left: 4px solid #15803d; }
+.inversiones-error span, .inversiones-exito span { flex: 1; }
+
+.inversiones-error button, .inversiones-exito button {
+  background: none; border: none; color: inherit; cursor: pointer; font-size: 16px;
 }
 
 /* ===== FILTROS ===== */
-
 .inversiones-container .filtros-adicionales {
-  min-width: 0;
-  gap: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
 }
 
 .inversiones-container .filtro-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   min-width: 0;
 }
 
+.inversiones-container .filtro-grupo.buscador {
+  grid-column: 1 / -1;
+}
+
 .inversiones-container .filtro-label {
+  color: #475569;
+  font-size: 12px;
   font-weight: 700;
-  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .inversiones-container .filtro-select,
 .inversiones-container .filtro-input {
-  max-width: 100%;
-  min-height: 46px;
-  border-radius: 9px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
   font-family: inherit;
   font-size: 14px;
+  color: #1e293b;
+  background: #f8fafc;
+  transition: all 0.2s;
 }
 
 .inversiones-container .filtro-select:focus,
 .inversiones-container .filtro-input:focus {
+  background: #ffffff;
   border-color: #8b1e1e;
-  outline: 2px solid rgba(139, 30, 30, 0.15);
+  box-shadow: 0 0 0 3px rgba(139, 30, 30, 0.1);
+  outline: none;
 }
 
-/* ===== RESUMEN ===== */
+.inversiones-container .filtro-info {
+  grid-column: 1 / -1;
+  text-align: right;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 600;
+  padding-top: 8px;
+  border-top: 1px dashed #e2e8f0;
+}
 
+.inversiones-container .filtro-limpiar {
+  position: absolute;
+  right: 12px;
+  top: 38px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #ef4444;
+  cursor: pointer;
+}
+
+/* ===== TARJETAS DE RESUMEN ===== */
 .inversiones-container .resumen-grid-inversiones {
-  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
 }
 
 .inversiones-container .resumen-card {
-  min-width: 0;
-  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s;
+}
+
+.inversiones-container .resumen-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+}
+
+.inversiones-container .resumen-card.total-card { border-left: 4px solid #8b1e1e; }
+.inversiones-container .resumen-card.transferencia-card { border-left: 4px solid #1565c0; }
+.inversiones-container .resumen-card.efectivo-card { border-left: 4px solid #2e7d32; }
+
+.inversiones-container .resumen-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inversiones-container .resumen-card-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .inversiones-container .resumen-card-value {
-  overflow-wrap: anywhere;
-  font-variant-numeric: tabular-nums;
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
 }
 
-/* ===== EXPORTACIONES ===== */
+.inversiones-container .resumen-card-sub {
+  font-size: 13px;
+  color: #94a3b8;
+}
 
+.inversiones-container .resumen-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  background: #f8fafc;
+  font-size: 24px;
+  line-height: 1;
+  opacity: 1;
+}
+
+.inversiones-container .total-card .resumen-card-icon { background: #fef2f2; }
+.inversiones-container .transferencia-card .resumen-card-icon { background: #eff6ff; }
+.inversiones-container .efectivo-card .resumen-card-icon { background: #f0fdf4; }
+
+/* ===== EXPORTAR ===== */
 .inversiones-container .export-buttons {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .inversiones-container .btn-exportar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  min-height: 46px;
-  border-radius: 10px;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-/* ===== TABLA EN COMPUTADORA ===== */
+.inversiones-container .btn-exportar i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
 
+.inversiones-container .btn-exportar.excel {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+.inversiones-container .btn-exportar.excel:hover:not(:disabled) { background: #dcfce7; }
+
+.inversiones-container .btn-exportar.pdf {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+.inversiones-container .btn-exportar.pdf:hover:not(:disabled) { background: #fee2e2; }
+
+/* ===== TABLA DE INVERSIONES ===== */
 .inversiones-container .tabla-inversiones-container {
-  width: 100%;
-  min-width: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
 }
 
 .inversiones-container .tabla-scroll {
   width: 100%;
-  max-width: 100%;
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .inversiones-container .tabla-inversiones {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0 8px;
 }
 
 .inversiones-container .tabla-inversiones th {
-  line-height: 1.45;
+  padding: 10px 12px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+  text-align: left;
 }
 
 .inversiones-container .tabla-inversiones td {
-  line-height: 1.5;
+  padding: 14px 12px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13px;
+  color: #1e293b;
+  vertical-align: middle;
+  transition: all 0.2s;
 }
 
-.inversiones-container .tabla-inversiones .col-nombre {
-  overflow-wrap: anywhere;
+.inversiones-container .tabla-inversiones tr:hover td {
+  background: #fdfaf9;
+  border-color: #f5e6e3;
 }
 
-.inversiones-container .tabla-inversiones
-:is(.proveedor-badge, .cat-badge, .badge-banco, .badge-tipo) {
-  max-width: 100%;
-  overflow-wrap: anywhere;
+.inversiones-container .tabla-inversiones td:first-child {
+  border-left: 1px solid #e2e8f0;
+  border-radius: 8px 0 0 8px;
+}
+.inversiones-container .tabla-inversiones td:last-child {
+  border-right: 1px solid #e2e8f0;
+  border-radius: 0 8px 8px 0;
 }
 
-/* ===== BOTONES DE LA TABLA ===== */
+.inversiones-container .tabla-inversiones tr.fila-local td {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
 
+/* Badges internos de la tabla */
+.inversiones-container .proveedor-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.inversiones-container .proveedor-badge i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.inversiones-container .cat-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.inversiones-container .cat-carnes_res { background: #fee2e2; color: #991b1b; }
+.inversiones-container .cat-carnes_cerdo { background: #ffedd5; color: #9a3412; }
+.inversiones-container .cat-pollo { background: #fef9c3; color: #854d0e; }
+.inversiones-container .cat-embutidos { background: #fce7f3; color: #9d174d; }
+.inversiones-container .cat-otros { background: #f1f5f9; color: #475569; }
+
+.inversiones-container .badge-tipo {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+.inversiones-container .badge-tipo.transferencia { background: #eff6ff; color: #1e40af; }
+.inversiones-container .badge-tipo.efectivo { background: #f0fdf4; color: #166534; }
+
+.inversiones-container .badge-banco {
+  font-weight: 600;
+  color: #475569;
+  text-transform: capitalize;
+}
+
+.inversiones-container .cantidad-valor {
+  display: block;
+  font-weight: 700;
+}
+.inversiones-container .cantidad-costo {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.inversiones-container .col-monto {
+  font-weight: 800;
+  color: #8b1e1e;
+}
+
+/* =============================================
+   BOTONES DE ACCIÓN TIPO PÍLDORA (EDITAR / ELIMINAR)
+============================================= */
 .inversiones-container .tabla-inversiones .col-acciones {
-  white-space: normal;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .inversiones-container .tabla-inversiones .btn-accion {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  min-height: 42px;
-  min-width: 88px;
-  padding: 10px 12px;
-  border-radius: 9px;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
   font-size: 13px;
   font-weight: 700;
+  color: #ffffff; /* Texto e íconos blancos */
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.inversiones-container .tabla-inversiones
-.btn-accion span {
-  display: inline;
+/* Centrado perfecto del ícono */
+.inversiones-container .tabla-inversiones .btn-accion i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
 }
 
-/* ===== FORMULARIO DE INVERSIONES ===== */
+/* Estilo Editar (Dorado) */
+.inversiones-container .tabla-inversiones .btn-accion.editar {
+  background: #b77d24;
+  box-shadow: 0 2px 6px rgba(183, 125, 36, 0.2);
+}
+.inversiones-container .tabla-inversiones .btn-accion.editar:hover {
+  background: #925e19;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(183, 125, 36, 0.3);
+}
 
+/* Estilo Eliminar (Rojo) */
+.inversiones-container .tabla-inversiones .btn-accion.eliminar {
+  background: #8b1e1e;
+  box-shadow: 0 2px 6px rgba(139, 30, 30, 0.2);
+}
+.inversiones-container .tabla-inversiones .btn-accion.eliminar:hover {
+  background: #6b1515;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(139, 30, 30, 0.3);
+}
+
+/* ===== MODAL ===== */
 .inversiones-container .modal-overlay {
-  padding: 14px;
-  overflow-x: hidden;
-  overflow-y: auto;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
 }
 
-.inversiones-container .modal-overlay > .modal-content {
-  width: min(100%, 650px);
-  max-width: calc(100vw - 28px);
-  max-height: calc(100dvh - 28px);
-  margin: auto;
+.inversiones-container .modal-content {
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
   overflow-y: auto;
-  overflow-x: hidden;
-  border-radius: 15px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
 }
 
-.inversiones-container .modal-header .modal-titulo {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  color: #8b1e1e !important;
-  background: none !important;
-  -webkit-text-fill-color: #8b1e1e !important;
-  font-size: 22px !important;
-  font-weight: 750 !important;
-  line-height: 1.35;
+.inversiones-container .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
 }
+
+.inversiones-container .modal-titulo {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #8b1e1e;
+}
+
+.inversiones-container .modal-cerrar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #64748b;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.inversiones-container .modal-cerrar:hover { color: #ef4444; }
 
 .inversiones-container .modal-body {
-  min-width: 0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.inversiones-container .form-grupo,
+.inversiones-container .form-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .inversiones-container .form-grupo-doble {
-  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.inversiones-container .form-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .inversiones-container .form-input,
 .inversiones-container .form-select {
   width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  min-height: 46px;
-  font-size: 16px;
-  border-radius: 9px;
+  padding: 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #1e293b;
+  background: #f8fafc;
+  transition: all 0.2s;
+}
+
+.inversiones-container .form-input:focus,
+.inversiones-container .form-select:focus {
+  background: #ffffff;
+  border-color: #8b1e1e;
+  box-shadow: 0 0 0 3px rgba(139, 30, 30, 0.1);
+  outline: none;
+}
+
+.inversiones-container .sin-proveedores-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #d97706;
+  margin-top: 4px;
+}
+
+.inversiones-container .costo-unitario-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f0fdf4;
+  padding: 12px;
+  border-radius: 8px;
+  color: #166534;
+  font-size: 14px;
+  margin-top: -8px;
+}
+
+.inversiones-container .costo-unitario-msg i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .inversiones-container .modal-footer {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 0 0 16px 16px;
 }
 
-.inversiones-container .modal-footer
-:is(.btn-modal-cancelar, .btn-modal-guardar) {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 46px;
-  padding: 11px 18px;
+.inversiones-container .btn-modal-cancelar {
+  padding: 10px 18px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+}
+.inversiones-container .btn-modal-cancelar:hover { background: #f1f5f9; }
+
+.inversiones-container .btn-modal-guardar {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #a32222 0%, #8b1e1e 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
   font-weight: 700;
-  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(139, 30, 30, 0.2);
 }
+.inversiones-container .btn-modal-guardar:hover { transform: translateY(-1px); box-shadow: 0 6px 15px rgba(139, 30, 30, 0.3); }
 
-/* ============================================
-   CELULARES - TARJETAS DE INVERSIONES
-============================================ */
+/* ===== CELULARES Y RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .inversiones-container .resumen-grid-inversiones {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
 @media (max-width: 768px) {
-
   .inversiones-container .inversiones-content {
-    padding: 14px 12px 85px;
+    padding: 16px 12px 80px 12px;
   }
 
   .inversiones-container .inversiones-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 14px;
   }
-
-  .inversiones-container .inversiones-titulo {
-    font-size: 22px;
-  }
-
-  /* BOTONES DE ENCABEZADO */
 
   .inversiones-container .inversiones-botones-header {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: stretch;
-    gap: 9px;
-    width: 100%;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
 
-  .inversiones-container .inversiones-botones-header
-  .btn-agregar {
+  .inversiones-container .inversiones-botones-header .btn-agregar {
     grid-column: 1 / -1;
-    width: 100%;
-    min-height: 48px;
   }
-
-  .inversiones-container .inversiones-botones-header
-  .btn-sincronizar {
-    width: 100%;
-    min-height: 48px;
-  }
-
-  .inversiones-container
-  :is(.status-indicator, .pendientes-indicator) {
-    justify-content: center;
-    min-width: 0;
-    white-space: normal;
-    text-align: center;
-  }
-
-  /* FILTROS EN UNA COLUMNA */
 
   .inversiones-container .filtros-adicionales {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 13px;
-    padding: 15px;
-  }
-
-  .inversiones-container .filtro-grupo {
-    flex: 0 0 auto;
-    width: 100%;
-    min-width: 0;
-  }
-
-  .inversiones-container .filtro-select,
-  .inversiones-container .filtro-input {
-    width: 100%;
-    min-height: 48px;
-    font-size: 16px;
-  }
-
-  .inversiones-container .filtro-info {
-    width: 100%;
-    margin: 0;
-    text-align: center;
-  }
-
-  /* TARJETAS DE RESUMEN */
-
-  .inversiones-container .resumen-grid-inversiones {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
-  }
-
-  .inversiones-container .resumen-card {
+    grid-template-columns: 1fr;
     padding: 16px;
   }
 
-  /* EXPORTAR */
+  .inversiones-container .resumen-grid-inversiones {
+    grid-template-columns: 1fr;
+  }
 
   .inversiones-container .export-buttons {
     flex-direction: column;
-    align-items: stretch;
   }
-
+  
   .inversiones-container .btn-exportar {
     width: 100%;
-    min-height: 48px;
   }
 
-  /* QUITAR SCROLL HORIZONTAL */
-
-  .inversiones-container .tabla-scroll {
-    overflow: visible;
-  }
-
-  .inversiones-container .tabla-inversiones {
-    display: block !important;
-    width: 100% !important;
-    min-width: 0 !important;
+  .inversiones-container .tabla-inversiones-container {
+    padding: 0;
     background: transparent;
+    border: none;
+    box-shadow: none;
   }
 
   .inversiones-container .tabla-inversiones thead {
-    display: none !important;
+    display: none;
   }
 
   .inversiones-container .tabla-inversiones tbody {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
-    width: 100%;
+    display: grid;
+    gap: 16px;
   }
 
-  /* CADA INVERSIÓN COMO TARJETA */
-
-  .inversiones-container .tabla-inversiones tbody tr {
-    display: block !important;
-    width: 100%;
-    min-width: 0;
-    padding: 15px !important;
-
-    background: #ffffff !important;
-    border: 1px solid #eadedb !important;
-    border-left: 4px solid #8b1e1e !important;
-    border-radius: 12px !important;
-
-    box-shadow: 0 2px 11px rgba(0, 0, 0, 0.06);
-  }
-
-  .inversiones-container .tabla-inversiones tbody tr.fila-local {
-    background: #fffbeb !important;
-    border-left-color: #d97706 !important;
-  }
-
-  /* CAMPOS DENTRO DE LAS TARJETAS */
-
-  .inversiones-container .tabla-inversiones tbody td {
-    display: flex !important;
-    align-items: flex-start !important;
-    justify-content: space-between !important;
-    gap: 12px !important;
-
-    width: 100% !important;
-    min-width: 0 !important;
-    height: auto !important;
-
-    padding: 10px 0 !important;
-
-    background: transparent !important;
-    border: none !important;
-    border-bottom: 1px solid #f1e9e6 !important;
-
-    font-size: 13px;
-    line-height: 1.5;
-    text-align: right !important;
-    white-space: normal !important;
-    overflow-wrap: anywhere;
-  }
-
-  .inversiones-container .tabla-inversiones tbody td:last-child {
-    border-bottom: none !important;
-  }
-
-  /* ETIQUETAS DE LOS DATOS */
-
-  .inversiones-container .tabla-inversiones tbody td::before {
-    flex: 0 0 35%;
-    min-width: 0;
-    color: #70463f;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 1.5;
-    text-align: left;
-  }
-
-  .inversiones-container .tabla-inversiones td:nth-child(1)::before {
-    content: "Fecha";
-  }
-
-  .inversiones-container .tabla-inversiones td:nth-child(2)::before {
-    content: "Nombre";
-  }
-
-  .inversiones-container .tabla-inversiones td:nth-child(3)::before {
-    content: "Proveedor";
-  }
-
-  .inversiones-container .tabla-inversiones td:nth-child(4)::before {
-    content: "Categoría";
-  }
-
-  .inversiones-container .tabla-inversiones td:nth-child(5)::before {
-    content: "Tipo";
-  }
-
-  .inversiones-container .tabla-inversiones td:nth-child(6)::before {
-    content: "Banco";
-  }
-
-  .inversiones-container .tabla-inversiones td:nth-child(7)::before {
-    content: "Cantidad";
-  }
-
-  .inversiones-container .tabla-inversiones td:nth-child(8)::before {
-    content: "Monto";
-  }
-
-  .inversiones-container .tabla-inversiones td:nth-child(9)::before {
-    content: "Acciones";
-  }
-
-  /* NOMBRE Y MONTO */
-
-  .inversiones-container .tabla-inversiones .col-nombre {
-    font-weight: 700;
-  }
-
-  .inversiones-container .tabla-inversiones .col-monto {
-    font-size: 16px;
-    font-weight: 750;
-    color: #8b1e1e;
-  }
-
-  /* ACCIONES */
-
-  .inversiones-container .tabla-inversiones .col-acciones {
-    display: block !important;
-    width: 100%;
-    text-align: left !important;
-    white-space: normal;
-  }
-
-  .inversiones-container .tabla-inversiones .col-acciones::before {
-    display: block;
-    width: 100%;
-    margin-bottom: 10px;
-    content: "Acciones";
-  }
-
-  .inversiones-container .tabla-inversiones .btn-accion {
-    display: inline-flex !important;
-    width: calc(50% - 5px);
-    min-width: 0;
-    min-height: 48px;
-    padding: 10px 7px;
-    font-size: 13px;
-    vertical-align: middle;
-  }
-
-  .inversiones-container .tabla-inversiones
-  .col-acciones .btn-accion + .btn-accion {
-    margin-left: 10px;
-  }
-
-  .inversiones-container .tabla-inversiones .btn-accion span {
-    display: inline !important;
-    visibility: visible !important;
-  }
-
-  /* MODAL DE AGREGAR Y EDITAR */
-
-  .inversiones-container .modal-overlay {
-    padding: 8px;
-  }
-
-  .inversiones-container .modal-overlay > .modal-content {
-    width: 100%;
-    max-width: calc(100vw - 16px);
-    max-height: calc(100dvh - 16px);
-    margin: auto;
+  .inversiones-container .tabla-inversiones tr {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
+
+  .inversiones-container .tabla-inversiones td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+    border-radius: 0 !important;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+  }
+
+  .inversiones-container .tabla-inversiones td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .inversiones-container .tabla-inversiones td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: #64748b;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+
+  .inversiones-container .tabla-inversiones td:nth-child(1)::before { content: "Fecha"; }
+  .inversiones-container .tabla-inversiones td:nth-child(2)::before { content: "Nombre"; }
+  .inversiones-container .tabla-inversiones td:nth-child(3)::before { content: "Proveedor"; }
+  .inversiones-container .tabla-inversiones td:nth-child(4)::before { content: "Categoría"; }
+  .inversiones-container .tabla-inversiones td:nth-child(5)::before { content: "Tipo"; }
+  .inversiones-container .tabla-inversiones td:nth-child(6)::before { content: "Banco"; }
+  .inversiones-container .tabla-inversiones td:nth-child(7)::before { content: "Cantidad"; }
+  .inversiones-container .tabla-inversiones td:nth-child(8)::before { content: "Monto"; }
+  .inversiones-container .tabla-inversiones td:nth-child(9)::before { content: "Acciones"; }
+
+  .inversiones-container .tabla-inversiones td.col-acciones {
+    justify-content: flex-start;
+    gap: 12px;
+    margin-top: 10px;
+    display: flex;
+  }
+  
+  .inversiones-container .tabla-inversiones td.col-acciones::before {
+    display: none;
+  }
+
+  /* Botones a todo el ancho en móvil */
+  .inversiones-container .tabla-inversiones .btn-accion {
+    flex: 1;
+    height: 44px;
+    margin: 0;
   }
 
   .inversiones-container .form-grupo-doble {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
+    grid-template-columns: 1fr;
   }
-
-  .inversiones-container .modal-body {
-    padding: 16px;
-  }
-
-  .inversiones-container .modal-header .modal-titulo {
-    font-size: 19px !important;
-  }
-
   .inversiones-container .modal-footer {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px;
-    padding: 15px;
+    flex-direction: column;
   }
-
-  .inversiones-container .modal-footer
-  :is(.btn-modal-cancelar, .btn-modal-guardar) {
+  .inversiones-container .modal-footer button {
     width: 100%;
-    min-width: 0;
-    min-height: 48px;
-    padding: 11px 8px;
-    font-size: 13px;
-  }
-}
-
-/* ===== CELULARES MUY PEQUEÑOS ===== */
-
-@media (max-width: 350px) {
-
-  .inversiones-container .inversiones-content {
-    padding: 10px 9px 85px;
-  }
-
-  .inversiones-container .tabla-inversiones tbody tr {
-    padding: 12px !important;
-  }
-
-  .inversiones-container .tabla-inversiones tbody td {
-    gap: 8px !important;
-    font-size: 12px;
-  }
-
-  .inversiones-container .tabla-inversiones tbody td::before {
-    flex-basis: 37%;
-    font-size: 11px;
-  }
-
-  .inversiones-container .modal-footer {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-/* ===== ACCESIBILIDAD ===== */
-
-.inversiones-container button:focus-visible,
-.inversiones-container input:focus-visible,
-.inversiones-container select:focus-visible {
-  outline: 3px solid #fbac3e;
-  outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .inversiones-container button {
-    transition: none;
   }
 }

@@ -7,7 +7,11 @@ import TablaAbonos from '../components/abonos/TablaAbonos';
 import ModalAgregarAbono from '../components/abonos/ModalAgregarAbono';
 import ModalEditarAbono from '../components/abonos/ModalEditarAbono';
 import ModalEliminarAbono from '../components/abonos/ModalEliminarAbono';
-import { agregarOperacion, sincronizarOperaciones, obtenerOperacionesPendientes } from '../services/OfflineService';
+import {
+  agregarOperacion,
+  sincronizarOperaciones,
+  obtenerOperacionesPendientes,
+} from '../services/OfflineService';
 import './Abonos.css';
 
 function Abonos() {
@@ -96,7 +100,6 @@ function Abonos() {
     cargarAbonos();
     cargarCreditos();
 
-    // Escuchar cambios de conectividad
     const handleOnline = () => setConectado(true);
     const handleOffline = () => setConectado(false);
     window.addEventListener('online', handleOnline);
@@ -127,10 +130,11 @@ function Abonos() {
     let filtrados = [...abonos];
     if (busqueda.trim() !== '') {
       const lower = busqueda.toLowerCase().trim();
-      filtrados = filtrados.filter((a) =>
-        a.credito?.cliente?.nombre?.toLowerCase().includes(lower) ||
-        a.monto?.toString().includes(lower) ||
-        a.metodo_pago?.toLowerCase().includes(lower)
+      filtrados = filtrados.filter(
+        (a) =>
+          a.credito?.cliente?.nombre?.toLowerCase().includes(lower) ||
+          a.monto?.toString().includes(lower) ||
+          a.metodo_pago?.toLowerCase().includes(lower)
       );
     }
     setAbonosFiltrados(filtrados);
@@ -140,10 +144,62 @@ function Abonos() {
     setBusqueda('');
   };
 
+  // ===== RECALCULAR CRÉDITO EN ESTADO LOCAL (para modo offline) =====
+  // Recibe el array de abonos ya actualizado para evitar depender del setState async.
+  const recalcularCreditoLocal = (creditoId, abonosActuales) => {
+    if (!creditoId) return;
+
+    const abonosCredito = (abonosActuales || []).filter(
+      (a) => parseInt(a.credito_id) === parseInt(creditoId)
+    );
+
+    const totalPagado = abonosCredito.reduce(
+      (sum, a) => sum + parseFloat(a.monto || 0),
+      0
+    );
+
+    setCreditos((prev) =>
+      prev.map((c) => {
+        if (c.id !== parseInt(creditoId)) return c;
+
+        const montoTotal = parseFloat(c.monto_total || 0);
+        const nuevoSaldo = Math.max(montoTotal - totalPagado, 0);
+        const nuevoEstado =
+          c.estado === 'cancelado'
+            ? 'cancelado'
+            : nuevoSaldo <= 0
+            ? 'pagado'
+            : 'activo';
+
+        return {
+          ...c,
+          monto_pagado: totalPagado,
+          saldo_pendiente: nuevoSaldo,
+          estado: nuevoEstado,
+        };
+      })
+    );
+  };
+
+  // ===== RECALCULAR CRÉDITO EN SUPABASE (vía RPC) =====
+  // Fallback por si el trigger no existe o falla.
+  const recalcularCreditoRemoto = async (creditoId) => {
+    if (!creditoId || !conectado) return;
+    try {
+      const { error } = await supabase.rpc('recalcular_credito', {
+        p_credito_id: parseInt(creditoId),
+      });
+      if (error) {
+        console.warn('RPC recalcular_credito falló:', error.message);
+      }
+    } catch (err) {
+      console.warn('Error invocando recalcular_credito:', err);
+    }
+  };
+
   // ===== CREAR ABONO =====
   const crearAbono = async (formData) => {
     try {
-      // Validaciones
       if (!formData.credito_id) {
         setError('Debes seleccionar un crédito');
         return false;
@@ -160,7 +216,10 @@ function Abonos() {
         setError('Selecciona un método de pago');
         return false;
       }
-      if (['tarjeta', 'transferencia', 'mixto'].includes(formData.metodo_pago) && !formData.banco) {
+      if (
+        ['tarjeta', 'transferencia', 'mixto'].includes(formData.metodo_pago) &&
+        !formData.banco
+      ) {
         setError('Debes seleccionar un banco');
         return false;
       }
@@ -171,9 +230,10 @@ function Abonos() {
         metodo_pago: formData.metodo_pago,
         banco: formData.banco || null,
         fecha: formData.fecha || new Date().toISOString(),
-        observaciones: formData.observaciones?.trim() || null
+        observaciones: formData.observaciones?.trim() || null,
       };
 
+      // ---------- ONLINE ----------
       if (conectado) {
         const { data, error } = await supabase
           .from('abonos_credito')
@@ -189,24 +249,37 @@ function Abonos() {
         if (data?.length > 0) {
           setModalAgregar(false);
           setExito('✅ Abono registrado');
-          // Recargar listas
+
+          // Refrescar abonos
           await cargarAbonos();
+
+          // Fallback: asegurar recálculo en DB (si el trigger no existe)
+          await recalcularCreditoRemoto(nuevoAbono.credito_id);
+
+          // Refrescar créditos (traerá los valores ya recalculados)
           await cargarCreditos();
+
           setTimeout(() => setExito(null), 3000);
           return true;
         }
         return false;
       }
 
-      // Sin internet: guardar localmente
+      // ---------- OFFLINE ----------
       const idLocal = `local_${Date.now()}`;
       agregarOperacion({
         tipo: 'INSERT',
         tabla: 'abonos_credito',
-        datos: nuevoAbono
+        datos: nuevoAbono,
       });
 
-      setAbonos((prev) => [...prev, { ...nuevoAbono, id: idLocal, _local: true }]);
+      const abonoLocal = { ...nuevoAbono, id: idLocal, _local: true };
+      const nuevosAbonos = [...abonos, abonoLocal];
+      setAbonos(nuevosAbonos);
+
+      // Recalcular crédito localmente con el array ya actualizado
+      recalcularCreditoLocal(nuevoAbono.credito_id, nuevosAbonos);
+
       setModalAgregar(false);
       setExito('📝 Guardado localmente. Se sincronizará con internet.');
       setTimeout(() => setExito(null), 4000);
@@ -237,7 +310,10 @@ function Abonos() {
         setError('Selecciona un método de pago');
         return false;
       }
-      if (['tarjeta', 'transferencia', 'mixto'].includes(formData.metodo_pago) && !formData.banco) {
+      if (
+        ['tarjeta', 'transferencia', 'mixto'].includes(formData.metodo_pago) &&
+        !formData.banco
+      ) {
         setError('Debes seleccionar un banco');
         return false;
       }
@@ -248,22 +324,36 @@ function Abonos() {
         metodo_pago: formData.metodo_pago,
         banco: formData.banco || null,
         fecha: formData.fecha || new Date().toISOString(),
-        observaciones: formData.observaciones?.trim() || null
+        observaciones: formData.observaciones?.trim() || null,
       };
 
-      // Si es local
+      const creditoAnterior = abonoSeleccionado?.credito_id
+        ? parseInt(abonoSeleccionado.credito_id)
+        : null;
+      const creditoNuevo = datos.credito_id;
+
+      // ---------- LOCAL (id local_) ----------
       if (typeof id === 'string' && id.startsWith('local_')) {
-        setAbonos((prev) =>
-          prev.map((a) => (a.id === id ? { ...a, ...datos } : a))
+        const abonosActualizados = abonos.map((a) =>
+          a.id === id ? { ...a, ...datos } : a
         );
+        setAbonos(abonosActualizados);
+
+        // Recalcular crédito nuevo
+        recalcularCreditoLocal(creditoNuevo, abonosActualizados);
+        // Si cambió de crédito, recalcular también el anterior
+        if (creditoAnterior && creditoAnterior !== creditoNuevo) {
+          recalcularCreditoLocal(creditoAnterior, abonosActualizados);
+        }
+
         setModalEditar(false);
         setAbonoSeleccionado(null);
         setExito('📝 Actualizado localmente');
         setTimeout(() => setExito(null), 3000);
-        cargarCreditos();
         return true;
       }
 
+      // ---------- ONLINE ----------
       if (conectado) {
         const { data, error } = await supabase
           .from('abonos_credito')
@@ -277,30 +367,52 @@ function Abonos() {
         }
 
         if (data?.length > 0) {
-          setAbonos((prev) => prev.map((a) => (a.id === id ? data[0] : a)));
+          setAbonos((prev) =>
+            prev.map((a) => (a.id === id ? data[0] : a))
+          );
+
           setModalEditar(false);
           setAbonoSeleccionado(null);
           setExito('✅ Abono actualizado');
+
+          // Fallback: recalcular crédito en DB
+          await recalcularCreditoRemoto(creditoNuevo);
+          if (creditoAnterior && creditoAnterior !== creditoNuevo) {
+            await recalcularCreditoRemoto(creditoAnterior);
+          }
+
+          // Refrescar abonos + créditos
+          await cargarAbonos();
           await cargarCreditos();
+
           setTimeout(() => setExito(null), 3000);
           return true;
         }
         return false;
       }
 
-      // Sin internet
+      // ---------- OFFLINE ----------
       agregarOperacion({
         tipo: 'UPDATE',
         tabla: 'abonos_credito',
         datos: datos,
-        id_registro: id
+        id_registro: id,
       });
-      setAbonos((prev) => prev.map((a) => (a.id === id ? { ...a, ...datos } : a)));
+
+      const abonosActualizados = abonos.map((a) =>
+        a.id === id ? { ...a, ...datos } : a
+      );
+      setAbonos(abonosActualizados);
+
+      recalcularCreditoLocal(creditoNuevo, abonosActualizados);
+      if (creditoAnterior && creditoAnterior !== creditoNuevo) {
+        recalcularCreditoLocal(creditoAnterior, abonosActualizados);
+      }
+
       setModalEditar(false);
       setAbonoSeleccionado(null);
       setExito('📝 Actualizado localmente');
       setTimeout(() => setExito(null), 3000);
-      cargarCreditos();
       return true;
     } catch (err) {
       console.error('Error:', err);
@@ -312,16 +424,25 @@ function Abonos() {
   // ===== ELIMINAR ABONO =====
   const eliminarAbono = async (id) => {
     try {
+      const creditoId = abonoSeleccionado?.credito_id
+        ? parseInt(abonoSeleccionado.credito_id)
+        : null;
+
+      // ---------- LOCAL (id local_) ----------
       if (typeof id === 'string' && id.startsWith('local_')) {
-        setAbonos((prev) => prev.filter((a) => a.id !== id));
+        const abonosRestantes = abonos.filter((a) => a.id !== id);
+        setAbonos(abonosRestantes);
+
+        recalcularCreditoLocal(creditoId, abonosRestantes);
+
         setModalEliminar(false);
         setAbonoSeleccionado(null);
         setExito('🗑️ Eliminado localmente');
-        cargarCreditos();
         setTimeout(() => setExito(null), 3000);
         return true;
       }
 
+      // ---------- ONLINE ----------
       if (conectado) {
         const { error } = await supabase
           .from('abonos_credito')
@@ -337,21 +458,32 @@ function Abonos() {
         setModalEliminar(false);
         setAbonoSeleccionado(null);
         setExito('🗑️ Abono eliminado');
+
+        // Fallback: recalcular crédito en DB
+        if (creditoId) await recalcularCreditoRemoto(creditoId);
+
+        await cargarAbonos();
         await cargarCreditos();
+
         setTimeout(() => setExito(null), 3000);
         return true;
       }
 
+      // ---------- OFFLINE ----------
       agregarOperacion({
         tipo: 'DELETE',
         tabla: 'abonos_credito',
-        id_registro: id
+        id_registro: id,
       });
-      setAbonos((prev) => prev.filter((a) => a.id !== id));
+
+      const abonosRestantes = abonos.filter((a) => a.id !== id);
+      setAbonos(abonosRestantes);
+
+      recalcularCreditoLocal(creditoId, abonosRestantes);
+
       setModalEliminar(false);
       setAbonoSeleccionado(null);
       setExito('📝 Eliminado localmente');
-      cargarCreditos();
       setTimeout(() => setExito(null), 3000);
       return true;
     } catch (err) {
@@ -377,7 +509,9 @@ function Abonos() {
       const ops = obtenerOperacionesPendientes();
       setOperacionesPendientes(ops.length);
 
-      setExito(ops.length === 0 ? '✅ Sincronizado' : `⏳ ${ops.length} pendientes`);
+      setExito(
+        ops.length === 0 ? '✅ Sincronizado' : `⏳ ${ops.length} pendientes`
+      );
       setTimeout(() => setExito(null), 3000);
     } catch (err) {
       setError('Error: ' + err.message);
@@ -442,16 +576,27 @@ function Abonos() {
             <p>Registro de pagos de créditos</p>
           </div>
           <div className="header-actions">
-            <span className={`status-indicator ${conectado ? 'online' : 'offline'}`}>
-              <i className={`fas ${conectado ? 'fa-wifi' : 'fa-wifi-slash'}`}></i>
+            <span
+              className={`status-indicator ${
+                conectado ? 'online' : 'offline'
+              }`}
+            >
+              <i
+                className={`fas ${conectado ? 'fa-wifi' : 'fa-wifi-slash'}`}
+              ></i>
               {conectado ? ' En línea' : ' Sin conexión'}
             </span>
             {operacionesPendientes > 0 && (
               <span className="pendientes-indicator">
-                <i className="fas fa-clock"></i> {operacionesPendientes} pendientes
+                <i className="fas fa-clock"></i> {operacionesPendientes}{' '}
+                pendientes
               </span>
             )}
-            <button className="btn-sincronizar" onClick={sincronizarManual} disabled={!conectado}>
+            <button
+              className="btn-sincronizar"
+              onClick={sincronizarManual}
+              disabled={!conectado}
+            >
               <i className="fas fa-sync"></i> Sincronizar
             </button>
             <button className="btn-agregar" onClick={abrirAgregar}>
@@ -493,7 +638,10 @@ function Abonos() {
               />
             </div>
             {busqueda && (
-              <button className="btn-limpiar-busqueda" onClick={limpiarFiltros}>
+              <button
+                className="btn-limpiar-busqueda"
+                onClick={limpiarFiltros}
+              >
                 <i className="fas fa-times-circle"></i> Limpiar
               </button>
             )}
@@ -559,7 +707,10 @@ function Abonos() {
           <i className="fas fa-cash-register"></i>
           <span>Ventas</span>
         </button>
-        <button className="nav-item active" onClick={() => navigate('/abonos')}>
+        <button
+          className="nav-item active"
+          onClick={() => navigate('/abonos')}
+        >
           <i className="fas fa-hand-holding-usd"></i>
           <span>Abonos</span>
         </button>
@@ -569,4 +720,3 @@ function Abonos() {
 }
 
 export default Abonos;
-
