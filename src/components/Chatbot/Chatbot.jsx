@@ -14,96 +14,145 @@ const normalizar = (texto) => {
 };
 
 // ==========================================
-// DICCIONARIO DE INTENCIONES
+// DICCIONARIO DE INTENCIONES (EXPANDIDO)
 // ==========================================
 const INTENCIONES = {
-  SALUDO: ['hola', 'buenas', 'buenos dias', 'buenas tardes', 'buenas noches',
-    'hey', 'saludos', 'que tal', 'hi', 'hello', 'que onda', 'holaa', 'ola'],
+  SALUDO: [
+    'hola', 'buenas', 'buenos dias', 'buenas tardes', 'buenas noches',
+    'hey', 'saludos', 'que tal', 'hi', 'hello', 'que onda', 'holaa', 'ola',
+    'aqui estas', 'estas ahi', 'piolin', 'holi'
+  ],
 
-  DESPEDIDA: ['adios', 'chao', 'bye', 'hasta luego', 'nos vemos',
+  DESPEDIDA: [
+    'adios', 'chao', 'bye', 'hasta luego', 'nos vemos',
     'me voy', 'hasta pronto', 'chau', 'me despido', 'ya me voy',
-    'ahi nos vemos'],
+    'ahi nos vemos', 'cuidate', 'hasta la vista'
+  ],
 
-  AGRADECIMIENTO: ['gracias', 'muchas gracias', 'te agradezco', 'mil gracias',
-    'thanks', 'agradecido', 'agradecida', 'graciass'],
+  AGRADECIMIENTO: [
+    'gracias', 'muchas gracias', 'te agradezco', 'mil gracias',
+    'thanks', 'agradecido', 'agradecida', 'graciass', 'muy amable',
+    'te pasaste', 'bendiciones'
+  ],
 
-  AYUDA: ['ayuda', 'ayudame', 'help', 'que puedes hacer',
+  AYUDA: [
+    'ayuda', 'ayudame', 'help', 'que puedes hacer',
     'que sabes hacer', 'opciones', 'comandos', 'como funciona',
-    'instrucciones', 'tutorial', 'que puedo preguntar', 'que hago aqui'],
+    'instrucciones', 'tutorial', 'que puedo preguntar', 'que hago aqui',
+    'en que me puedes ayudar', 'dime que haces', 'cuales son tus funciones'
+  ],
 
-  ESTADO_ANIMO: ['como estas', 'como te va', 'como te encuentras',
-    'que haces', 'como te sientes', 'como andas'],
+  IDENTIDAD: [
+    'quien eres', 'como te llamas', 'que eres', 'eres un robot',
+    'eres humano', 'quien te creo', 'tu nombre'
+  ],
 
-  BROMA: ['chiste', 'broma', 'algo gracioso', 'cuentame algo',
-    'dime algo', 'aburrido', 'aburrida', 'algo divertido', 'algo chistoso'],
+  ESTADO_ANIMO: [
+    'como estas', 'como te va', 'como te encuentras',
+    'que haces', 'como te sientes', 'como andas', 'todo bien', 'que tal tu dia'
+  ],
 
-  PROVEEDOR_PRODUCTO: ['proveedor', 'proveedores', 'a quien le compro',
+  BROMA: [
+    'chiste', 'broma', 'algo gracioso', 'cuentame algo',
+    'dime algo', 'aburrido', 'aburrida', 'algo divertido', 'algo chistoso',
+    'hazme reir', 'sorprendeme', 'cuentame un chiste', 'otro chiste'
+  ],
+
+  PROVEEDOR_PRODUCTO: [
+    'proveedor', 'proveedores', 'a quien le compro',
     'donde compro', 'de quien compro', 'a cual proveedor',
-    'que proveedor', 'quien me vende', 'quien me surte', 'quien me trae'],
+    'que proveedor', 'quien me vende', 'quien me surte', 'quien me trae',
+    'quien distribuye', 'quien me provee', 'donde consigo'
+  ],
 
-  VENTAS_HOY: ['ventas de hoy', 'ventas hoy', 'vendi hoy', 'se vendio hoy',
-    'se vendió hoy', 'que se vendio hoy', 'que se vendió hoy',
-    'cuanto vendi hoy', 'venta del dia', 'cuanto he vendido hoy',
-    'cuanto se vendio hoy', 'que vendi hoy', 'que se ha vendido hoy',
-    'que hemos vendido hoy', 'ventas de hoy dia'],
+  VENTAS_HOY: [
+    'ventas de hoy', 'ventas hoy', 'vendi hoy', 'se vendio hoy',
+    'que se vendio hoy', 'cuanto vendi hoy', 'venta del dia',
+    'cuanto he vendido hoy', 'cuanto se vendio hoy', 'que vendi hoy',
+    'que se ha vendido hoy', 'que hemos vendido hoy', 'ventas de hoy dia',
+    'como van las ventas hoy'
+  ],
 
-  VENTAS_SEMANA: ['ventas de la semana', 'ventas semana', 'esta semana',
+  VENTAS_SEMANA: [
+    'ventas de la semana', 'ventas semana', 'esta semana',
     'vendi esta semana', 'se vendio esta semana', 'cuanto vendi esta semana',
-    'ultimos 7 dias', 'semana pasada', 'ventas semanales'],
+    'ultimos 7 dias', 'semana pasada', 'ventas semanales', 'como van las ventas'
+  ],
 
-  VENTAS_MES: ['ventas del mes', 'ventas mes', 'vendi este mes',
+  VENTAS_MES: [
+    'ventas del mes', 'ventas mes', 'vendi este mes',
     'se vendio este mes', 'cuanto vendi este mes',
-    'cuanto se vendio este mes', 'ventas mensuales', 'mes actual'],
+    'cuanto se vendio este mes', 'ventas mensuales', 'mes actual', 'cierre de mes'
+  ],
 
-  PRODUCTO_MAS_VENDIDO: ['mas vendido', 'que se vende mas',
+  PRODUCTO_MAS_VENDIDO: [
+    'mas vendido', 'que se vende mas',
     'que es lo que mas se vende', 'producto estrella', 'top ventas',
     'mejor vendido', 'mejores ventas', 'que producto vende mas',
     'cual se vende mas', 'ranking ventas', 'top productos',
     'que sale mas', 'que es lo que mas sale', 'cual es el mas vendido',
-    'lo mas vendido', 'top 5'],
+    'lo mas vendido', 'top 5', 'que me esta dando plata'
+  ],
 
-  PRODUCTO_MENOS_VENDIDO: ['menos vendido', 'menos vendidos',
+  PRODUCTO_MENOS_VENDIDO: [
+    'menos vendido', 'menos vendidos',
     'que no se vende', 'que no se vende nada', 'producto flojo',
     'peor vendido', 'que casi no se vende', 'cual se vende menos',
-    'cual es el menos vendido', 'lo menos vendido'],
+    'cual es el menos vendido', 'lo menos vendido', 'que no sale'
+  ],
 
-  MENOR_STOCK: ['menor stock', 'menos stock', 'menor cantidad',
+  MENOR_STOCK: [
+    'menor stock', 'menos stock', 'menor cantidad',
     'menos cantidad', 'mas bajo', 'mas bajos', 'el que tiene menos',
     'el que tiene menor', 'cual tiene menos', 'cual tiene menor',
     'cual es el que tiene menos', 'cual es el producto que tiene menos',
     'que tiene menos stock', 'que tiene menor stock', 'los mas bajos',
-    'que esta mas bajo', 'que producto tiene menos'],
+    'que esta mas bajo', 'que producto tiene menos', 'que esta escaseando',
+    'que se me esta acabando', 'que falta'
+  ],
 
-  RECOMENDAR_COMPRA: ['comprar', 'compra', 'conviene', 'recomien',
+  RECOMENDAR_COMPRA: [
+    'comprar', 'compra', 'conviene', 'recomien',
     'recomend', 'abastecer', 'abastezca', 'pedir', 'surtir', 'surtido',
     'proximo mes', 'reponer', 'reposicion', 'bajo stock', 'stock bajo',
     'poco stock', 'falta', 'faltan', 'faltante', 'agotar', 'agotado',
-    'escaso', 'escasez', 'minimo', 'que me falta', 'que falta',
-    'que hay que pedir', 'que compro', 'sugerencia', 'sugerir',
-    'sugiereme', 'aconseja', 'aconsejame', 'cual compro',
-    'que debo comprar', 'que necesito comprar'],
+    'escaso', 'escasez', 'minimo', 'que me falta', 'que hay que pedir',
+    'que compro', 'sugerencia', 'sugerir', 'sugiereme', 'aconseja',
+    'aconsejame', 'cual compro', 'que debo comprar', 'que necesito comprar',
+    'que pido'
+  ],
 
-  CONSULTAR_PRODUCTO: ['cuanto queda', 'cuanto hay', 'cuanto tiene',
+  CONSULTAR_PRODUCTO: [
+    'cuanto queda', 'cuanto hay', 'cuanto tiene',
     'cuanto stock', 'stock de', 'inventario de', 'existencia',
     'existencias', 'disponible', 'disponibles', 'hay de', 'queda de',
-    'tienes de', 'cantidad de', 'cuantas', 'cuantos'],
+    'tienes de', 'cantidad de', 'cuantas', 'cuantos'
+  ],
 
-  LISTAR_TODO: ['todos', 'todo', 'lista', 'listar', 'listado',
+  LISTAR_TODO: [
+    'todos', 'todo', 'lista', 'listar', 'listado',
     'muestra', 'muestrame', 'mostrar', 'inventario completo',
     'productos', 'ver productos', 'dame', 'ensename', 'catalogo',
     'ranking completo', 'todos los productos', 'que productos',
-    'que tengo', 'que hay en inventario', 'inventario'],
+    'que tengo', 'que hay en inventario', 'inventario'
+  ],
 
-  ESTADO_GENERAL: ['como va', 'como esta', 'estado', 'resumen',
+  ESTADO_GENERAL: [
+    'como va', 'como esta', 'estado', 'resumen',
     'panorama', 'situacion', 'como va todo', 'como andamos',
     'reporte', 'dame un resumen', 'analisis', 'que tal todo',
-    'como va el negocio'],
+    'como va el negocio', 'que novedades hay'
+  ],
 
-  PRODUCTOS_AGOTADOS: ['agotado', 'agotados', 'sin stock', 'no hay',
-    'cero', 'que no hay', 'que se acabo', 'vacios'],
+  PRODUCTOS_AGOTADOS: [
+    'agotado', 'agotados', 'sin stock', 'no hay',
+    'cero', 'que no hay', 'que se acabo', 'vacios'
+  ],
 
-  STOCK_CRITICO: ['critico', 'alerta', 'emergencia', 'problema',
-    'grave', 'peligro', 'al borde', 'criticos', 'urgente'],
+  STOCK_CRITICO: [
+    'critico', 'alerta', 'emergencia', 'problema',
+    'grave', 'peligro', 'al borde', 'criticos', 'urgente'
+  ],
 
   LISTAR_PROVEEDORES: [
     'mis proveedores', 'lista de proveedores', 'todos los proveedores',
@@ -129,33 +178,40 @@ const PREFIJOS = {
 
 const RESPUESTAS_VARIADAS = {
   SALUDO: [
-    '¡Pío pío! 🐥 ¿En qué te ayudo hoy?',
-    '¡Hola humano o vendedor! 👋 ¿Qué necesita mi carnicería favorita?',
-    '¡Pío pío! 🐣 ¿Qué averiguamos hoy?',
-    '¡Hey! 🐥 Aquí ando listo para lo que sea.'
+    '¡Pío pío! 🐥 Hola, ¿cómo estás? Soy Piolín, tu asistente personal. ¿En qué te puedo ayudar hoy con la carnicería?',
+    '¡Hola! 👋 Qué gusto verte por aquí. Acabo de revisar los datos del sistema, ¿quieres saber algo en específico?',
+    '¡Pío! 🐣 Estoy listo para picotear un poco de información. Dime, ¿qué necesitas consultar?',
+    '¡Hey, jefe! 🐥 Aquí estoy, listo para la acción. ¿Qué averiguamos hoy?'
   ],
   DESPEDIDA: [
-    '¡Pío pío, hasta luego! 👋',
-    '¡Adiós! Vuelve cuando quieras 🐥',
-    '¡Nos vemos! Aquí estaré picoteando datos 🐣',
-    '¡Chao! Éxito con las ventas 🐥'
+    '¡Pío pío, hasta luego! 👋 Fue un gusto ayudarte. Aquí estaré si necesitas algo más.',
+    '¡Adiós! Vuelve cuando quieras 🐥 Que tengas un excelente día de ventas.',
+    '¡Nos vemos! Aquí estaré picoteando datos 🐣 ¡Mucho éxito!',
+    '¡Chao! Cuídate mucho y que las ventas fluyan 🐥'
   ],
   AGRADECIMIENTO: [
-    '¡De nada! 😊 Pío pío 🐥',
-    '¡Con gusto! ¿Algo más? 🐤',
-    '¡Un placer ayudar! 🙌 🐥',
-    '¡Pío pío! Aquí estoy para servirte 🐣'
+    '¡De nada! 😊 Pío pío 🐥 Para eso estoy. ¿Hay algo más en lo que te pueda echar una mano?',
+    '¡Con gusto! ¿Algo más? 🐤 Si necesitas otra cosa, ya sabes dónde encontrarme.',
+    '¡Un placer ayudar! 🙌 🐥 Me alegra ser de utilidad. ¿Seguimos revisando?',
+    '¡Pío pío! Aquí estoy para servirte 🐣 ¿Qué más necesitas?'
   ],
   ESTADO_ANIMO: [
-    '¡Pío pío! Muy bien 💪 ¿Qué necesitas?',
-    '¡Excelente! 🐥 Listo para picotear datos.',
-    '¡De maravilla! ¿En qué te ayudo? 🐤'
+    '¡Pío pío! Muy bien 💪 ¿Qué necesitas? Estoy al 100%.',
+    '¡Excelente! 🐥 Listo para picotear datos. ¿Qué se te ofrece?',
+    '¡De maravilla! ¿En qué te ayudo? 🐤 Aquí no paramos.',
+    '¡Feliz y con las plumas bien puestas! 🐣 ¿Qué consultamos?'
+  ],
+  IDENTIDAD: [
+    '🐥 ¡Pío! Soy Piolín, un pollito asistente entrenado para ayudarte a manejar el inventario y las ventas de la carnicería. Fui creado por el equipo de desarrollo para facilitarte la vida.',
+    '¡Pío pío! 🐣 Soy Piolín, tu compañero digital. No soy humano (¡obvio, soy un gallo!), pero tengo acceso a toda la base de datos para darte la información más precisa.'
   ],
   BROMA: [
     '🐥 ¿Por qué el pollito cruzó la carnicería? ¡Para llegar al otro lado! 😄',
     '🍗 ¿Qué dijo un pollito a otro? ¡Pío pío pío! (es su idioma, no traduzco) 😂',
     '🥚 ¿Por qué el huevo fue al médico? Porque se sentía "cascarrabias". 😅',
-    '🐣 ¿Cómo se despide un pollito elegante? ¡"Pío luego"! 💪'
+    '🐣 ¿Cómo se despide un pollito elegante? ¡"Pío luego"! 💪',
+    '🥩 ¿Sabes cuál es la carne más alegre? ¡La de res, porque siempre está "contenta"! 🐄😄',
+    '🍖 ¿Qué le dice un pollo a otro en la carnicería? "¡Compadre, salgamos de aquí volando!" 🏃‍♂️💨'
   ]
 };
 
@@ -165,18 +221,21 @@ const SEGUIMIENTOS = [
   '\n\n🥚 ¿Necesitas otro dato?',
   '\n\n🐤 ¿Te ayudo con algo más?',
   '\n\n✨ ¿Hay algo más que quieras consultar?',
-  '\n\n👉 ¿Seguimos? Pregúntame otra cosa 🐥'
+  '\n\n👉 ¿Seguimos? Pregúntame otra cosa 🐥',
+  '\n\n📊 ¿Revisamos algo más del negocio?',
+  '\n\n💡 ¿Hay alguna otra duda que tenga picoteando?'
 ];
 
 const respuestaAleatoria = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const seguimientoAleatorio = () => respuestaAleatoria(SEGUIMIENTOS);
 
 // ==========================================
-// DETECCIÓN DE INTENCIONES (con texto normalizado)
+// DETECCIÓN DE INTENCIONES
 // ==========================================
 const contarCoincidencias = (texto, palabrasClave) => {
   let contador = 0;
   const encontradas = [];
+  
   palabrasClave.forEach(palabra => {
     const palabraNorm = normalizar(palabra);
     if (texto.includes(palabraNorm)) {
@@ -184,6 +243,7 @@ const contarCoincidencias = (texto, palabrasClave) => {
       encontradas.push(palabra);
     }
   });
+  
   return { contador, encontradas };
 };
 
@@ -206,7 +266,7 @@ const detectarIntencion = (textoOriginal) => {
 };
 
 // ==========================================
-// HELPERS DE FECHAS
+// HELPERS DE FECHAS Y MONTOS
 // ==========================================
 const rangoHoy = () => {
   const inicio = new Date();
@@ -239,7 +299,7 @@ const formatearMonto = (n) =>
   }).format(n || 0);
 
 // ==========================================
-// COMPONENTE
+// COMPONENTE PRINCIPAL
 // ==========================================
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -251,6 +311,9 @@ const Chatbot = () => {
   ]);
   const [input, setInput] = useState('');
   const [cargando, setCargando] = useState(false);
+  
+  // Memoria a corto plazo para contexto
+  const [ultimoProducto, setUltimoProducto] = useState(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -291,12 +354,8 @@ const Chatbot = () => {
     }));
   };
 
-  const obtenerStockProductos = async () => {
-    return await obtenerTodosLosProductos();
-  };
-
   // ==========================================
-  // BUSCAR PRODUCTO EN EL TEXTO
+  // BUSCAR PRODUCTO EN EL TEXTO (BÚSQUEDA INTELIGENTE)
   // ==========================================
   const buscarProducto = (txt, productos) => {
     const txtNorm = normalizar(txt);
@@ -305,14 +364,18 @@ const Chatbot = () => {
 
     productos.forEach(p => {
       const nombreNorm = normalizar(p.nombre);
+      
+      // Coincidencia exacta
       if (txtNorm.includes(nombreNorm)) {
         if (nombreNorm.length > mejorCoincidencia) {
           mejorCoincidencia = nombreNorm.length;
           encontrado = p;
         }
       } else {
+        // Coincidencia parcial
         const palabrasProducto = nombreNorm.split(/\s+/).filter(w => w.length > 3);
         const coincidencias = palabrasProducto.filter(pal => txtNorm.includes(pal));
+        
         if (coincidencias.length >= 2 && coincidencias.length > mejorCoincidencia) {
           mejorCoincidencia = coincidencias.length;
           encontrado = p;
@@ -324,7 +387,7 @@ const Chatbot = () => {
   };
 
   // ==========================================
-  // PROVEEDORES DE UN PRODUCTO (robusta)
+  // PROVEEDORES DE UN PRODUCTO
   // ==========================================
   const obtenerProveedoresDeProducto = async (productoId) => {
     const { data: invData, error: errInv } = await supabase
@@ -354,9 +417,6 @@ const Chatbot = () => {
     }
 
     if (!provData || provData.length === 0) return [];
-
-    console.log('📋 Columnas reales de proveedores:', Object.keys(provData[0]));
-    console.log('📋 Ejemplo de proveedor:', provData[0]);
 
     const extraerNombre = (prov) => {
       const posiblesColumnas = [
@@ -410,7 +470,7 @@ const Chatbot = () => {
   };
 
   // ==========================================
-  // LÓGICA PRINCIPAL
+  // LÓGICA PRINCIPAL DE PROCESAMIENTO
   // ==========================================
   const procesarPregunta = async (texto) => {
     setCargando(true);
@@ -419,19 +479,50 @@ const Chatbot = () => {
       const { intencion, puntaje, palabras } = detectarIntencion(texto);
       console.log('🎯 Intención:', intencion, '| Puntaje:', puntaje, '| Palabras:', palabras);
 
-      // --- RESPUESTAS RÁPIDAS ---
-      if (intencion === 'SALUDO' && puntaje > 0) return respuestaAleatoria(RESPUESTAS_VARIADAS.SALUDO);
-      if (intencion === 'DESPEDIDA' && puntaje > 0) return respuestaAleatoria(RESPUESTAS_VARIADAS.DESPEDIDA);
-      if (intencion === 'AGRADECIMIENTO' && puntaje > 0) return respuestaAleatoria(RESPUESTAS_VARIADAS.AGRADECIMIENTO);
-      if (intencion === 'ESTADO_ANIMO' && puntaje > 0) return respuestaAleatoria(RESPUESTAS_VARIADAS.ESTADO_ANIMO);
-      if (intencion === 'BROMA' && puntaje > 0) return respuestaAleatoria(RESPUESTAS_VARIADAS.BROMA) + seguimientoAleatorio();
+      // --- RESPUESTAS RÁPIDAS (Conversacionales) ---
+      if (intencion === 'SALUDO' && puntaje > 0) {
+        return respuestaAleatoria(RESPUESTAS_VARIADAS.SALUDO);
+      }
+      
+      if (intencion === 'DESPEDIDA' && puntaje > 0) {
+        return respuestaAleatoria(RESPUESTAS_VARIADAS.DESPEDIDA);
+      }
+      
+      if (intencion === 'AGRADECIMIENTO' && puntaje > 0) {
+        return respuestaAleatoria(RESPUESTAS_VARIADAS.AGRADECIMIENTO);
+      }
+      
+      if (intencion === 'ESTADO_ANIMO' && puntaje > 0) {
+        return respuestaAleatoria(RESPUESTAS_VARIADAS.ESTADO_ANIMO);
+      }
+      
+      if (intencion === 'IDENTIDAD' && puntaje > 0) {
+        return respuestaAleatoria(RESPUESTAS_VARIADAS.IDENTIDAD);
+      }
+      
+      if (intencion === 'BROMA' && puntaje > 0) {
+        return respuestaAleatoria(RESPUESTAS_VARIADAS.BROMA) + seguimientoAleatorio();
+      }
+      
       if (intencion === 'AYUDA' && puntaje > 0) {
-        return '🐥 ¡Pío pío! Esto es lo que puedo hacer:\n\n📦 INVENTARIO:\n• "¿Qué me conviene comprar?"\n• "¿Cuál tiene menor stock?"\n• "¿Cuánto queda de [producto]?"\n• "Muéstrame el inventario"\n\n🏭 PROVEEDORES:\n• "¿A qué proveedor le compro [producto]?"\n• "¿Cuáles son mis proveedores?"\n\n💰 VENTAS:\n• "¿Qué se vendió hoy?"\n• "Ventas de la semana"\n• "¿Qué se vende más?"\n\n📊 ANÁLISIS:\n• "¿Cómo va todo?"\n• "¿Qué está agotado?"\n\n💬 CONVERSACIÓN:\n• "Cuéntame un chiste"\n\n¿Qué te gustaría saber? 🐣';
+        return '🐥 ¡Pío pío! Soy Piolín. Esto es lo que puedo hacer por ti:\n\n📦 INVENTARIO:\n• "¿Qué me conviene comprar?"\n• "¿Cuál tiene menor stock?"\n• "¿Cuánto queda de [producto]?"\n• "Muéstrame el inventario"\n\n🏭 PROVEEDORES:\n• "¿A qué proveedor le compro [producto]?"\n• "¿Cuáles son mis proveedores?"\n\n💰 VENTAS:\n• "¿Qué se vendió hoy?"\n• "Ventas de la semana"\n• "¿Qué se vende más?"\n\n📊 ANÁLISIS:\n• "¿Cómo va todo?"\n• "¿Qué está agotado?"\n\nDime, ¿qué te gustaría saber? 🐣';
       }
 
-      // --- CONSULTAS A BD ---
+      // --- CONSULTAS A LA BASE DE DATOS ---
       const productos = await obtenerTodosLosProductos();
-      const productoMencionado = buscarProducto(texto, productos);
+      let productoMencionado = buscarProducto(texto, productos);
+
+      // Memoria a corto plazo
+      if (!productoMencionado && ultimoProducto) {
+        const textoNorm = normalizar(texto);
+        if (textoNorm.startsWith('y ') || textoNorm.includes('tambien') || textoNorm.includes('que hay de')) {
+          productoMencionado = ultimoProducto;
+        }
+      }
+
+      if (productoMencionado) {
+        setUltimoProducto(productoMencionado);
+      }
 
       // --- LISTAR TODOS LOS PROVEEDORES ---
       if (intencion === 'LISTAR_PROVEEDORES' && puntaje > 0) {
@@ -442,7 +533,7 @@ const Chatbot = () => {
         if (errProv) throw errProv;
 
         if (!provData || provData.length === 0) {
-          return '🏭 No tienes proveedores registrados.' + seguimientoAleatorio();
+          return '🏭 Pío... no tienes proveedores registrados todavía. ¿Quieres que te ayude a registrar alguno?' + seguimientoAleatorio();
         }
 
         const columnas = Object.keys(provData[0]);
@@ -461,7 +552,8 @@ const Chatbot = () => {
           ['telefono', 'teléfono', 'celular', 'phone'].includes(c)
         );
 
-        let respuesta = `🏭 Tienes ${provData.length} proveedores:\n\n`;
+        let respuesta = `🏭 ¡Claro que sí! Tienes ${provData.length} proveedores en tu lista:\n\n`;
+        
         provData.forEach((p, i) => {
           const nombre = p[colNombre] || `Proveedor #${p.id}`;
           respuesta += `${i + 1}. ${nombre}`;
@@ -469,28 +561,31 @@ const Chatbot = () => {
           if (colTelefono && p[colTelefono]) respuesta += ` — 📞 ${p[colTelefono]}`;
           respuesta += '\n';
         });
+        
         return respuesta + seguimientoAleatorio();
       }
 
       // --- PROVEEDOR DE UN PRODUCTO ---
       if (intencion === 'PROVEEDOR_PRODUCTO' && puntaje > 0) {
         if (!productoMencionado) {
-          return '🏭 ¿De qué producto? Dime por ejemplo: "¿A qué proveedor le compro carne molida?"';
+          return '🏭 ¡Pío! ¿De qué producto hablamos? Dime por ejemplo: "¿A qué proveedor le compro carne molida?"';
         }
 
         const proveedores = await obtenerProveedoresDeProducto(productoMencionado.id);
 
         if (proveedores.length === 0) {
-          return `📭 No tengo registro de proveedores para "${productoMencionado.nombre}".${seguimientoAleatorio()}`;
+          return `📭 Pío... no tengo registro de proveedores para "${productoMencionado.nombre}". ¿Quizás se lo has comprado a alguien nuevo?${seguimientoAleatorio()}`;
         }
 
-        let respuesta = `🏭 Proveedores de "${productoMencionado.nombre}":\n\n`;
+        let respuesta = `🏭 ¡Listo! Déjame decirte quién te surte de "${productoMencionado.nombre}":\n\n`;
+        
         proveedores.forEach((p, i) => {
           respuesta += `${i + 1}. ${p.nombre}\n`;
           if (p.vendedor) respuesta += `   👤 Vendedor: ${p.vendedor}\n`;
           if (p.telefono) respuesta += `   📞 ${p.telefono}\n`;
-          respuesta += `   🔄 ${p.veces} compra(s)\n`;
+          respuesta += `   🔄 ${p.veces} compra(s) registrada(s)\n`;
         });
+        
         return respuesta + seguimientoAleatorio();
       }
 
@@ -504,9 +599,10 @@ const Chatbot = () => {
         intencion !== 'PRODUCTO_MENOS_VENDIDO'
       ) {
         const p = productoMencionado;
-        const alerta = p.stock <= 0 ? '\n\n⚠️ ¡AGOTADO!' :
-                       p.stock <= p.stockMinimo ? '\n\n⚠️ Por debajo del mínimo.' : '';
-        return `${respuestaAleatoria(PREFIJOS.INVENTARIO)} "${p.nombre}" tiene ${p.stock} ${p.unidad}.${alerta}${seguimientoAleatorio()}`;
+        const alerta = p.stock <= 0 ? '\n\n⚠️ ¡Cuidado! Ese producto está AGOTADO.' :
+                       p.stock <= p.stockMinimo ? '\n\n⚠️ Ojo, está por debajo del mínimo.' : '';
+        
+        return `📦 ¡Pío! Revisé el sistema y "${p.nombre}" tiene ${p.stock} ${p.unidad} disponibles.${alerta}${seguimientoAleatorio()}`;
       }
 
       // --- VENTAS DE HOY ---
@@ -526,14 +622,14 @@ const Chatbot = () => {
         const unidades = validas.reduce((s, v) => s + (parseFloat(v.cantidad) || 0), 0);
 
         if (validas.length === 0) {
-          return '📭 Aún no hay ventas registradas hoy.' + seguimientoAleatorio();
+          return '📭 Pío... aún no hay ventas registradas hoy. ¡A darle duro! 🐥' + seguimientoAleatorio();
         }
 
-        const intro = respuestaAleatoria(['💰', '📈', '🛒']);
-        return `${intro} VENTAS DE HOY:\n\n` +
-          `• Total: C$ ${formatearMonto(total)}\n` +
-          `• Facturas: ${facturas}\n` +
-          `• Unidades vendidas: ${unidades.toFixed(2)}` + seguimientoAleatorio();
+        return `💰 ¡Pío pío! Déjame revisar cómo va el día de hoy...\n\n` +
+          `📈 Hemos tenido un total de C$ ${formatearMonto(total)} en ventas.\n` +
+          `🧾 Se han generado ${facturas} facturas.\n` +
+          `🥩 Se han vendido ${unidades.toFixed(2)} unidades de producto.\n\n` +
+          `¡Buen trabajo! ¿Quieres saber algo más? 🐣` + seguimientoAleatorio();
       }
 
       // --- VENTAS DE LA SEMANA ---
@@ -550,9 +646,9 @@ const Chatbot = () => {
         const validas = (data || []).filter(v => !['anulada', 'cancelada'].includes(v.estado));
         const total = validas.reduce((s, v) => s + (parseFloat(v.total) || 0), 0);
 
-        return `📅 VENTAS ÚLTIMOS 7 DÍAS:\n\n` +
-          `• Total: C$ ${formatearMonto(total)}\n` +
-          `• Registros: ${validas.length}` + seguimientoAleatorio();
+        return `📅 ¡Aquí tienes el resumen de la semana!\n\n` +
+          `• Total recaudado: C$ ${formatearMonto(total)}\n` +
+          `• Se registraron ${validas.length} ventas en estos últimos 7 días.` + seguimientoAleatorio();
       }
 
       // --- VENTAS DEL MES ---
@@ -569,9 +665,9 @@ const Chatbot = () => {
         const validas = (data || []).filter(v => !['anulada', 'cancelada'].includes(v.estado));
         const total = validas.reduce((s, v) => s + (parseFloat(v.total) || 0), 0);
 
-        return `📆 VENTAS DEL MES:\n\n` +
-          `• Total: C$ ${formatearMonto(total)}\n` +
-          `• Registros: ${validas.length}` + seguimientoAleatorio();
+        return `📆 ¡Vamos con el cierre del mes!\n\n` +
+          `• Total acumulado: C$ ${formatearMonto(total)}\n` +
+          `• Registros de venta: ${validas.length}` + seguimientoAleatorio();
       }
 
       // --- PRODUCTO MÁS VENDIDO ---
@@ -606,13 +702,17 @@ const Chatbot = () => {
           .sort((a, b) => b.cantidad - a.cantidad)
           .slice(0, 5);
 
-        if (ranking.length === 0) return '📭 No hay ventas registradas este mes.' + seguimientoAleatorio();
+        if (ranking.length === 0) {
+          return '📭 Pío... No hay ventas registradas este mes como para armar un ranking.' + seguimientoAleatorio();
+        }
 
-        let respuesta = '🏆 TOP 5 MÁS VENDIDOS (este mes):\n\n';
+        let respuesta = '🏆 ¡Pío pío! Aquí están los campeones de ventas de este mes:\n\n';
+        
         ranking.forEach((p, i) => {
           const medalla = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
           respuesta += `${medalla} ${p.nombre}: ${p.cantidad.toFixed(2)} ${p.unidad} | C$ ${formatearMonto(p.total)}\n`;
         });
+        
         return respuesta + seguimientoAleatorio();
       }
 
@@ -648,12 +748,16 @@ const Chatbot = () => {
           .sort((a, b) => a.cantidad - b.cantidad)
           .slice(0, 5);
 
-        if (ranking.length === 0) return '📭 No hay ventas registradas este mes.' + seguimientoAleatorio();
+        if (ranking.length === 0) {
+          return '📭 Pío... No hay ventas registradas este mes como para ver qué no se vende.' + seguimientoAleatorio();
+        }
 
-        let respuesta = '📉 TOP 5 MENOS VENDIDOS (este mes):\n\n';
+        let respuesta = '📉 ¡Pío! Ojo con estos, que casi no se están moviendo este mes:\n\n';
+        
         ranking.forEach((p, i) => {
           respuesta += `${i + 1}. ${p.nombre}: ${p.cantidad.toFixed(2)} ${p.unidad}\n`;
         });
+        
         return respuesta + seguimientoAleatorio();
       }
 
@@ -663,13 +767,15 @@ const Chatbot = () => {
         const menor = ordenados[0];
         const top5 = ordenados.slice(0, 5);
 
-        let respuesta = `📉 El producto con MENOR stock es:\n\n`;
-        respuesta += `🥇 ${menor.nombre}: ${menor.stock} ${menor.unidad}\n\n`;
-        respuesta += `Top 5 con menos stock:\n`;
+        let respuesta = `📉 ¡Pío! Ojo aquí, jefe. Revisé el inventario y el producto que está más bajo es:\n\n`;
+        respuesta += `🥇 ${menor.nombre} (solo quedan ${menor.stock} ${menor.unidad})\n\n`;
+        respuesta += `Aquí te dejo el Top 5 de los que están más escasos:\n`;
+        
         top5.forEach((p, i) => {
           respuesta += `${i + 1}. ${p.nombre}: ${p.stock} ${p.unidad}\n`;
         });
-        return respuesta + seguimientoAleatorio();
+        
+        return respuesta + `\n\n¿Te recomiendo comprar algo? Solo dime "¿qué me conviene comprar?" 🐥` + seguimientoAleatorio();
       }
 
       // --- RECOMENDAR COMPRA ---
@@ -684,36 +790,50 @@ const Chatbot = () => {
 
         if (productosBajos.length === 0) {
           const menor = [...productos].sort((a, b) => a.stock - b.stock)[0];
-          return `✅ Todos tus productos tienen stock suficiente.\n\n💡 Aunque el que tiene menos es:\n• ${menor.nombre}: ${menor.stock} ${menor.unidad}` + seguimientoAleatorio();
+          return `✅ ¡Pío pío! Buenas noticias: revisé todo y tienes stock suficiente. El que está un poco más bajo es ${menor.nombre} con ${menor.stock} ${menor.unidad}.` + seguimientoAleatorio();
         }
 
-        let respuesta = '🛒 Productos que te recomiendo abastecer:\n\n';
+        let respuesta = '🛒 ¡Pío! Analizando los datos, te sugiero abastecerte de estos productos pronto:\n\n';
+        
         productosBajos.forEach((p, i) => {
-          const alerta = p.stock <= 0 ? ' ⚠️ AGOTADO' : '';
-          respuesta += `${i + 1}. ${p.nombre}: ${p.stock} ${p.unidad}${alerta}\n`;
+          const alerta = p.stock <= 0 ? ' ❌ (¡AGOTADO!)' : ' ⚠️ (Bajo)';
+          respuesta += `${i + 1}. ${p.nombre}: quedan ${p.stock} ${p.unidad}${alerta}\n`;
         });
-        return respuesta + seguimientoAleatorio();
+        
+        return respuesta + `\n\n¡No dejes que te agarren desprevenido! ¿Quieres que te diga a qué proveedor comprarle? 🐣` + seguimientoAleatorio();
       }
 
       // --- AGOTADOS ---
       if (intencion === 'PRODUCTOS_AGOTADOS' && puntaje > 0) {
         const agotados = productos.filter(p => p.stock <= 0);
-        if (agotados.length === 0) return '✅ ¡No hay productos agotados!' + seguimientoAleatorio();
-        let respuesta = `❌ Productos AGOTADOS (${agotados.length}):\n\n`;
+        
+        if (agotados.length === 0) {
+          return '✅ ¡Pío pío! Revisé y no hay productos agotados. ¡Todo bajo control!' + seguimientoAleatorio();
+        }
+        
+        let respuesta = `❌ ¡Alerta roja! Tienes ${agotados.length} producto(s) AGOTADO(S):\n\n`;
+        
         agotados.forEach((p, i) => {
           respuesta += `${i + 1}. ${p.nombre}\n`;
         });
+        
         return respuesta + seguimientoAleatorio();
       }
 
       // --- STOCK CRÍTICO ---
       if (intencion === 'STOCK_CRITICO' && puntaje > 0) {
         const criticos = productos.filter(p => p.stock > 0 && p.stock <= 5);
-        if (criticos.length === 0) return '✅ No hay productos en estado crítico.' + seguimientoAleatorio();
-        let respuesta = `🚨 Productos CRÍTICOS (≤5):\n\n`;
+        
+        if (criticos.length === 0) {
+          return '✅ ¡Pío! No hay productos en estado crítico.' + seguimientoAleatorio();
+        }
+        
+        let respuesta = `🚨 ¡Cuidado! Tienes ${criticos.length} producto(s) en estado CRÍTICO (5 o menos):\n\n`;
+        
         criticos.forEach((p, i) => {
           respuesta += `${i + 1}. ${p.nombre}: ${p.stock} ${p.unidad}\n`;
         });
+        
         return respuesta + seguimientoAleatorio();
       }
 
@@ -727,46 +847,54 @@ const Chatbot = () => {
         const stockTotal = productos.reduce((sum, p) => sum + p.stock, 0);
         const menor = [...productos].sort((a, b) => a.stock - b.stock)[0];
 
-        return `📊 RESUMEN DEL INVENTARIO:\n\n` +
-          `• Total productos: ${total}\n` +
+        return `📊 ¡Pío pío! Aquí tienes el panorama general del negocio:\n\n` +
+          `• Total de productos: ${total}\n` +
           `• Stock total: ${stockTotal.toFixed(2)} unidades\n\n` +
-          `Estado:\n` +
+          `Estado del inventario:\n` +
           `✅ Suficiente: ${ok}\n` +
           `⚠️ Bajo: ${bajos}\n` +
           `🚨 Crítico: ${criticos}\n` +
           `❌ Agotados: ${agotados}\n\n` +
-          `📉 Menor stock: ${menor.nombre} (${menor.stock} ${menor.unidad})` + seguimientoAleatorio();
+          `📉 El que está más bajo es: ${menor.nombre} (${menor.stock} ${menor.unidad})` + seguimientoAleatorio();
       }
 
       // --- LISTAR TODO ---
       if (intencion === 'LISTAR_TODO' && puntaje > 0) {
-        if (productos.length === 0) return 'No hay productos registrados.' + seguimientoAleatorio();
-        let respuesta = `📋 Inventario (${productos.length} productos):\n\n`;
+        if (productos.length === 0) {
+          return 'Pío... No hay productos registrados en el sistema.' + seguimientoAleatorio();
+        }
+        
+        let respuesta = `📋 ¡Aquí tienes tu inventario completo (${productos.length} productos)!\n\n`;
+        
         [...productos]
           .sort((a, b) => a.stock - b.stock)
           .forEach((p, i) => {
             const alerta = p.stock <= 0 ? ' ❌' : p.stock <= 5 ? ' 🚨' : p.stock <= 20 ? ' ⚠️' : ' ✅';
             respuesta += `${i + 1}. ${p.nombre}: ${p.stock} ${p.unidad}${alerta}\n`;
           });
+          
         return respuesta + seguimientoAleatorio();
       }
 
       // --- FALLBACK AMIGABLE ---
       if (productos.length > 0) {
         const topBajos = [...productos].sort((a, b) => a.stock - b.stock).slice(0, 5);
-        return '🐥 Pío... no entendí bien tu pregunta.\n\n💡 Prueba algo como:\n• "¿Cuál tiene menor stock?"\n• "¿Qué me conviene comprar?"\n• "¿Qué se vendió hoy?"\n• "¿A qué proveedor le compro carne molida?"\n\nMientras tanto, mira los 5 con menos stock:\n\n' +
-          topBajos.map((p, i) => `${i + 1}. ${p.nombre}: ${p.stock} ${p.unidad}`).join('\n');
+        
+        return '🐥 Pío... creo que mi cerebro de pollito no procesó bien esa pregunta. ¿Podrías intentar decirlo de otra forma?\n\n💡 Por ejemplo, puedes preguntarme:\n• "¿Cuál tiene menor stock?"\n• "¿Qué se vendió hoy?"\n• "¿Qué me conviene comprar?"\n• "¿A qué proveedor le compro carne molida?"\n\nMientras piensas, te cuento que los 5 productos con menos stock son:\n\n' +
+          topBajos.map((p, i) => `${i + 1}. ${p.nombre}: ${p.stock} ${p.unidad}`).join('\n') + '\n\n¿Qué te gustaría hacer? 🐣';
       }
 
-      return '🤔 No entendí. Escribe "ayuda" para ver qué puedo hacer.';
+      return '🤔 Uy, no entendí nada. Escribe "ayuda" para ver de qué soy capaz. ¡Soy un pollito muy listo! 🐥';
 
     } catch (error) {
       console.error('Error en chatbot:', error);
       const msg = error?.message || '';
+      
       if (msg.includes('does not exist')) {
-        return '⚠️ Falta la vista "stock_actual" o la tabla "proveedores".';
+        return '⚠️ Pío... parece que falta la vista "stock_actual" o la tabla "proveedores" en la base de datos. ¿Podrías revisar eso?';
       }
-      return '❌ Error al consultar la base de datos. Intenta de nuevo.';
+      
+      return '❌ Pío pío... tuve un problema al consultar la base de datos. ¿Lo intentamos de nuevo? 🐥';
     } finally {
       setCargando(false);
     }

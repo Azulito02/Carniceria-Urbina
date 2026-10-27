@@ -1,5 +1,10 @@
 {
-  "appId": "com.example.app",
-  "appName": "carniceria-urbina",
-  "webDir": "dist"
+  "appId": "carniceria-urbina.netlify.app",
+  "appName": "Carniceria urbina",
+  "webDir": "dist",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000
+    }
+  }
 }

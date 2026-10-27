@@ -7,12 +7,17 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "android:build": "deploid build",
+    "android:deploy": "deploid deploy --launch",
+    "android:ship": "deploid ship --patch",
+    "android:doctor": "deploid doctor"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.3",
     "@capacitor/cli": "^8.5.3",
     "@capacitor/core": "^8.5.3",
+    "@deploid/plugin-storage": "^2.0.1",
     "@fortawesome/fontawesome-free": "^7.3.1",
     "@supabase/supabase-js": "^2.112.4",
     "html2canvas": "^1.4.1",
@@ -33,5 +38,10 @@
     "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^17.7.0",
     "vite": "^8.2.0"
+  },
+  "description": "sistema de inventario para carniceria",
+  "author": {
+    "name": "Milton Oporta , Gersania Amdor , Julio Oivas",
+    "email": "miltonoporta023@gmail.com"
   }
 }
