@@ -684,3 +684,47 @@
     font-size: 10px !important;
   }
 }
+
+
+/* CORRECCIÓN DE DESBORDAMIENTO EN MÓVILES */
+@media (max-width: 768px) {
+  .ventas-container,
+  .ventas-container .ventas-content {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .ventas-container *,
+  .ventas-container *::before,
+  .ventas-container *::after {
+    box-sizing: border-box;
+  }
+
+  .ventas-container .ventas-layout {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .ventas-container .ventas-col-cobro,
+  .ventas-container .tabla-venta-container,
+  .ventas-container .formulario-venta,
+  .ventas-container .ventas-acciones {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .ventas-container .tabla-scroll-venta {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto !important;
+  }
+
+  .ventas-container .tabla-venta {
+    min-width: 0;
+  }
+}
