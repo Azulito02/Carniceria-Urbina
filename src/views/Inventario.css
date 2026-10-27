@@ -1076,3 +1076,128 @@
     transition: none;
   }
 }
+
+/* ==========================================
+   CORRECCIÓN RESPONSIVE DE INVENTARIO
+   WEB, TABLET Y MÓVIL
+========================================== */
+
+.inventario-container,
+.inventario-container * {
+  box-sizing: border-box;
+}
+
+.inventario-container {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.inventario-container .inventario-content {
+  width: 100%;
+  max-width: 1400px;
+  min-width: 0;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.inventario-container .inventario-header {
+  width: 100%;
+  min-width: 0;
+}
+
+.inventario-container .inventario-titulo {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.inventario-container .inventario-titulo h1,
+.inventario-container .inventario-titulo p {
+  overflow-wrap: anywhere;
+}
+
+.inventario-container .header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.inventario-container .header-actions > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.inventario-container .btn-sincronizar,
+.inventario-container .btn-pdf,
+.inventario-container .btn-agregar-producto {
+  box-sizing: border-box;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.inventario-container .btn-agregar-producto {
+  min-width: 0;
+}
+
+/* Móvil y tablet */
+@media (max-width: 768px) {
+  .inventario-container .inventario-content {
+    padding: 14px 12px 75px;
+  }
+
+  .inventario-container .inventario-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .inventario-container .header-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+    width: 100%;
+  }
+
+  .inventario-container .status-indicator,
+  .inventario-container .pendientes-indicator,
+  .inventario-container .btn-sincronizar,
+  .inventario-container .btn-pdf {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    justify-content: center;
+  }
+
+  .inventario-container .btn-agregar-producto {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    justify-content: center;
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 420px) {
+  .inventario-container .inventario-content {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .inventario-container .header-actions {
+    gap: 8px;
+  }
+
+  .inventario-container .btn-sincronizar,
+  .inventario-container .btn-pdf,
+  .inventario-container .btn-agregar-producto {
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+}
+

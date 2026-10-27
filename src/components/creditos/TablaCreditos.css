@@ -563,14 +563,14 @@
   /* TEXTO DE LOS BOTONES */
 
   .tabla-creditos .btn-accion.editar::after {
-    content: "Editar";
+    content: "";
     font-family: inherit;
     font-size: 13px;
     font-weight: 700;
   }
 
   .tabla-creditos .btn-accion.eliminar::after {
-    content: "Eliminar";
+    content: "";
     font-family: inherit;
     font-size: 13px;
     font-weight: 700;

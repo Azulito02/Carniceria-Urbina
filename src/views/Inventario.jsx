@@ -549,7 +549,7 @@ function Inventario() {
                 </>
               ) : (
                 <>
-                  <i className="fas fa-file-pdf"></i> Exportar PDF
+                  <i className="fas fa-file-pdf"></i> 
                 </>
               )}
             </button>
