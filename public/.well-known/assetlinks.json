@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.netlify.carniceria_urbina.twa",
+        "sha256_cert_fingerprints": ["93:80:49:1A:E6:7F:E9:A9:8B:03:DF:02:66:37:AC:BA:71:9C:29:4E:77:8C:5A:3E:84:59:75:5F:FF:CC:CD:1A"]
+      }
+    }]
