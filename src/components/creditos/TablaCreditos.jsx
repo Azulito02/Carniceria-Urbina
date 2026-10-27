@@ -4,13 +4,27 @@ import './TablaCreditos.css';
 const TablaCreditos = ({ creditos, loading, onEditar, onEliminar, getEstadoCredito }) => {
   const [creditosAgrupados, setCreditosAgrupados] = useState({});
   const [clientesExpandidos, setClientesExpandidos] = useState({});
+  const [busqueda, setBusqueda] = useState('');
+  
+  const [filtroEstado, setFiltroEstado] = useState('pendientes'); 
 
-  // Agrupar créditos por cliente
+  // Color principal del sistema (Ajusta este código HEX si tu rojo es un poco más claro u oscuro)
+  const COLOR_SISTEMA = '#9b1c1c'; 
+
   useEffect(() => {
     if (creditos && creditos.length > 0) {
+      const termino = busqueda.toLowerCase().trim();
+      
+      let creditosFiltrados = creditos.filter(credito => {
+        if (!termino) return true;
+        const nombreCliente = (credito.cliente_nombre || '').toLowerCase();
+        const idCredito = String(credito.id);
+        return nombreCliente.includes(termino) || idCredito.includes(termino);
+      });
+
       const agrupados = {};
       
-      creditos.forEach(credito => {
+      creditosFiltrados.forEach(credito => {
         const nombreRaw = credito.cliente_nombre || 'Sin nombre';
         const clienteClave = nombreRaw.toLowerCase().trim();
         
@@ -20,7 +34,7 @@ const TablaCreditos = ({ creditos, loading, onEditar, onEliminar, getEstadoCredi
             creditos: [],
             totalGeneral: 0,
             saldoGeneral: 0,
-            expandido: clientesExpandidos[clienteClave] || false
+            expandido: termino ? true : (clientesExpandidos[clienteClave] || false)
           };
         }
         
@@ -28,12 +42,23 @@ const TablaCreditos = ({ creditos, loading, onEditar, onEliminar, getEstadoCredi
         agrupados[clienteClave].totalGeneral += parseFloat(credito.monto_total || 0);
         agrupados[clienteClave].saldoGeneral += parseFloat(credito.saldo_pendiente || 0);
       });
-      
-      setCreditosAgrupados(agrupados);
+
+      const agrupadosFiltrados = Object.entries(agrupados).reduce((acc, [clave, datos]) => {
+        if (filtroEstado === 'pendientes' && datos.saldoGeneral > 0) {
+          acc[clave] = datos;
+        } else if (filtroEstado === 'completados' && datos.saldoGeneral <= 0) {
+          acc[clave] = datos;
+        } else if (filtroEstado === 'todos') {
+          acc[clave] = datos;
+        }
+        return acc;
+      }, {});
+
+      setCreditosAgrupados(agrupadosFiltrados);
     } else {
       setCreditosAgrupados({});
     }
-  }, [creditos, clientesExpandidos]);
+  }, [creditos, clientesExpandidos, busqueda, filtroEstado]);
 
   const toggleExpandirCliente = (clienteClave) => {
     setClientesExpandidos(prev => ({
@@ -42,19 +67,9 @@ const TablaCreditos = ({ creditos, loading, onEditar, onEliminar, getEstadoCredi
     }));
   };
 
-  const formatFecha = (fechaISO) => {
-    if (!fechaISO) return 'Fecha no disponible';
-    try {
-      const fechaUTC = new Date(fechaISO);
-      const fechaNic = new Date(fechaUTC.getTime() - (6 * 60 * 60 * 1000));
-      const d = fechaNic.getDate().toString().padStart(2, '0');
-      const m = (fechaNic.getMonth() + 1).toString().padStart(2, '0');
-      const y = fechaNic.getFullYear();
-      return `${d}/${m}/${y}`;
-    } catch (e) {
-      return fechaISO;
-    }
-  };
+  const totalPendientes = creditos.filter(c => Number(c.saldo_pendiente || 0) > 0).length;
+  const totalCompletados = creditos.filter(c => Number(c.saldo_pendiente || 0) <= 0).length;
+  const totalTodos = creditos.length;
 
   if (loading) {
     return (
@@ -69,6 +84,102 @@ const TablaCreditos = ({ creditos, loading, onEditar, onEliminar, getEstadoCredi
 
   return (
     <div className="tabla-creditos-container">
+      
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '20px' }}>
+        
+        {/* BARRA DE PESTAÑAS (Filtros con color del sistema) */}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          
+          <button 
+            onClick={() => setFiltroEstado('pendientes')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '10px 16px', borderRadius: '8px', border: `1px solid ${filtroEstado === 'pendientes' ? COLOR_SISTEMA : '#e5e7eb'}`, cursor: 'pointer',
+              backgroundColor: filtroEstado === 'pendientes' ? COLOR_SISTEMA : '#ffffff',
+              color: filtroEstado === 'pendientes' ? '#ffffff' : '#374151',
+              fontWeight: 'bold', transition: 'all 0.2s'
+            }}
+          >
+            Pendientes 
+            <span style={{ 
+              backgroundColor: filtroEstado === 'pendientes' ? 'rgba(255,255,255,0.2)' : '#f3f4f6',
+              padding: '2px 8px', borderRadius: '12px', fontSize: '12px'
+            }}>{totalPendientes}</span>
+          </button>
+
+          <button 
+            onClick={() => setFiltroEstado('completados')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '10px 16px', borderRadius: '8px', border: `1px solid ${filtroEstado === 'completados' ? COLOR_SISTEMA : '#e5e7eb'}`, cursor: 'pointer',
+              backgroundColor: filtroEstado === 'completados' ? COLOR_SISTEMA : '#ffffff',
+              color: filtroEstado === 'completados' ? '#ffffff' : '#374151',
+              fontWeight: 'bold', transition: 'all 0.2s'
+            }}
+          >
+            Completados 
+            <span style={{ 
+              backgroundColor: filtroEstado === 'completados' ? 'rgba(255,255,255,0.2)' : '#f3f4f6',
+              padding: '2px 8px', borderRadius: '12px', fontSize: '12px'
+            }}>{totalCompletados}</span>
+          </button>
+
+          <button 
+            onClick={() => setFiltroEstado('todos')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '10px 16px', borderRadius: '8px', border: `1px solid ${filtroEstado === 'todos' ? COLOR_SISTEMA : '#e5e7eb'}`, cursor: 'pointer',
+              backgroundColor: filtroEstado === 'todos' ? COLOR_SISTEMA : '#ffffff',
+              color: filtroEstado === 'todos' ? '#ffffff' : '#374151',
+              fontWeight: 'bold', transition: 'all 0.2s'
+            }}
+          >
+            Todos 
+            <span style={{ 
+              backgroundColor: filtroEstado === 'todos' ? 'rgba(255,255,255,0.2)' : '#f3f4f6',
+              padding: '2px 8px', borderRadius: '12px', fontSize: '12px'
+            }}>{totalTodos}</span>
+          </button>
+
+          {/* Botón de Eliminar Completados con el color del sistema */}
+          <button 
+            style={{
+              marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '10px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+              backgroundColor: '#ef4444', color: '#ffffff', fontWeight: 'bold' // Rojo brillante para indicar peligro/eliminación
+            }}
+          >
+            <i className="fas fa-trash"></i> Eliminar Completados
+            <span style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '2px 8px', borderRadius: '12px', fontSize: '12px' }}>
+              {totalCompletados}
+            </span>
+          </button>
+        </div>
+
+        {/* BUSCADOR */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '400px' }}>
+            <i className="fas fa-search" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }}></i>
+            <input
+              type="text"
+              placeholder="Buscar por cliente o número de crédito..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              style={{
+                width: '100%', padding: '10px 10px 10px 35px', borderRadius: '8px',
+                border: '1px solid #d1d5db', outline: 'none', fontSize: '14px'
+              }}
+            />
+          </div>
+          {busqueda && (
+            <button onClick={() => setBusqueda('')} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>
+              Limpiar
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* TABLA (Se mantiene igual) */}
       <div className="tabla-scroll">
         <table className="tabla-creditos">
           <thead>
@@ -83,8 +194,8 @@ const TablaCreditos = ({ creditos, loading, onEditar, onEliminar, getEstadoCredi
           <tbody>
             {Object.entries(creditosAgrupados).length === 0 ? (
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
-                  No hay créditos registrados
+                <td colSpan="5" style={{ textAlign: 'center', padding: '20px', color: '#6b7280' }}>
+                  No se encontraron créditos {filtroEstado !== 'todos' ? filtroEstado : ''}
                 </td>
               </tr>
             ) : (
@@ -93,7 +204,6 @@ const TablaCreditos = ({ creditos, loading, onEditar, onEliminar, getEstadoCredi
 
                 return (
                   <React.Fragment key={clienteClave}>
-                    {/* FILA DEL CLIENTE (RESUMEN) */}
                     <tr 
                       onClick={() => toggleExpandirCliente(clienteClave)}
                       style={{ cursor: 'pointer', backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}
@@ -125,7 +235,6 @@ const TablaCreditos = ({ creditos, loading, onEditar, onEliminar, getEstadoCredi
                       </td>
                     </tr>
                     
-                    {/* FILAS DE DETALLES DEL CLIENTE (EXPANDIDAS) */}
                     {expandido && datos.creditos.map((credito) => {
                       const estado = getEstadoCredito ? getEstadoCredito(credito) : { texto: 'Activo', clase: 'activo' };
 
