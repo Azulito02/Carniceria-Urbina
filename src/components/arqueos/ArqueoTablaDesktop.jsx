@@ -65,12 +65,12 @@ const ArqueoTablaDesktop = ({
                   <button className="btn-accion btn-excel" onClick={() => onExportarExcel(a)} disabled={exportando[a.id] === 'excel'}>
                     {exportando[a.id] === 'excel'
                       ? <><span className="spinner-mini"></span>Exportando...</>
-                      : <><span className="btn-icon">📊</span><span className="btn-text">Excel</span></>}
+                      : <><span className="fas fa-file-excel" ></span><span className="btn-text"></span></>}
                   </button>
                   <button className="btn-accion btn-pdf" onClick={() => onExportarPDF(a)} disabled={exportando[a.id] === 'pdf'}>
                     {exportando[a.id] === 'pdf'
                       ? <><span className="spinner-mini"></span>Exportando...</>
-                      : <><span className="btn-icon">📄</span><span className="btn-text">PDF</span></>}
+                      : <><span className="fas fa-file-pdf"></span><span className="btn-text"></span></>}
                   </button>
                 </div>
               </td>

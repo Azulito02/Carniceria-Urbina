@@ -4,17 +4,22 @@
    TABLA DE CLIENTES - RESPONSIVE
 ========================================== */
 
+.tabla-clientes,
+.tabla-clientes * {
+  box-sizing: border-box;
+}
+
 /* ===== CONTENEDOR PRINCIPAL ===== */
 
 .tabla-clientes {
   width: 100%;
   min-width: 0;
+  margin: 20px 0;
   background: #ffffff;
-  border: 1px solid #f0e8e6;
+  border: 1px solid #eadedb;
   border-radius: 14px;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
   overflow: hidden;
-  box-sizing: border-box;
 }
 
 /* ===== ENCABEZADO ===== */
@@ -52,7 +57,7 @@
   white-space: nowrap;
 }
 
-/* ===== DESPLAZAMIENTO DE TABLA ===== */
+/* ===== DESPLAZAMIENTO ===== */
 
 .tabla-clientes .tabla-scroll {
   width: 100%;
@@ -61,7 +66,7 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* ===== TABLA EN COMPUTADORA ===== */
+/* ===== TABLA ===== */
 
 .tabla-clientes table {
   width: 100%;
@@ -118,7 +123,7 @@
 }
 
 .tabla-clientes td.nombre {
-  color: #2c3e50;
+  color: #8B1E1E;
   font-size: 15px;
   font-weight: 700;
   overflow-wrap: anywhere;
@@ -130,7 +135,7 @@
 }
 
 .tabla-clientes .acciones-header {
-  min-width: 190px;
+  min-width: 140px;
   text-align: center;
 }
 
@@ -138,7 +143,9 @@
   text-align: center;
 }
 
-/* ===== BOTONES DE ACCIONES ===== */
+/* ==========================================
+   BOTONES UNIFICADOS: SOLO ICONOS
+========================================== */
 
 .tabla-clientes .acciones-buttons {
   display: flex;
@@ -148,76 +155,83 @@
   gap: 9px;
 }
 
-/* ESTILO GENERAL DE LOS BOTONES */
-
 .tabla-clientes .btn-editar,
 .tabla-clientes .btn-eliminar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-width: 88px;
-  min-height: 42px;
-  padding: 10px 13px;
-  border: none;
+
+  width: 48px;
+  min-width: 48px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+
+  border: 1px solid transparent;
   border-radius: 9px;
-  color: #ffffff;
+
   font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.3;
+  font-size: 15px;
+  line-height: 1;
+
   cursor: pointer;
+
   transition:
-    background 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
     transform 0.2s ease,
     box-shadow 0.2s ease;
 }
 
-/* EDITAR */
+/* ===== EDITAR ===== */
 
 .tabla-clientes .btn-editar {
   background: #AD741C;
+  color: #ffffff;
 }
 
 .tabla-clientes .btn-editar:hover:not(:disabled) {
   background: #8d5d13;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(173, 116, 28, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(173, 116, 28, 0.2);
 }
 
-/* ELIMINAR */
+/* ===== ELIMINAR ===== */
 
 .tabla-clientes .btn-eliminar {
   background: #8B1E1E;
+  color: #ffffff;
 }
 
 .tabla-clientes .btn-eliminar:hover:not(:disabled) {
   background: #6b1515;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(139, 30, 30, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(139, 30, 30, 0.2);
 }
 
-/* ÍCONOS */
+/* ===== ICONOS ===== */
 
 .tabla-clientes .btn-editar i,
 .tabla-clientes .btn-eliminar i {
-  font-size: 14px;
+  display: inline-block;
+  font-size: 16px;
+  line-height: 1;
 }
 
-/* TEXTO SIEMPRE VISIBLE */
+/* Ocultar textos heredados de botones */
 
-.tabla-clientes .btn-editar .btn-text,
-.tabla-clientes .btn-eliminar .btn-text {
-  display: inline !important;
-  font-size: 13px;
+.tabla-clientes .btn-icon-only .btn-text {
+  display: none !important;
 }
 
-/* DESHABILITADOS */
+/* ===== DESHABILITADOS ===== */
 
 .tabla-clientes button:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 /* ===== SIN CLIENTES ===== */
@@ -283,13 +297,10 @@
 }
 
 /* ==========================================
-   CELULARES - TARJETAS
+   CELULARES: TARJETAS
 ========================================== */
 
 @media (max-width: 768px) {
-
-  /* CONTENEDOR */
-
   .tabla-clientes {
     background: transparent;
     border: none;
@@ -297,8 +308,6 @@
     box-shadow: none;
     overflow: visible;
   }
-
-  /* ENCABEZADO */
 
   .tabla-clientes .tabla-header {
     padding: 14px;
@@ -317,13 +326,9 @@
     padding: 5px 10px;
   }
 
-  /* QUITAR SCROLL HORIZONTAL */
-
   .tabla-clientes .tabla-scroll {
     overflow: visible;
   }
-
-  /* TABLA COMO TARJETAS */
 
   .tabla-clientes table {
     display: block !important;
@@ -333,13 +338,9 @@
     background: transparent !important;
   }
 
-  /* OCULTAR ENCABEZADOS */
-
   .tabla-clientes thead {
     display: none !important;
   }
-
-  /* LISTA DE TARJETAS */
 
   .tabla-clientes tbody {
     display: grid !important;
@@ -347,8 +348,6 @@
     gap: 12px;
     width: 100%;
   }
-
-  /* CADA CLIENTE */
 
   .tabla-clientes tbody tr {
     display: block !important;
@@ -361,10 +360,7 @@
     border-left: 4px solid #8B1E1E !important;
     border-radius: 12px !important;
     box-shadow: 0 2px 9px rgba(0, 0, 0, 0.06);
-    box-sizing: border-box;
   }
-
-  /* CAMPOS DE CADA CLIENTE */
 
   .tabla-clientes tbody td {
     display: flex !important;
@@ -381,14 +377,11 @@
     white-space: normal !important;
     overflow-wrap: anywhere !important;
     font-size: 14px;
-    box-sizing: border-box;
   }
 
   .tabla-clientes tbody td:last-child {
     border-bottom: none !important;
   }
-
-  /* ETIQUETAS */
 
   .tabla-clientes tbody td::before {
     flex: 0 0 32%;
@@ -400,42 +393,25 @@
     line-height: 1.5;
   }
 
-  /* NÚMERO */
-
   .tabla-clientes tbody td:nth-child(1)::before {
     content: "N.º";
   }
-
-  /* NOMBRE */
 
   .tabla-clientes tbody td:nth-child(2)::before {
     content: "Nombre";
   }
 
-  /* DIRECCIÓN */
-
   .tabla-clientes tbody td:nth-child(3)::before {
     content: "Dirección";
   }
 
-  /* ACCIONES */
-
-  .tabla-clientes tbody td:nth-child(4)::before {
-    content: "Acciones";
-  }
-
-  /* AJUSTES DE COLUMNAS */
-
   .tabla-clientes td.numero {
     width: 100%;
-    font-weight: 700;
-    color: #996b62;
     text-align: right;
   }
 
   .tabla-clientes td.nombre {
     font-size: 15px;
-    font-weight: 700;
     color: #8B1E1E;
   }
 
@@ -444,7 +420,7 @@
     line-height: 1.5;
   }
 
-  /* BOTONES AL FINAL DE LA TARJETA */
+  /* ACCIONES */
 
   .tabla-clientes td.acciones {
     display: block !important;
@@ -459,32 +435,20 @@
   }
 
   .tabla-clientes .acciones-buttons {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 9px;
     width: 100%;
   }
-
-  /* BOTONES GRANDES */
 
   .tabla-clientes .btn-editar,
   .tabla-clientes .btn-eliminar {
-    width: 100%;
-    min-width: 0;
-    min-height: 46px;
-    padding: 12px;
-    font-size: 13px;
-  }
-
-  .tabla-clientes .btn-editar .btn-text,
-  .tabla-clientes .btn-eliminar .btn-text {
-    display: inline !important;
-    font-size: 13px;
-  }
-
-  .tabla-clientes .btn-editar i,
-  .tabla-clientes .btn-eliminar i {
-    font-size: 15px;
+    width: 48px;
+    min-width: 48px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
   }
 
   /* ESTADO VACÍO */
@@ -534,9 +498,10 @@
 
   .tabla-clientes .btn-editar,
   .tabla-clientes .btn-eliminar {
-    min-height: 44px;
-    padding: 10px 7px;
-    font-size: 12px;
+    width: 44px;
+    min-width: 44px;
+    height: 42px;
+    min-height: 42px;
   }
 }
 

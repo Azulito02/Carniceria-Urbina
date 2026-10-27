@@ -767,7 +767,7 @@ function Inventario() {
                               title="Editar conteo"
                             >
                               <i className="fas fa-edit"></i>
-                              <span>Editar</span>
+                              <span></span>
                             </button>
                             <button
                               className="btn-eliminar"
@@ -775,7 +775,7 @@ function Inventario() {
                               title="Eliminar conteo"
                             >
                               <i className="fas fa-trash-alt"></i>
-                              <span>Eliminar</span>
+                              <span></span>
                             </button>
                           </div>
                         </td>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 const TablaProveedores = ({
@@ -21,7 +22,9 @@ const TablaProveedores = ({
       <div className="tabla-vacia">
         <i className="fas fa-truck"></i>
         <p>No hay proveedores registrados</p>
-        <span>Haz clic en "Agregar Proveedor" para comenzar</span>
+        <span>
+          Haz clic en "Agregar Proveedor" para comenzar
+        </span>
       </div>
     );
   }
@@ -39,45 +42,79 @@ const TablaProveedores = ({
               <th>Acciones</th>
             </tr>
           </thead>
+
           <tbody>
             {proveedores.map((prov, index) => (
-              <tr key={prov.id} className={prov._local ? 'fila-local' : ''}>
-                <td className="numero">{index + 1}</td>
+              <tr
+                key={prov.id}
+                className={prov._local ? 'fila-local' : ''}
+              >
+                <td className="numero">
+                  {index + 1}
+                </td>
+
                 <td className="nombre">
                   {prov.nombre_empresa}
-                  {prov._local && <span className="badge-local">📝 Local</span>}
+
+                  {prov._local && (
+                    <span className="badge-local">
+                      📝 Local
+                    </span>
+                  )}
                 </td>
-                <td className="contacto">{prov.nombre_vendedor || '—'}</td>
+
+                <td className="contacto">
+                  {prov.nombre_vendedor || '—'}
+                </td>
+
                 <td className="categorias">
-                  {prov.categorias && prov.categorias.length > 0 ? (
+                  {prov.categorias &&
+                  prov.categorias.length > 0 ? (
                     <div className="categorias-badges">
-                      {prov.categorias.map(cat => (
-                        <span key={cat} className={`cat-badge cat-${cat}`}>
-                          {getEtiquetaCategoria ? getEtiquetaCategoria(cat) : cat}
+                      {prov.categorias.map((cat) => (
+                        <span
+                          key={cat}
+                          className={`cat-badge cat-${cat}`}
+                        >
+                          {getEtiquetaCategoria
+                            ? getEtiquetaCategoria(cat)
+                            : cat}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <span className="sin-categorias">Sin categorías</span>
+                    <span className="sin-categorias">
+                      Sin categorías
+                    </span>
                   )}
                 </td>
+
                 <td className="acciones">
                   <div className="acciones-botones">
                     <button
-                      className="btn-editar"
+                      type="button"
+                      className="btn-editar btn-icon-only"
                       onClick={() => onEditar(prov)}
-                      title="Editar"
+                      title="Editar proveedor"
+                      aria-label={`Editar ${prov.nombre_empresa}`}
                     >
-                      <i className="fas fa-edit"></i>
-                      <span>Editar</span>
+                      <i
+                        className="fas fa-edit"
+                        aria-hidden="true"
+                      ></i>
                     </button>
+
                     <button
-                      className="btn-eliminar"
+                      type="button"
+                      className="btn-eliminar btn-icon-only"
                       onClick={() => onEliminar(prov)}
-                      title="Eliminar"
+                      title="Eliminar proveedor"
+                      aria-label={`Eliminar ${prov.nombre_empresa}`}
                     >
-                      <i className="fas fa-trash-alt"></i>
-                      <span>Eliminar</span>
+                      <i
+                        className="fas fa-trash"
+                        aria-hidden="true"
+                      ></i>
                     </button>
                   </div>
                 </td>

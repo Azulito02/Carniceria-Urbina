@@ -652,3 +652,45 @@
     animation: none;
   }
 }
+
+
+/* Botones de editar y eliminar en Créditos */
+.tabla-creditos-container .col-acciones {
+  white-space: nowrap;
+}
+
+.tabla-creditos-container .btn-accion {
+  width: 48px;
+  height: 44px;
+  min-width: 48px;
+  padding: 0;
+  margin: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 9px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.tabla-creditos-container .btn-accion.editar {
+  background-color: #ad741c;
+  color: #ffffff;
+}
+
+.tabla-creditos-container .btn-accion.editar:hover {
+  background-color: #8d5d13;
+  transform: translateY(-1px);
+}
+
+.tabla-creditos-container .btn-accion.eliminar {
+  background-color: #8b1e1e;
+  color: #ffffff;
+}
+
+.tabla-creditos-container .btn-accion.eliminar:hover {
+  background-color: #6b1515;
+  transform: translateY(-1px);
+}

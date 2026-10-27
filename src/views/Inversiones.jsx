@@ -1010,7 +1010,7 @@ const Inversiones = () => {
             ) : (
               <>
                 <i className="fas fa-file-excel"></i>
-                Exportar Excel
+                
               </>
             )}
           </button>
@@ -1027,7 +1027,7 @@ const Inversiones = () => {
             ) : (
               <>
                 <i className="fas fa-file-pdf"></i>
-                Exportar PDF
+                
               </>
             )}
           </button>

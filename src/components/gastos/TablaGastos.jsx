@@ -78,7 +78,7 @@ const TablaGastos = ({ gastos, loading, onEditar, onEliminar }) => {
                       title="Editar gasto"
                     >
                       <i className="fas fa-edit"></i>
-                      <span>Editar</span>
+                      <span></span>
                     </button>
                     <button
                       className="btn-eliminar"
@@ -86,7 +86,7 @@ const TablaGastos = ({ gastos, loading, onEditar, onEliminar }) => {
                       title="Eliminar gasto"
                     >
                       <i className="fas fa-trash-alt"></i>
-                      <span>Eliminar</span>
+                      <span></span>
                     </button>
                   </div>
                 </td>

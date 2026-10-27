@@ -1,15 +1,15 @@
-// src/components/creditos/TablaCreditos.jsx
+
 import React from 'react';
 import './TablaCreditos.css';
 
-const TablaCreditos = ({ 
-  creditos, 
-  loading, 
-  onEditar, 
+const TablaCreditos = ({
+  creditos,
+  loading,
+  onEditar,
   onEliminar,
-  getEstadoCredito 
+  getEstadoCredito
 }) => {
-  
+
   const formatFecha = (fechaISO) => {
     if (!fechaISO) return 'Fecha no disponible';
     try {
@@ -69,43 +69,65 @@ const TablaCreditos = ({
               const saldo = credito.saldo_pendiente || 0;
               const total = credito.monto_total || 0;
               const pagado = credito.monto_pagado || 0;
-              
+
               return (
-                <tr key={credito.id} className={saldo === 0 ? 'fila-completada' : ''}>
+                <tr
+                  key={credito.id}
+                  className={saldo === 0 ? 'fila-completada' : ''}
+                >
                   <td className="col-id">#{credito.id}</td>
+
                   <td className="col-cliente">
-                    <strong>{credito.cliente_nombre || 'Cliente no disponible'}</strong>
+                    <strong>
+                      {credito.cliente_nombre || 'Cliente no disponible'}
+                    </strong>
                   </td>
-                  <td className="col-fecha">{formatFecha(credito.fecha_inicio)}</td>
-                  <td className="col-fecha">{formatFecha(credito.fecha_fin)}</td>
+
+                  <td className="col-fecha">
+                    {formatFecha(credito.fecha_inicio)}
+                  </td>
+
+                  <td className="col-fecha">
+                    {formatFecha(credito.fecha_fin)}
+                  </td>
+
                   <td className="col-monto total">
                     C${total.toFixed(2)}
                   </td>
+
                   <td className="col-monto pagado">
                     C${pagado.toFixed(2)}
                   </td>
+
                   <td className="col-monto saldo">
                     <strong>C${saldo.toFixed(2)}</strong>
                   </td>
+
                   <td className="col-estado">
                     <span className={`badge-estado ${estado.clase}`}>
                       {estado.texto}
                     </span>
                   </td>
+
                   <td className="col-acciones">
                     <button
+                      type="button"
                       onClick={() => onEditar(credito)}
                       className="btn-accion editar"
-                      title="Editar"
+                      title="Editar crédito"
+                      aria-label="Editar crédito"
                     >
-                      ✏️
+                      <i className="fas fa-edit" aria-hidden="true"></i>
                     </button>
+
                     <button
+                      type="button"
                       onClick={() => onEliminar(credito)}
                       className="btn-accion eliminar"
-                      title="Eliminar"
+                      title="Eliminar crédito"
+                      aria-label="Eliminar crédito"
                     >
-                      🗑️
+                      <i className="fas fa-trash" aria-hidden="true"></i>
                     </button>
                   </td>
                 </tr>

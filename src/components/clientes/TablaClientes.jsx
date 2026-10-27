@@ -1,11 +1,12 @@
+
 import React from 'react';
 import './TablaClientes.css';
 
-function TablaClientes({ 
-  clientes, 
-  loading, 
-  onEditar, 
-  onEliminar 
+function TablaClientes({
+  clientes,
+  loading,
+  onEditar,
+  onEliminar
 }) {
   if (loading) {
     return (
@@ -20,7 +21,10 @@ function TablaClientes({
     <div className="tabla-clientes">
       <div className="tabla-header">
         <h3>📋 Lista de Clientes</h3>
-        <span className="total-clientes">{clientes.length} clientes</span>
+
+        <span className="total-clientes">
+          {clientes.length} clientes
+        </span>
       </div>
 
       <div className="tabla-scroll">
@@ -30,41 +34,64 @@ function TablaClientes({
               <th>#</th>
               <th>Nombre</th>
               <th>Dirección</th>
-              <th className="acciones-header">Acciones</th>
+              <th className="acciones-header">
+                Acciones
+              </th>
             </tr>
           </thead>
+
           <tbody>
             {clientes.length === 0 ? (
               <tr>
                 <td colSpan="4" className="sin-clientes">
                   <i className="fas fa-users-slash"></i>
                   <p>No hay clientes registrados</p>
-                  <span className="sin-clientes-sub">Haz clic en "Agregar Cliente" para comenzar</span>
+                  <span className="sin-clientes-sub">
+                    Haz clic en "Agregar Cliente" para comenzar
+                  </span>
                 </td>
               </tr>
             ) : (
               clientes.map((cliente, index) => (
                 <tr key={cliente.id} className="cliente-row">
-                  <td className="numero">{index + 1}</td>
-                  <td className="nombre">{cliente.nombre}</td>
-                  <td className="direccion">{cliente.direccion || '-'}</td>
+                  <td className="numero">
+                    {index + 1}
+                  </td>
+
+                  <td className="nombre">
+                    {cliente.nombre}
+                  </td>
+
+                  <td className="direccion">
+                    {cliente.direccion || '-'}
+                  </td>
+
                   <td className="acciones">
                     <div className="acciones-buttons">
-                      <button 
-                        className="btn-editar" 
-                        onClick={() => onEditar(cliente)} 
+                      <button
+                        type="button"
+                        className="btn-editar btn-icon-only"
+                        onClick={() => onEditar(cliente)}
                         title="Editar cliente"
+                        aria-label={`Editar ${cliente.nombre}`}
                       >
-                        <i className="fas fa-edit"></i>
-                        <span className="btn-text">Editar</span>
+                        <i
+                          className="fas fa-edit"
+                          aria-hidden="true"
+                        ></i>
                       </button>
-                      <button 
-                        className="btn-eliminar" 
-                        onClick={() => onEliminar(cliente)} 
+
+                      <button
+                        type="button"
+                        className="btn-eliminar btn-icon-only"
+                        onClick={() => onEliminar(cliente)}
                         title="Eliminar cliente"
+                        aria-label={`Eliminar ${cliente.nombre}`}
                       >
-                        <i className="fas fa-trash-alt"></i>
-                        <span className="btn-text">Eliminar</span>
+                        <i
+                          className="fas fa-trash"
+                          aria-hidden="true"
+                        ></i>
                       </button>
                     </div>
                   </td>

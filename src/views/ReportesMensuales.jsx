@@ -657,14 +657,14 @@ useEffect(() => {
               disabled={loading || facturasFiltradas.length === 0 || exportando}
               className="btn-exportar excel"
             >
-              {exportando ? (<><span className="spinner-mini"></span>Exportando...</>) : (<><span className="btn-icon">📊</span>Exportar Excel</>)}
+              {exportando ? (<><span className="spinner-mini"></span>Exportando...</>) : (<><span className="fas fa-file-excel"></span></>)}
             </button>
             <button
               onClick={exportarPDF}
               disabled={loading || facturasFiltradas.length === 0 || exportando}
               className="btn-exportar pdf"
             >
-              {exportando ? (<><span className="spinner-mini"></span>Exportando...</>) : (<><span className="btn-icon">📄</span>Exportar PDF</>)}
+              {exportando ? (<><span className="spinner-mini"></span>Exportando...</>) : (<><span className="fas fa-file-pdf"></span></>)}
             </button>
           </div>
 
