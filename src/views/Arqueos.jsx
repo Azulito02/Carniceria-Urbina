@@ -13,9 +13,6 @@ import ArqueoModal from '../components/arqueos/ArqueoModal'
 
 import { formatFechaNicaragua } from '../components/arqueos/utils'
 
-const USUARIO_KEY = 'usuarioArelyz'
-const NOMBRE_NEGOCIO = 'Arelyz Salón'
-
 const Arqueos = () => {
   const [arqueos, setArqueos] = useState([])
   const [loading, setLoading] = useState(true)

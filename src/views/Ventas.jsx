@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../database/supabase';
 import Encabezado from '../components/Encabezado';
@@ -14,7 +14,80 @@ import {
   avisosStockTrasVenta,
   notificarCambioStock
 } from '../services/StockService';
+
 import './Ventas.css';
+
+// ===== ALMACENAMIENTO LOCAL =====
+const CLAVE_COLA_VENTAS = 'ventas_pendientes_sync';
+const CLAVE_CLIENTES = 'clientes_cache';
+const CLAVE_STOCK = 'stock_mapa_cache';
+
+const leerJSON = (clave, defecto) => {
+  try {
+    const v = localStorage.getItem(clave);
+    return v ? JSON.parse(v) : defecto;
+  } catch {
+    return defecto;
+  }
+};
+
+const leerCola = () => leerJSON(CLAVE_COLA_VENTAS, []);
+const guardarCola = (cola) => localStorage.setItem(CLAVE_COLA_VENTAS, JSON.stringify(cola));
+
+const notificarStock = () => {
+  try {
+    Promise.resolve(notificarCambioStock()).catch(() => {});
+  } catch (e) {
+    console.warn('No se pudo notificar el cambio de stock', e);
+  }
+};
+
+/**
+ * Guarda una venta completa (ventas + crédito + abono) en Supabase, en orden.
+ * Es "reanudable": cada paso completado queda marcado en el paquete, así que si falla a la mitad
+ * y se reintenta después, NO duplica lo que ya se guardó.
+ */
+const procesarPaquete = async (pkg) => {
+  // 1. Filas de la venta
+  if (!pkg.ventaInsertada) {
+    const { data, error } = await supabase.from('ventas').insert(pkg.filasVenta).select();
+    if (error) throw error;
+    pkg.ventaId = data && data.length > 0 ? data[0].id : null;
+    pkg.ventaInsertada = true;
+  }
+
+  if (!pkg.credito) return;
+
+  // 2. Cancelar créditos anteriores que se unificaron en esta factura
+  if (pkg.idsCancelar && pkg.idsCancelar.length > 0 && !pkg.canceladosHecho) {
+    const { error } = await supabase
+      .from('creditos')
+      .update({ estado: 'cancelado', observaciones: `Unificado en factura ${pkg.numeroFactura}` })
+      .in('id', pkg.idsCancelar);
+    if (error) throw error;
+    pkg.canceladosHecho = true;
+  }
+
+  // 3. Crédito (ya con el venta_id real)
+  if (!pkg.creditoId) {
+    const { data, error } = await supabase
+      .from('creditos')
+      .insert([{ ...pkg.credito, venta_id: pkg.ventaId }])
+      .select();
+    if (error) throw error;
+    pkg.creditoId = data && data.length > 0 ? data[0].id : null;
+  }
+
+  // 4. Abono inicial (ya con el credito_id real)
+  if (pkg.abono && !pkg.abonoInsertado) {
+    if (!pkg.creditoId) throw new Error('No se obtuvo el id del crédito');
+    const { error } = await supabase
+      .from('abonos_credito')
+      .insert([{ ...pkg.abono, credito_id: pkg.creditoId }]);
+    if (error) throw error;
+    pkg.abonoInsertado = true;
+  }
+};
 
 function Ventas() {
   const navigate = useNavigate();
@@ -23,7 +96,7 @@ function Ventas() {
   const { data: productos } = useRealtimeSync('productos', 'productos_cache');
   const [clientes, setClientes] = useState([]);
 
-  // ===== STOCK DISPONIBLE (inventario - ventas) =====
+  // ===== STOCK DISPONIBLE =====
   const [stockMapa, setStockMapa] = useState({});
   const [alertasStock, setAlertasStock] = useState([]);
 
@@ -51,28 +124,138 @@ function Ventas() {
   const [modalAgregarProducto, setModalAgregarProducto] = useState(false);
   const [numeroFacturaVer, setNumeroFacturaVer] = useState('');
 
-  // ===== MENSAJES =====
+  // ===== MENSAJES Y CONEXIÓN =====
   const [error, setError] = useState(null);
   const [exito, setExito] = useState(null);
   const [guardando, setGuardando] = useState(false);
 
+  const [conectado, setConectado] = useState(navigator.onLine);
+  const [operacionesPendientes, setOperacionesPendientes] = useState(0);
+  const [sincronizando, setSincronizando] = useState(false);
+  const sincronizandoRef = useRef(false);
+
   // ===== HOOK PRECIOS POR CLIENTE =====
   const { preciosCliente } = usePreciosCliente(clienteSeleccionado);
 
-  // ===== CARGAR STOCK DISPONIBLE =====
-  const cargarStock = async () => {
-    const mapa = await obtenerMapaStock();
-    setStockMapa(mapa);
-    return mapa;
-  };
-
-  useEffect(() => {
-    cargarStock();
+  // ===== STOCK (con caché para offline) =====
+  const cargarStock = useCallback(async () => {
+    if (!navigator.onLine) {
+      const cache = leerJSON(CLAVE_STOCK, {});
+      setStockMapa(cache);
+      return cache;
+    }
+    try {
+      const mapa = await obtenerMapaStock();
+      setStockMapa(mapa);
+      localStorage.setItem(CLAVE_STOCK, JSON.stringify(mapa));
+      return mapa;
+    } catch (err) {
+      console.warn('No se pudo cargar el stock, se usa el caché');
+      const cache = leerJSON(CLAVE_STOCK, {});
+      setStockMapa(cache);
+      return cache;
+    }
   }, []);
 
-  // ===== CARGAR CLIENTES =====
+  // ===== SINCRONIZAR VENTAS PENDIENTES =====
+  const sincronizarPendientes = useCallback(async (manual = false) => {
+    if (!navigator.onLine) {
+      if (manual) setError('Sin internet');
+      return;
+    }
+    if (sincronizandoRef.current) return;
+
+    const cola = leerCola();
+    if (cola.length === 0) {
+      if (manual) {
+        setExito('✅ Todo sincronizado');
+        setTimeout(() => setExito(null), 3000);
+      }
+      return;
+    }
+
+    sincronizandoRef.current = true;
+    setSincronizando(true);
+
+    const okIds = new Set();
+    const fallidos = new Map();
+
+    try {
+      for (const pkg of cola) {
+        try {
+          await procesarPaquete(pkg);
+          okIds.add(pkg.id_local);
+        } catch (err) {
+          console.warn('⚠️ No se pudo sincronizar la venta', pkg.numeroFactura, err);
+          pkg.ultimoError = err?.message || String(err);
+          fallidos.set(pkg.id_local, pkg); // conserva el progreso ya hecho
+        }
+      }
+    } finally {
+      // Se relee la cola por si se guardó otra venta mientras sincronizaba
+      const nuevaCola = leerCola()
+        .filter(p => !okIds.has(p.id_local))
+        .map(p => fallidos.get(p.id_local) || p);
+
+      guardarCola(nuevaCola);
+      setOperacionesPendientes(nuevaCola.length);
+      sincronizandoRef.current = false;
+      setSincronizando(false);
+    }
+
+    if (okIds.size > 0) {
+      setExito(`✅ ${okIds.size} venta(s) sincronizada(s)`);
+      setTimeout(() => setExito(null), 4000);
+      notificarStock();
+      await cargarStock();
+    }
+    if (fallidos.size > 0) {
+      setError(`⚠️ ${fallidos.size} venta(s) no se pudieron sincronizar. Se reintentará automáticamente.`);
+      setTimeout(() => setError(null), 5000);
+    }
+  }, [cargarStock]);
+
+  // ===== CONEXIÓN + STOCK INICIAL + SINCRONIZAR AL VOLVER EL INTERNET =====
+  useEffect(() => {
+    cargarStock();
+
+    const handleOnline = () => {
+      setConectado(true);
+      sincronizarPendientes();
+    };
+    const handleOffline = () => setConectado(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Si hay pendientes de una sesión anterior y ya hay internet, se envían
+    if (navigator.onLine) sincronizarPendientes();
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [cargarStock, sincronizarPendientes]);
+
+  // ===== CONTAR PENDIENTES (y reintentar si hay internet) =====
+  useEffect(() => {
+    const revisar = () => {
+      const cola = leerCola();
+      setOperacionesPendientes(cola.length);
+      if (cola.length > 0 && navigator.onLine) sincronizarPendientes();
+    };
+    revisar();
+    const interval = setInterval(revisar, 15000);
+    return () => clearInterval(interval);
+  }, [sincronizarPendientes]);
+
+  // ===== CLIENTES (con caché para offline) =====
   useEffect(() => {
     const cargarClientes = async () => {
+      if (!navigator.onLine) {
+        setClientes(leerJSON(CLAVE_CLIENTES, []));
+        return;
+      }
       try {
         const { data, error } = await supabase
           .from('clientes')
@@ -81,24 +264,24 @@ function Ventas() {
 
         if (error) throw error;
         setClientes(data || []);
+        localStorage.setItem(CLAVE_CLIENTES, JSON.stringify(data || []));
       } catch (err) {
         console.error('Error cargando clientes:', err);
+        setClientes(leerJSON(CLAVE_CLIENTES, []));
       }
     };
     cargarClientes();
-  }, []);
+  }, [conectado]);
 
-  // ===== BUSCAR SALDO ANTERIOR DEL CLIENTE =====
   useEffect(() => {
     const buscarSaldoAnterior = async () => {
       setSaldoAnterior(0);
       setCreditoAnterior(null);
 
-      if (!clienteSeleccionado || clienteSeleccionado === 'general') return;
+      if (!clienteSeleccionado || clienteSeleccionado === 'general' || !conectado) return;
 
       try {
         const clienteId = parseInt(clienteSeleccionado);
-
         const { data, error } = await supabase
           .from('creditos')
           .select('*')
@@ -119,9 +302,8 @@ function Ventas() {
     };
 
     buscarSaldoAnterior();
-  }, [clienteSeleccionado]);
+  }, [clienteSeleccionado, conectado]);
 
-  // ===== FECHA VENCIMIENTO (8 DÍAS) =====
   useEffect(() => {
     if (metodoPago === 'credito') {
       const hoy = new Date();
@@ -132,7 +314,6 @@ function Ventas() {
     }
   }, [metodoPago]);
 
-  // ===== LIMPIAR CAMPOS DE PAGO =====
   useEffect(() => {
     setEfectivo('');
     setTarjeta('');
@@ -141,11 +322,14 @@ function Ventas() {
     setBanco('');
   }, [metodoPago]);
 
-  // ===== GENERAR NÚMERO DE FACTURA =====
   const generarNumeroFactura = async () => {
+    const hoy = new Date();
+    const fechaStr = `${hoy.getFullYear()}${String(hoy.getMonth() + 1).padStart(2, '0')}${String(hoy.getDate()).padStart(2, '0')}`;
+
     try {
-      const hoy = new Date();
-      const fechaStr = `${hoy.getFullYear()}${String(hoy.getMonth() + 1).padStart(2, '0')}${String(hoy.getDate()).padStart(2, '0')}`;
+      if (!navigator.onLine) {
+        return `OFF-${fechaStr}-${Date.now().toString().slice(-4)}`;
+      }
 
       const inicioDia = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 0, 0, 0).toISOString();
       const finDia = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 23, 59, 59).toISOString();
@@ -156,7 +340,7 @@ function Ventas() {
         .gte('fecha', inicioDia)
         .lte('fecha', finDia);
 
-      if (error) console.error('Error obteniendo último número:', error);
+      if (error) throw error;
 
       let correlativo = 1;
       if (data && data.length > 0) {
@@ -173,52 +357,53 @@ function Ventas() {
 
       return `${fechaStr}-${String(correlativo).padStart(3, '0')}`;
     } catch (err) {
-      console.error('Error generando número:', err);
-      const timestamp = Date.now().toString().slice(-6);
-      const hoy = new Date();
-      const fechaStr = `${hoy.getFullYear()}${String(hoy.getMonth() + 1).padStart(2, '0')}${String(hoy.getDate()).padStart(2, '0')}`;
-      return `${fechaStr}-${timestamp}`;
+      console.error('Error generando número, se usa uno offline:', err);
+      return `OFF-${fechaStr}-${Date.now().toString().slice(-4)}`;
     }
   };
 
-  // ===== AGREGAR PRODUCTO DESDE MODAL =====
   const agregarProductoDesdeModal = (nuevaLinea) => {
     setLineasVenta(prev => {
       const existe = prev.find(l => l.producto_id === nuevaLinea.producto_id);
-
       if (existe) {
-        return prev.map(l =>
-          l.producto_id === nuevaLinea.producto_id
-            ? {
-                ...l,
-                cantidad: nuevaLinea.cantidad,
-                precio_unitario: nuevaLinea.precio_unitario,
-                total: nuevaLinea.total
-              }
-            : l
-        );
+        return prev.map(l => l.producto_id === nuevaLinea.producto_id ? { ...l, cantidad: nuevaLinea.cantidad, precio_unitario: nuevaLinea.precio_unitario, total: nuevaLinea.total } : l);
       } else {
         return [...prev, nuevaLinea];
       }
     });
   };
 
-  // ===== REVISAR STOCK DESPUÉS DE GUARDAR LA VENTA =====
   const revisarStockTrasVenta = async (idsVendidos) => {
+    if (!navigator.onLine) return;
     try {
       const avisos = await avisosStockTrasVenta(idsVendidos);
       setAlertasStock(avisos);
-      if (avisos.length > 0) {
-        setTimeout(() => setAlertasStock([]), 15000);
-      }
-      notificarCambioStock();
+      if (avisos.length > 0) setTimeout(() => setAlertasStock([]), 15000);
+      notificarStock();
       await cargarStock();
     } catch (err) {
       console.error('Error revisando stock tras la venta:', err);
     }
   };
 
-  // ===== GUARDAR VENTA =====
+  // Resta del stock local lo vendido offline, para que las siguientes ventas avisen bien
+  const descontarStockLocal = (lineas) => {
+    setStockMapa(prev => {
+      const nuevo = { ...prev };
+      lineas.forEach(l => {
+        const s = nuevo[l.producto_id];
+        if (s) {
+          nuevo[l.producto_id] = {
+            ...s,
+            stock_disponible: Number(s.stock_disponible || 0) - Number(l.cantidad || 0)
+          };
+        }
+      });
+      localStorage.setItem(CLAVE_STOCK, JSON.stringify(nuevo));
+      return nuevo;
+    });
+  };
+
   const guardarVenta = async () => {
     try {
       setError(null);
@@ -248,26 +433,24 @@ function Ventas() {
         return;
       }
 
-      // ===== ADVERTIR SI SE VENDE MÁS DE LO DISPONIBLE =====
-      const idsVendidos = lineasVenta.map(l => l.producto_id);
-      const stockFresco = await obtenerMapaStock();
-      const insuficientes = lineasVenta.filter(l => {
-        const s = stockFresco[l.producto_id];
-        return s && Number(l.cantidad) > s.stock_disponible;
-      });
+      // Advertencia de stock: con internet usa el dato fresco, sin internet usa el caché local
+      try {
+        const stockFresco = navigator.onLine ? await obtenerMapaStock() : leerJSON(CLAVE_STOCK, {});
+        const insuficientes = lineasVenta.filter(l => {
+          const s = stockFresco[l.producto_id];
+          return s && Number(l.cantidad) > s.stock_disponible;
+        });
 
-      if (insuficientes.length > 0) {
-        const detalle = insuficientes
-          .map(l => {
+        if (insuficientes.length > 0) {
+          const detalle = insuficientes.map(l => {
             const s = stockFresco[l.producto_id];
             return `• ${s.nombre}: vendes ${Number(l.cantidad).toFixed(2)} y hay ${Math.max(0, s.stock_disponible).toFixed(2)} ${s.unidad_medida || ''}`;
-          })
-          .join('\n');
-
-        const continuar = window.confirm(
-          `⚠️ Stock insuficiente según el inventario:\n\n${detalle}\n\n¿Guardar la venta de todas formas?`
-        );
-        if (!continuar) return;
+          }).join('\n');
+          const continuar = window.confirm(`⚠️ Stock insuficiente según el inventario:\n\n${detalle}\n\n¿Guardar la venta de todas formas?`);
+          if (!continuar) return;
+        }
+      } catch (e) {
+        console.warn('No se pudo verificar el stock, probablemente sin internet.');
       }
 
       const aplicarSaldoAnterior = metodoPago === 'credito' && saldoAnterior > 0 && sumarSaldoAnterior;
@@ -280,7 +463,6 @@ function Ventas() {
       const clienteIdFinal = clienteSeleccionado === 'general' ? null : parseInt(clienteSeleccionado);
 
       let metodoPagoBD = 'efectivo';
-
       if (metodoPago === 'credito') {
         metodoPagoBD = 'credito';
       } else {
@@ -288,15 +470,12 @@ function Ventas() {
         if (efectivoNum > 0) metodosConMonto.push('efectivo');
         if (tarjetaNum > 0) metodosConMonto.push('tarjeta');
         if (transferenciaNum > 0) metodosConMonto.push('transferencia');
-
         if (metodosConMonto.length === 0) metodoPagoBD = 'efectivo';
         else if (metodosConMonto.length === 1) metodoPagoBD = metodosConMonto[0];
         else metodoPagoBD = 'mixto';
       }
 
       const estadoBD = metodoPago === 'credito' ? 'credito' : 'completada';
-
-      // ✅ FECHA ÚNICA PARA TODAS LAS LÍNEAS DE LA FACTURA
       const fechaVentaISO = new Date().toISOString();
 
       const filasVenta = lineasVenta.map(l => ({
@@ -314,106 +493,86 @@ function Ventas() {
         estado: estadoBD,
         numero_factura: numeroFactura,
         usuario: 'Admin',
-        fecha: fechaVentaISO   // 👈 FIX: ya no queda null
+        fecha: fechaVentaISO
       }));
 
-      const { data: ventasInsertadas, error: errVenta } = await supabase
-        .from('ventas')
-        .insert(filasVenta)
-        .select();
-
-      if (errVenta) throw errVenta;
+      // ===== PAQUETE COMPLETO DE LA VENTA (venta + crédito + abono) =====
+      const paquete = {
+        id_local: `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        numeroFactura,
+        timestamp: fechaVentaISO,
+        filasVenta,
+        credito: null,
+        abono: null,
+        idsCancelar: [],
+        ventaInsertada: false,
+        ventaId: null,
+        canceladosHecho: false,
+        creditoId: null,
+        abonoInsertado: false
+      };
 
       if (metodoPago === 'credito' && clienteIdFinal) {
-        let ventaIdPrincipal = null;
-
-        if (ventasInsertadas && ventasInsertadas.length > 0 && ventasInsertadas[0].id) {
-          ventaIdPrincipal = ventasInsertadas[0].id;
-        } else {
-          const { data: ventaBuscada } = await supabase
-            .from('ventas')
-            .select('id')
-            .eq('numero_factura', numeroFactura)
-            .limit(1)
-            .maybeSingle();
-
-          if (ventaBuscada) ventaIdPrincipal = ventaBuscada.id;
-        }
-
         const abonoInicial = totalPagado;
         const saldoPendiente = totalFacturaConSaldo - abonoInicial;
 
-        // Cancelar créditos anteriores si se sumaron
-        if (aplicarSaldoAnterior && creditoAnterior && creditoAnterior.length > 0) {
-          const idsAnteriores = creditoAnterior.map(c => c.id);
-
-          await supabase
-            .from('creditos')
-            .update({
-              estado: 'cancelado',
-              observaciones: `Unificado en factura ${numeroFactura}`
-            })
-            .in('id', idsAnteriores);
-        }
-
-        let estadoCredito = 'activo';
-        if (saldoPendiente <= 0) estadoCredito = 'pagado';
-
-        const creditoData = {
+        paquete.credito = {
           cliente_id: clienteIdFinal,
-          venta_id: ventaIdPrincipal,
-          fecha_inicio: new Date().toISOString(),
+          fecha_inicio: fechaVentaISO,
           fecha_fin: fechaVencimiento,
           monto_total: totalFacturaConSaldo,
           monto_pagado: abonoInicial,
           saldo_pendiente: saldoPendiente,
-          estado: estadoCredito,
-          observaciones: aplicarSaldoAnterior
-            ? `Incluye saldo anterior de C$${saldoAAgregar.toFixed(2)}`
-            : null
+          estado: saldoPendiente <= 0 ? 'pagado' : 'activo',
+          observaciones: aplicarSaldoAnterior ? `Incluye saldo anterior de C$${saldoAAgregar.toFixed(2)}` : null
         };
 
-        const { data: creditoInsertado, error: errCredito } = await supabase
-          .from('creditos')
-          .insert([creditoData])
-          .select();
+        if (abonoInicial > 0) {
+          paquete.abono = {
+            monto: abonoInicial,
+            metodo_pago: metodoPagoBD,
+            banco: banco || null,
+            fecha: fechaVentaISO,
+            observaciones: 'Abono inicial al momento de la venta'
+          };
+        }
 
-        if (errCredito) {
-          setError('Venta guardada, pero error al crear crédito: ' + errCredito.message);
-        } else if (abonoInicial > 0 && creditoInsertado && creditoInsertado.length > 0) {
-          const creditoId = creditoInsertado[0].id;
-
-          let metodoAbono = 'efectivo';
-          const metodosAbono = [];
-          if (efectivoNum > 0) metodosAbono.push('efectivo');
-          if (tarjetaNum > 0) metodosAbono.push('tarjeta');
-          if (transferenciaNum > 0) metodosAbono.push('transferencia');
-
-          if (metodosAbono.length === 1) metodoAbono = metodosAbono[0];
-          else if (metodosAbono.length > 1) metodoAbono = 'mixto';
-
-          await supabase
-            .from('abonos_credito')
-            .insert([{
-              credito_id: creditoId,
-              monto: abonoInicial,
-              metodo_pago: metodoAbono,
-              banco: banco || null,
-              fecha: new Date().toISOString(),
-              observaciones: 'Abono inicial al momento de la venta'
-            }]);
+        if (aplicarSaldoAnterior && creditoAnterior && creditoAnterior.length > 0) {
+          paquete.idsCancelar = creditoAnterior.map(c => c.id);
         }
       }
 
-      setNumeroFacturaVer(numeroFactura);
-      setModalVerFactura(true);
+      // ===== INTENTAR GUARDAR EN SUPABASE; SI FALLA O NO HAY INTERNET, A LA COLA LOCAL =====
+      let guardadoExitoso = false;
 
-      setExito(`✅ Venta registrada - Factura: ${numeroFactura}`);
-      setTimeout(() => setExito(null), 4000);
+      if (navigator.onLine) {
+        try {
+          await procesarPaquete(paquete);
+          guardadoExitoso = true;
+        } catch (errorRed) {
+          console.warn('⚠️ Falló el guardado en Supabase. Se guarda localmente...', errorRed);
+          paquete.ultimoError = errorRed?.message || String(errorRed);
+        }
+      }
 
-      // ===== ALERTA DE STOCK BAJO TRAS LA VENTA =====
-      await revisarStockTrasVenta(idsVendidos);
+      if (!guardadoExitoso) {
+        const cola = leerCola();
+        cola.push(paquete);
+        guardarCola(cola);
+        setOperacionesPendientes(cola.length);
+        descontarStockLocal(lineasVenta);
 
+        setExito(`📝 Venta guardada localmente - Factura: ${numeroFactura}. Se sincronizará con internet.`);
+        setTimeout(() => setExito(null), 5000);
+      } else {
+        setExito(`✅ Venta registrada - Factura: ${numeroFactura}`);
+        setTimeout(() => setExito(null), 4000);
+        setNumeroFacturaVer(numeroFactura);
+        setModalVerFactura(true);
+        await revisarStockTrasVenta(lineasVenta.map(l => l.producto_id));
+      }
+
+      // Limpiar formulario
       setLineasVenta([]);
       setClienteSeleccionado('general');
       setMetodoPago('contado');
@@ -429,15 +588,7 @@ function Ventas() {
 
     } catch (err) {
       console.error('❌ Error guardando venta:', err);
-
-      let mensajeError = 'Error al guardar la venta';
-      if (err.code === '23505') {
-        mensajeError = 'Conflicto: número de factura duplicado. Intenta de nuevo.';
-      } else if (err.message) {
-        mensajeError += ': ' + err.message;
-      }
-
-      setError(mensajeError);
+      setError('Error inesperado al guardar la venta.');
       setTimeout(() => setError(null), 5000);
     } finally {
       setGuardando(false);
@@ -464,7 +615,26 @@ function Ventas() {
             <p>Registro de ventas de la carnicería</p>
           </div>
 
-          <div className="header-actions">
+          {/* ESTADO DE CONEXIÓN */}
+          <div className="header-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <span className={`status-indicator ${conectado ? 'online' : 'offline'}`} style={{ fontSize: '13px', color: conectado ? '#059669' : '#dc2626' }}>
+              <i className={`fas ${conectado ? 'fa-wifi' : 'fa-wifi-slash'}`}></i>
+              {conectado ? ' En línea' : ' Sin conexión'}
+            </span>
+            {operacionesPendientes > 0 && (
+              <span className="pendientes-indicator" style={{ fontSize: '13px', color: '#d97706' }}>
+                <i className="fas fa-clock"></i> {operacionesPendientes} pendientes
+              </span>
+            )}
+            {operacionesPendientes > 0 && (
+              <button
+                className="btn-sincronizar"
+                onClick={() => sincronizarPendientes(true)}
+                disabled={!conectado || sincronizando}
+              >
+                <i className={`fas fa-sync ${sincronizando ? 'fa-spin' : ''}`}></i> Sincronizar
+              </button>
+            )}
             <button
               className="btn-facturas-dia"
               onClick={() => setModalFacturasDia(true)}
