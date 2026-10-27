@@ -694,3 +694,27 @@
   background-color: #6b1515;
   transform: translateY(-1px);
 }
+
+
+/* Ocultar tabla en móvil y mostrar tarjetas */
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-only {
+    display: block !important;
+  }
+  .desktop-only-text {
+    display: none; /* Oculta el texto del botón eliminar en móvil */
+  }
+}
+
+/* Ocultar tarjetas en PC y mostrar tabla */
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+  .desktop-only {
+    display: block !important;
+  }
+}
