@@ -24,7 +24,6 @@ const Inversiones = () => {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [editando, setEditando] = useState(null);
 
-  // Se incrementa cada vez que cambian las inversiones, para refrescar las tarjetas de resultado
   const [versionResultado, setVersionResultado] = useState(0);
 
   // ===== PROVEEDORES, PRODUCTOS Y CATEGORÍAS =====
@@ -48,7 +47,6 @@ const Inversiones = () => {
     cantidadRegistros: 0
   });
 
-  // formData sin "nombre", con "precio_unitario"
   const [formData, setFormData] = useState({
     monto: '',
     precio_unitario: '',
@@ -85,6 +83,22 @@ const Inversiones = () => {
       try {
         console.log('🔄 Cargando proveedores, productos y categorías...');
 
+        // 1. Si no hay internet, leer del caché (LocalStorage)
+        if (!navigator.onLine) {
+          const provCache = localStorage.getItem('proveedores_cache');
+          const prodCache = localStorage.getItem('productos_cache');
+          
+          if (provCache) setProveedores(JSON.parse(provCache));
+          if (prodCache) {
+            const prods = JSON.parse(prodCache);
+            setProductos(prods);
+            const cats = [...new Set(prods.map(p => p.categoria).filter(c => c && c.trim() !== ''))].sort();
+            setCategoriasDisponibles(cats);
+          }
+          return; // Detenemos la ejecución aquí si estamos offline
+        }
+
+        // 2. Si hay internet, cargar de Supabase y guardar en caché
         const { data: provData, error: provError } = await supabase
           .from('proveedores')
           .select('id, nombre_empresa, nombre_vendedor, categorias')
@@ -93,8 +107,8 @@ const Inversiones = () => {
         if (provError) {
           console.error('❌ Error cargando proveedores:', provError);
         } else {
-          console.log('✅ Proveedores cargados:', provData?.length || 0);
           setProveedores(provData || []);
+          localStorage.setItem('proveedores_cache', JSON.stringify(provData || [])); // Guardamos en caché
         }
 
         const { data: prodData, error: prodError } = await supabase
@@ -106,23 +120,29 @@ const Inversiones = () => {
           console.error('❌ Error cargando productos:', prodError);
         } else {
           setProductos(prodData || []);
-
+          localStorage.setItem('productos_cache', JSON.stringify(prodData || [])); // Guardamos en caché
+          
           const cats = [...new Set(
             (prodData || [])
               .map(p => p.categoria)
               .filter(c => c && c.trim() !== '')
           )].sort();
 
-          console.log('✅ Categorías cargadas:', cats);
           setCategoriasDisponibles(cats);
         }
       } catch (err) {
         console.error('❌ Error general:', err);
       }
     };
+    
     cargarDatosIniciales();
+    
+    // Escuchar cuando vuelve el internet para recargar los datos
+    const handleOnline = () => cargarDatosIniciales();
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
   }, []);
-
+  
   // ===== CARGAR INVERSIONES =====
   const cargarInversiones = useCallback(async () => {
     try {
@@ -395,6 +415,7 @@ const Inversiones = () => {
     try {
       setError(null);
 
+      // 🔥 VALIDACIONES CORREGIDAS (Ya no bloquea por categoría)
       if (!formData.producto_id) {
         setError('Debes seleccionar un producto');
         return;
@@ -673,6 +694,7 @@ const Inversiones = () => {
     setError(null);
   };
 
+  // 🔥 REPARADO: Si no hay categoría, muestra todos
   const proveedoresFiltradosPorCategoria = () => {
     if (!formData.categoria) return proveedores;
     return proveedores.filter(p =>
@@ -680,6 +702,7 @@ const Inversiones = () => {
     );
   };
 
+  // 🔥 REPARADO: Si no hay categoría, muestra todos
   const productosFiltradosPorCategoria = () => {
     if (!formData.categoria) return productos;
     return productos.filter(p => p.categoria === formData.categoria);
@@ -694,7 +717,7 @@ const Inversiones = () => {
     setFormData({
       ...formData,
       categoria: nuevaCategoria,
-      proveedor_id: '',
+      proveedor_id: mantenerProducto ? formData.proveedor_id : '',
       producto_id: mantenerProducto ? formData.producto_id : '',
       cantidad: mantenerProducto ? formData.cantidad : ''
     });
@@ -1192,10 +1215,9 @@ const Inversiones = () => {
                     value={formData.proveedor_id}
                     onChange={(e) => setFormData({ ...formData, proveedor_id: e.target.value })}
                     className="form-select"
-                    disabled={!formData.categoria}
                   >
                     <option value="">
-                      {formData.categoria ? 'Seleccionar proveedor...' : 'Selecciona categoría primero'}
+                      Seleccionar proveedor...
                     </option>
                     {proveedoresFiltradosPorCategoria().map(p => (
                       <option key={p.id} value={p.id}>

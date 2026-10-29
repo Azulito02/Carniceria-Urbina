@@ -50,8 +50,6 @@ const PRIORIDAD = { perdida: 0, 'sin-datos': 1, equilibrio: 2, 'sin-ventas': 3, 
 // COMPONENTE
 // ============================================================
 const TarjetasResultadoProductos = ({ version = 0 }) => {
-  console.log('🎯 [TarjetasResultadoProductos] COMPONENTE MONTADO - version:', version);
-
   const [tarjetas, setTarjetas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -64,9 +62,22 @@ const TarjetasResultadoProductos = ({ version = 0 }) => {
   const [menuAbierto, setMenuAbierto] = useState(null);
 
   const cargar = useCallback(async () => {
-    console.log('🚀 [cargar] INICIANDO CARGA DE TARJETAS...');
+    setLoading(true);
+    
     try {
       setError(null);
+
+      // 🔥 SI NO HAY INTERNET, LEER DEL CACHÉ
+      if (!navigator.onLine) {
+        const cache = localStorage.getItem('tarjetas_resultado_cache');
+        if (cache) {
+          setTarjetas(JSON.parse(cache));
+        } else {
+          setError('No hay conexión a internet y no hay datos guardados previamente.');
+        }
+        setLoading(false);
+        return;
+      }
 
       // ===== 1) Inversiones =====
       const inversiones = await traerTodo(() =>
@@ -77,22 +88,18 @@ const TarjetasResultadoProductos = ({ version = 0 }) => {
           .order('id')
       );
 
-      console.log('📥 [cargar] Inversiones traídas:', inversiones.length);
-
       if (inversiones.length === 0) {
-        console.log('⚠️ [cargar] No hay inversiones con producto_id');
         setTarjetas([]);
+        setLoading(false);
         return;
       }
 
       const ids = [...new Set(inversiones.map(i => i.producto_id))];
-      console.log('🔍 [cargar] IDs de producto en inversiones:', ids);
 
       // ===== 2) Productos + Ventas desde DOS fuentes =====
       const [resProductos, ventasActivas, ventasFacturadas] = await Promise.all([
         supabase.from('productos').select('id, nombre, unidad_medida').in('id', ids),
 
-        // 🔵 Ventas activas → tabla "ventas"
         traerTodo(() =>
           supabase
             .from('ventas')
@@ -100,7 +107,6 @@ const TarjetasResultadoProductos = ({ version = 0 }) => {
             .order('id')
         ),
 
-        // 🟢 Ventas facturadas → tabla "facturados"
         traerTodo(() =>
           supabase
             .from('facturados')
@@ -111,36 +117,6 @@ const TarjetasResultadoProductos = ({ version = 0 }) => {
       ]);
 
       if (resProductos.error) throw resProductos.error;
-
-      // 🚨 LOGS DE DIAGNÓSTICO
-      console.log('═══════════════════════════════════════════');
-      console.log('🔍 IDs DE INVERSIONES:', ids);
-      console.log('🔵 VENTAS ACTIVAS (total traídas):', ventasActivas.length);
-      console.log('🟢 VENTAS FACTURADAS (total traídas):', ventasFacturadas.length);
-
-      if (ventasActivas.length > 0) {
-        console.log('📋 Muestra de ventas activas:');
-        console.table(ventasActivas.slice(0, 10).map(v => ({
-          id: v.id,
-          producto_id: v.producto_id,
-          cantidad: v.cantidad,
-          total: v.total,
-          estado: v.estado
-        })));
-      }
-
-      if (ventasFacturadas.length > 0) {
-        console.log('📋 Muestra de ventas facturadas:');
-        console.table(ventasFacturadas.slice(0, 10).map(v => ({
-          id: v.id,
-          tipo: v.tipo,
-          producto_id: v.producto_id,
-          monto: v.monto,
-          cantidad: v.detalle?.cantidad,
-          estado: v.detalle?.estado
-        })));
-      }
-      console.log('═══════════════════════════════════════════');
 
       // ===== 3) Normalizar ambas fuentes =====
       const ventasNormalizadas = [
@@ -174,7 +150,6 @@ const TarjetasResultadoProductos = ({ version = 0 }) => {
         const invertido = compras.reduce((s, c) => s + (parseFloat(c[COLUMNA_MONTO]) || 0), 0);
         const comprado = compras.reduce((s, c) => s + (parseFloat(c[COLUMNA_CANTIDAD]) || 0), 0);
 
-        // Cruce por producto_id
         const ventasProducto = ventasNormalizadas.filter(v => {
           if (Number(v.producto_id) !== Number(id)) return false;
           if (ESTADOS_EXCLUIDOS.includes(v.estado)) return false;
@@ -197,16 +172,6 @@ const TarjetasResultadoProductos = ({ version = 0 }) => {
         else if (utilidad > 0.005) estado = 'ganancia';
         else if (utilidad < -0.005) estado = 'perdida';
         else estado = 'equilibrio';
-
-        console.log(`📦 [${producto?.nombre}] id=${id}`, {
-          comprado: `${comprado} ${unidadCorta(producto?.unidad_medida)}`,
-          invertido: `C$${invertido.toFixed(2)}`,
-          ventasEncontradas: ventasProducto.length,
-          vendido: `${vendido} ${unidadCorta(producto?.unidad_medida)}`,
-          ingresos: `C$${ingresos.toFixed(2)}`,
-          utilidad: `C$${utilidad.toFixed(2)}`,
-          estado
-        });
 
         return {
           id,
@@ -231,18 +196,27 @@ const TarjetasResultadoProductos = ({ version = 0 }) => {
         PRIORIDAD[a.estado] - PRIORIDAD[b.estado] || b.invertido - a.invertido
       );
 
-      console.log('✅ [cargar] Tarjetas calculadas:', resultado.length);
+      // 🔥 GUARDAR EN CACHÉ PARA CUANDO NO HAYA INTERNET
+      localStorage.setItem('tarjetas_resultado_cache', JSON.stringify(resultado));
       setTarjetas(resultado);
+
     } catch (err) {
       console.error('❌ Error calculando inversión vs ventas:', err.message);
-      setError('No se pudo calcular el resultado: ' + (err.message || 'error de conexión'));
+      
+      // Si falla por error de red, intentamos rescatar el caché
+      const cache = localStorage.getItem('tarjetas_resultado_cache');
+      if (cache) {
+        setTarjetas(JSON.parse(cache));
+        setError(null);
+      } else {
+        setError('No se pudo calcular el resultado: ' + (err.message || 'error de conexión'));
+      }
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    console.log('🔄 [useEffect] Disparando cargar() por version:', version);
     cargar();
   }, [cargar, version]);
 
@@ -359,8 +333,6 @@ const TarjetasResultadoProductos = ({ version = 0 }) => {
       setBorrando(false);
     }
   };
-
-  console.log('🎨 [RENDER] loading:', loading, '| error:', error, '| tarjetas:', tarjetas.length);
 
   return (
     <section className="resultado-productos">
