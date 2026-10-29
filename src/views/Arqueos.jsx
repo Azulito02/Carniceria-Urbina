@@ -29,16 +29,43 @@ const Arqueos = () => {
   const cargarArqueos = async () => {
     try {
       setLoading(true)
+      
+      // 🔥 REPARACIÓN 1: Leer caché si no hay internet
+      if (!navigator.onLine) {
+        const cache = localStorage.getItem('arqueos_cache')
+        if (cache) {
+          const dataCache = JSON.parse(cache)
+          setArqueos(dataCache)
+          if (dataCache.length > 0) setUltimoArqueo(dataCache[0])
+        }
+        setLoading(false)
+        return
+      }
+
       const { data, error } = await supabase
         .from('arqueos').select('*')
         .order('fecha', { ascending: false })
         .limit(20)
+      
       if (error) throw error
+      
+      // 🔥 REPARACIÓN 2: Guardar en caché
+      localStorage.setItem('arqueos_cache', JSON.stringify(data || []))
+      
       setArqueos(data || [])
       if (data && data.length > 0) setUltimoArqueo(data[0])
     } catch (error) {
       console.error('Error cargando arqueos:', error)
-      alert('Error al cargar arqueos')
+      
+      // 🔥 REPARACIÓN 3: Rescatar caché si falla la red
+      const cache = localStorage.getItem('arqueos_cache')
+      if (cache) {
+        const dataCache = JSON.parse(cache)
+        setArqueos(dataCache)
+        if (dataCache.length > 0) setUltimoArqueo(dataCache[0])
+      } else {
+        alert('Error al cargar arqueos y no hay datos guardados.')
+      }
     } finally {
       setLoading(false)
     }
@@ -47,6 +74,11 @@ const Arqueos = () => {
   // ---------- calcular resumen del turno ----------
   const calcularResumenTurno = async () => {
     try {
+      if (!navigator.onLine) {
+        alert('No puedes realizar un arqueo sin conexión a internet.')
+        return
+      }
+
       setCalculando(true)
 
       const fechaDesde = new Date()
@@ -169,12 +201,17 @@ const Arqueos = () => {
 
   // ---------- confirmar arqueo ----------
   const realizarArqueo = async () => {
+    if (!navigator.onLine) {
+      alert('No puedes confirmar el arqueo sin internet.')
+      return
+    }
+
     if (!efectivoContado || parseFloat(efectivoContado) < 0) {
       alert('Ingresa un monto válido para el efectivo contado')
       return
     }
 
-    const usuario = JSON.parse(localStorage.getItem(USUARIO_KEY))?.nombre || 'Sistema'
+    const usuario = JSON.parse(localStorage.getItem('USUARIO_KEY'))?.nombre || 'Sistema'
     const efectivo = parseFloat(efectivoContado)
 
     const mensaje =
@@ -243,9 +280,14 @@ const Arqueos = () => {
   const exportarArqueoExcel = async (arqueo) => {
     try {
       setExportando((p) => ({ ...p, [arqueo.id]: 'excel' }))
-      const { data: a, error } = await supabase
-        .from('arqueos').select('*').eq('id', arqueo.id).single()
-      if (error) throw error
+      
+      let a = arqueo
+      if (navigator.onLine) {
+        const { data, error } = await supabase
+          .from('arqueos').select('*').eq('id', arqueo.id).single()
+        if (error) throw error
+        a = data
+      }
 
       const hojaResumen = [
         ['COMPROBANTE DE ARQUEO', ''],
@@ -300,9 +342,14 @@ const Arqueos = () => {
   const exportarArqueoPDF = async (arqueo) => {
     try {
       setExportando((p) => ({ ...p, [arqueo.id]: 'pdf' }))
-      const { data: a, error } = await supabase
-        .from('arqueos').select('*').eq('id', arqueo.id).single()
-      if (error) throw error
+      
+      let a = arqueo
+      if (navigator.onLine) {
+        const { data, error } = await supabase
+          .from('arqueos').select('*').eq('id', arqueo.id).single()
+        if (error) throw error
+        a = data
+      }
 
       const doc = new jsPDF()
       let y = 20
@@ -314,7 +361,7 @@ const Arqueos = () => {
       y += 8
       doc.setFontSize(11)
       doc.setTextColor(100)
-      doc.text(`${NOMBRE_NEGOCIO} - Sistema de Caja`, 105, y, { align: 'center' })
+      doc.text(`Carnicería Urbina - Sistema de Caja`, 105, y, { align: 'center' })
 
       y += 12
       doc.setTextColor(50)

@@ -42,15 +42,29 @@ const notificarStock = () => {
   }
 };
 
-/**
- * Guarda una venta completa (ventas + crédito + abono) en Supabase, en orden.
- * Es "reanudable": cada paso completado queda marcado en el paquete, así que si falla a la mitad
- * y se reintenta después, NO duplica lo que ya se guardó.
- */
 const procesarPaquete = async (pkg) => {
   // 1. Filas de la venta
   if (!pkg.ventaInsertada) {
-    const { data, error } = await supabase.from('ventas').insert(pkg.filasVenta).select();
+    // Limpiamos datos nulos o indefinidos para evitar error 400
+    const filasLimpias = pkg.filasVenta.map(f => ({
+      producto_id: f.producto_id,
+      cliente_id: f.cliente_id || null,
+      cantidad: f.cantidad,
+      precio_unitario: f.precio_unitario,
+      total: f.total,
+      metodo_pago: f.metodo_pago,
+      banco: f.banco || null,
+      efectivo: f.efectivo || 0,
+      tarjeta: f.tarjeta || 0,
+      transferencia: f.transferencia || 0,
+      vuelto: f.vuelto || 0,
+      estado: f.estado,
+      numero_factura: f.numero_factura,
+      usuario: f.usuario || 'Admin',
+      fecha: f.fecha
+    }));
+
+    const { data, error } = await supabase.from('ventas').insert(filasLimpias).select();
     if (error) throw error;
     pkg.ventaId = data && data.length > 0 ? data[0].id : null;
     pkg.ventaInsertada = true;
@@ -68,27 +82,63 @@ const procesarPaquete = async (pkg) => {
     pkg.canceladosHecho = true;
   }
 
-  // 3. Crédito (ya con el venta_id real)
+  // 3. Crédito (con datos limpios y el venta_id real)
   if (!pkg.creditoId) {
+    // Aseguramos que la fecha_fin no sea vacía (causa del error 400)
+    let fechaFinValida = pkg.credito.fecha_fin;
+    if (!fechaFinValida || fechaFinValida === '') {
+      const hoy = new Date();
+      hoy.setDate(hoy.getDate() + 8);
+      fechaFinValida = hoy.toISOString().split('T')[0];
+    }
+
+    const creditoLimpio = {
+      cliente_id: pkg.credito.cliente_id,
+      venta_id: pkg.ventaId || null,
+      fecha_inicio: pkg.credito.fecha_inicio || new Date().toISOString(),
+      fecha_fin: fechaFinValida,
+      monto_total: pkg.credito.monto_total || 0,
+      monto_pagado: pkg.credito.monto_pagado || 0,
+      saldo_pendiente: pkg.credito.saldo_pendiente || 0,
+      estado: pkg.credito.estado || 'activo',
+      observaciones: pkg.credito.observaciones || null
+    };
+
     const { data, error } = await supabase
       .from('creditos')
-      .insert([{ ...pkg.credito, venta_id: pkg.ventaId }])
+      .insert([creditoLimpio])
       .select();
-    if (error) throw error;
+      
+    if (error) {
+      console.error("Error exacto al insertar crédito:", error);
+      throw error;
+    }
     pkg.creditoId = data && data.length > 0 ? data[0].id : null;
   }
 
-  // 4. Abono inicial (ya con el credito_id real)
+  // 4. Abono inicial (con datos limpios)
   if (pkg.abono && !pkg.abonoInsertado) {
     if (!pkg.creditoId) throw new Error('No se obtuvo el id del crédito');
+    
+    const abonoLimpio = {
+      credito_id: pkg.creditoId,
+      monto: pkg.abono.monto || 0,
+      metodo_pago: pkg.abono.metodo_pago || 'efectivo',
+      banco: pkg.abono.banco || null,
+      fecha: pkg.abono.fecha || new Date().toISOString(),
+      observaciones: pkg.abono.observaciones || null
+    };
+
     const { error } = await supabase
       .from('abonos_credito')
-      .insert([{ ...pkg.abono, credito_id: pkg.creditoId }]);
-    if (error) throw error;
+      .insert([abonoLimpio]);
+    if (error) {
+      console.error("Error exacto al insertar abono:", error);
+      throw error;
+    }
     pkg.abonoInsertado = true;
   }
 };
-
 function Ventas() {
   const navigate = useNavigate();
 
