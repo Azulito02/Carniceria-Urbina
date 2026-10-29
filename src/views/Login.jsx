@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -27,7 +26,10 @@ function Login() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && user) {
+    // 🔥 REPARACIÓN: Si ya hay un usuario logueado o un pase VIP en caché, entra directo
+    const tieneSesionGuardada = localStorage.getItem('usuario_sesion_activa') === 'true';
+    
+    if ((!authLoading && user) || (tieneSesionGuardada && !user)) {
       navigate('/', { replace: true });
     }
   }, [user, authLoading, navigate]);
@@ -70,6 +72,11 @@ function Login() {
       }
     }
 
+    if (!navigator.onLine) {
+      setError('No hay conexión a internet. Verifica tu red e inténtalo de nuevo.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -94,6 +101,8 @@ function Login() {
 
         if (resultado.session) {
           setMensaje('Cuenta creada correctamente. Entrando al sistema...');
+          // 🔥 GUARDAR PASE VIP
+          localStorage.setItem('usuario_sesion_activa', 'true');
           navigate('/', { replace: true });
         } else {
           setModoRegistro(false);
@@ -112,18 +121,32 @@ function Login() {
           return;
         }
 
+        // 🔥 GUARDAR PASE VIP
+        localStorage.setItem('usuario_sesion_activa', 'true');
         navigate('/', { replace: true });
       }
     } catch (err) {
       console.error('Error de autenticación:', err);
 
-      setError(
-        'Ocurrió un error. Verifica tu conexión e inténtalo nuevamente.'
-      );
+      if (!navigator.onLine || err.message?.includes('fetch')) {
+        setError('Error de conexión. Asegúrate de tener internet para iniciar sesión.');
+      } else {
+        setError('Ocurrió un error. Verifica tu conexión e inténtalo nuevamente.');
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  // 🔥 REPARACIÓN: Si hay un pase VIP guardado, no mostramos la pantalla de Login
+  if (typeof window !== 'undefined' && localStorage.getItem('usuario_sesion_activa') === 'true') {
+    return (
+      <div className="login-loading">
+        <i className="fas fa-spinner fa-spin"></i>
+        <span>Entrando al sistema...</span>
+      </div>
+    );
+  }
 
   if (authLoading) {
     return (

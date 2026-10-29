@@ -318,7 +318,8 @@ function Clientes() {
 
   const totalClientes = clientesFiltrados.length;
 
-  if (loading) {
+  // 🔥 REPARACIÓN: Si el hook se queda cargando porque no hay internet pero tenemos caché, lo liberamos
+  if (loading && clientes.length === 0) {
     return (
       <div className="clientes-container">
         <Encabezado />
@@ -439,8 +440,6 @@ function Clientes() {
         cliente={clienteSeleccionado}
         loading={loading}
       />
-
-      
     </div>
   );
 }

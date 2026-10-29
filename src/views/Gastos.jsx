@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../database/supabase';
@@ -45,6 +44,20 @@ function Gastos() {
     setLoading(true);
 
     try {
+      // 🔥 REPARACIÓN: Si no hay internet, leer del caché
+      if (!navigator.onLine) {
+        const cache = localStorage.getItem('gastos_cache');
+        if (cache) {
+          const dataCache = JSON.parse(cache);
+          setGastos(dataCache);
+        } else {
+          setGastos([]);
+        }
+        setSyncError(null);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('gastos')
         .select('*')
@@ -53,11 +66,25 @@ function Gastos() {
       if (error) throw error;
 
       console.log('📦 Gastos cargados:', data);
+
+      // 🔥 REPARACIÓN: Guardar en caché para cuando no haya internet
+      localStorage.setItem('gastos_cache', JSON.stringify(data || []));
+
       setGastos(data || []);
       setSyncError(null);
     } catch (err) {
       console.error('Error cargando gastos:', err);
-      setSyncError('Error al cargar los gastos: ' + err.message);
+      
+      // 🔥 REPARACIÓN: Si falla la red, recuperar del caché
+      const cache = localStorage.getItem('gastos_cache');
+      if (cache) {
+        const dataCache = JSON.parse(cache);
+        setGastos(dataCache);
+        setSyncError('Mostrando datos guardados (sin conexión)');
+        setTimeout(() => setSyncError(null), 3000);
+      } else {
+        setSyncError('Error al cargar los gastos: ' + err.message);
+      }
     } finally {
       setLoading(false);
     }
