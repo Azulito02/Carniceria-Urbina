@@ -42,6 +42,18 @@ function Abonos() {
   const cargarAbonos = async () => {
     setLoading(true);
     try {
+      // 🔥 SI NO HAY INTERNET, LEER DEL CACHÉ
+      if (!navigator.onLine) {
+        const cache = localStorage.getItem('abonos_cache');
+        if (cache) {
+          setAbonos(JSON.parse(cache));
+        } else {
+          setAbonos([]);
+        }
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('abonos_credito')
         .select(`
@@ -56,11 +68,24 @@ function Abonos() {
         .order('fecha', { ascending: false });
 
       if (error) throw error;
+
+      // 🔥 GUARDAR CACHÉ
+      localStorage.setItem('abonos_cache', JSON.stringify(data || []));
+      
       setAbonos(data || []);
       setSyncError(null);
     } catch (err) {
       console.error('Error cargando abonos:', err);
-      setSyncError('Error al cargar los abonos: ' + err.message);
+      
+      // 🔥 SI FALLA LA RED, RECUPERAR DEL CACHÉ
+      const cache = localStorage.getItem('abonos_cache');
+      if (cache) {
+        setAbonos(JSON.parse(cache));
+        setSyncError('Mostrando datos guardados (sin conexión)');
+        setTimeout(() => setSyncError(null), 3000);
+      } else {
+        setSyncError('Error al cargar los abonos: ' + err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -70,6 +95,18 @@ function Abonos() {
   const cargarCreditos = async () => {
     setLoadingCreditos(true);
     try {
+      // 🔥 SI NO HAY INTERNET, LEER DEL CACHÉ
+      if (!navigator.onLine) {
+        const cache = localStorage.getItem('creditos_activos_cache');
+        if (cache) {
+          setCreditos(JSON.parse(cache));
+        } else {
+          setCreditos([]);
+        }
+        setLoadingCreditos(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('creditos')
         .select(`
@@ -86,10 +123,21 @@ function Abonos() {
         .order('id', { ascending: false });
 
       if (error) throw error;
+
+      // 🔥 GUARDAR CACHÉ
+      localStorage.setItem('creditos_activos_cache', JSON.stringify(data || []));
+      
       setCreditos(data || []);
     } catch (err) {
       console.error('Error cargando créditos:', err);
-      setError('No se pudieron cargar los créditos');
+      
+      // 🔥 SI FALLA LA RED, RECUPERAR DEL CACHÉ
+      const cache = localStorage.getItem('creditos_activos_cache');
+      if (cache) {
+        setCreditos(JSON.parse(cache));
+      } else {
+        setError('No se pudieron cargar los créditos');
+      }
     } finally {
       setLoadingCreditos(false);
     }
@@ -145,7 +193,6 @@ function Abonos() {
   };
 
   // ===== RECALCULAR CRÉDITO EN ESTADO LOCAL (para modo offline) =====
-  // Recibe el array de abonos ya actualizado para evitar depender del setState async.
   const recalcularCreditoLocal = (creditoId, abonosActuales) => {
     if (!creditoId) return;
 
@@ -182,7 +229,6 @@ function Abonos() {
   };
 
   // ===== RECALCULAR CRÉDITO EN SUPABASE (vía RPC) =====
-  // Fallback por si el trigger no existe o falla.
   const recalcularCreditoRemoto = async (creditoId) => {
     if (!creditoId || !conectado) return;
     try {
@@ -250,13 +296,8 @@ function Abonos() {
           setModalAgregar(false);
           setExito('✅ Abono registrado');
 
-          // Refrescar abonos
           await cargarAbonos();
-
-          // Fallback: asegurar recálculo en DB (si el trigger no existe)
           await recalcularCreditoRemoto(nuevoAbono.credito_id);
-
-          // Refrescar créditos (traerá los valores ya recalculados)
           await cargarCreditos();
 
           setTimeout(() => setExito(null), 3000);
@@ -277,7 +318,6 @@ function Abonos() {
       const nuevosAbonos = [...abonos, abonoLocal];
       setAbonos(nuevosAbonos);
 
-      // Recalcular crédito localmente con el array ya actualizado
       recalcularCreditoLocal(nuevoAbono.credito_id, nuevosAbonos);
 
       setModalAgregar(false);
@@ -339,9 +379,7 @@ function Abonos() {
         );
         setAbonos(abonosActualizados);
 
-        // Recalcular crédito nuevo
         recalcularCreditoLocal(creditoNuevo, abonosActualizados);
-        // Si cambió de crédito, recalcular también el anterior
         if (creditoAnterior && creditoAnterior !== creditoNuevo) {
           recalcularCreditoLocal(creditoAnterior, abonosActualizados);
         }
@@ -375,13 +413,11 @@ function Abonos() {
           setAbonoSeleccionado(null);
           setExito('✅ Abono actualizado');
 
-          // Fallback: recalcular crédito en DB
           await recalcularCreditoRemoto(creditoNuevo);
           if (creditoAnterior && creditoAnterior !== creditoNuevo) {
             await recalcularCreditoRemoto(creditoAnterior);
           }
 
-          // Refrescar abonos + créditos
           await cargarAbonos();
           await cargarCreditos();
 
@@ -459,7 +495,6 @@ function Abonos() {
         setAbonoSeleccionado(null);
         setExito('🗑️ Abono eliminado');
 
-        // Fallback: recalcular crédito en DB
         if (creditoId) await recalcularCreditoRemoto(creditoId);
 
         await cargarAbonos();
