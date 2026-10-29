@@ -1,4 +1,3 @@
-
 import React, {
   createContext,
   useContext,
@@ -48,6 +47,8 @@ export function AuthProvider({ children }) {
 
         if (session?.user) {
           setUser(session.user);
+          // 🔥 Aseguramos que el pase VIP exista si Supabase confirma la sesión
+          localStorage.setItem('usuario_sesion_activa', 'true');
 
           const p = await cargarPerfil(session.user.id);
 
@@ -55,6 +56,8 @@ export function AuthProvider({ children }) {
         } else {
           setUser(null);
           setPerfil(null);
+          // 🔥 Si Supabase dice que no hay sesión, borramos el pase VIP
+          localStorage.removeItem('usuario_sesion_activa');
         }
       } catch (err) {
         console.error('Error inicializando sesión:', err);
@@ -75,7 +78,12 @@ export function AuthProvider({ children }) {
       if (!session?.user) {
         setPerfil(null);
         setLoading(false);
+        // 🔥 Si Supabase detecta que la sesión se cerró, borramos el pase VIP
+        localStorage.removeItem('usuario_sesion_activa');
       } else {
+        // 🔥 Si Supabase confirma que hay usuario, guardamos el pase VIP
+        localStorage.setItem('usuario_sesion_activa', 'true');
+        
         // Evitar consultas asíncronas dentro del callback
         // de autenticación de Supabase.
         setTimeout(async () => {
@@ -111,6 +119,9 @@ export function AuthProvider({ children }) {
       };
     }
 
+    // 🔥 Guardar pase VIP al iniciar sesión
+    localStorage.setItem('usuario_sesion_activa', 'true');
+
     return {
       success: true,
       user: data.user
@@ -136,6 +147,11 @@ export function AuthProvider({ children }) {
       };
     }
 
+    // 🔥 Guardar pase VIP si se registra y se loguea automáticamente
+    if (data.session) {
+      localStorage.setItem('usuario_sesion_activa', 'true');
+    }
+
     return {
       success: true,
       user: data.user,
@@ -145,6 +161,8 @@ export function AuthProvider({ children }) {
 
   // CERRAR SESIÓN
   const logout = async () => {
+    // 🔥 BORRAR EL PASE VIP ANTES DE CERRAR SESIÓN
+    localStorage.removeItem('usuario_sesion_activa');
     await supabase.auth.signOut();
     setUser(null);
     setPerfil(null);
