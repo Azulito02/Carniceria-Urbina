@@ -139,6 +139,7 @@ const procesarPaquete = async (pkg) => {
     pkg.abonoInsertado = true;
   }
 };
+
 function Ventas() {
   const navigate = useNavigate();
 
@@ -149,6 +150,9 @@ function Ventas() {
   // ===== STOCK DISPONIBLE =====
   const [stockMapa, setStockMapa] = useState({});
   const [alertasStock, setAlertasStock] = useState([]);
+
+  // ===== ADVERTENCIA COSTO =====
+  const [advertenciaCosto, setAdvertenciaCosto] = useState([]);
 
   // ===== ESTADOS DEL FORMULARIO =====
   const [clienteSeleccionado, setClienteSeleccionado] = useState('general');
@@ -457,6 +461,7 @@ function Ventas() {
   const guardarVenta = async () => {
     try {
       setError(null);
+      setAdvertenciaCosto([]);
 
       if (lineasVenta.length === 0) {
         setError('Agrega al menos un producto');
@@ -501,6 +506,83 @@ function Ventas() {
         }
       } catch (e) {
         console.warn('No se pudo verificar el stock, probablemente sin internet.');
+      }
+
+      // ===== ADVERTENCIA: PRECIO DE VENTA IGUAL O MENOR AL COSTO =====
+      // El costo real viene de la tabla `inversiones` (precio_unitario, cantidad)
+      try {
+        const idsProductos = lineasVenta.map(l => l.producto_id);
+        const costosPorProducto = {};
+
+        if (navigator.onLine && idsProductos.length > 0) {
+          const { data, error } = await supabase
+            .from('inversiones')
+            .select('producto_id, precio_unitario, cantidad, fecha')
+            .in('producto_id', idsProductos)
+            .order('fecha', { ascending: false });
+
+          if (!error && data && data.length > 0) {
+            // Costo promedio ponderado por producto
+            const acum = {};
+            data.forEach(row => {
+              const pid = row.producto_id;
+              const precio = parseFloat(row.precio_unitario) || 0;
+              const cant = parseFloat(row.cantidad) || 0;
+              if (precio <= 0) return;
+              if (!acum[pid]) acum[pid] = { totalPrecio: 0, totalCant: 0 };
+              const cantEfectiva = cant > 0 ? cant : 1;
+              acum[pid].totalPrecio += precio * cantEfectiva;
+              acum[pid].totalCant += cantEfectiva;
+            });
+
+            Object.entries(acum).forEach(([pid, v]) => {
+              if (v.totalCant > 0) {
+                costosPorProducto[pid] = v.totalPrecio / v.totalCant;
+              }
+            });
+
+            console.log('[Costo desde inversiones]', costosPorProducto);
+          } else if (error) {
+            console.warn('Error consultando inversiones:', error);
+          }
+        }
+
+        const lineasBajoCosto = [];
+        lineasVenta.forEach(l => {
+          const costo = costosPorProducto[l.producto_id];
+          const precioVenta = parseFloat(l.precio_unitario) || 0;
+
+          if (costo > 0 && precioVenta <= costo) {
+            const prod = (productos || []).find(p => p.id === l.producto_id);
+            lineasBajoCosto.push({
+              nombre: prod?.nombre || `Producto #${l.producto_id}`,
+              costo,
+              precioVenta,
+              diferencia: precioVenta - costo
+            });
+          }
+        });
+
+        console.log('[Verificación costo] Líneas bajo costo:', lineasBajoCosto);
+
+        if (lineasBajoCosto.length > 0) {
+          setAdvertenciaCosto(lineasBajoCosto);
+
+          const detalle = lineasBajoCosto.map(item => {
+            const signo = item.diferencia === 0 ? '=' : '';
+            const perdida = item.diferencia < 0
+              ? ` (pérdida: C$${Math.abs(item.diferencia).toFixed(2)} por unidad)`
+              : '';
+            return `• ${item.nombre}: precio venta C$${item.precioVenta.toFixed(2)} ${signo} costo C$${item.costo.toFixed(2)}${perdida}`;
+          }).join('\n');
+
+          const continuar = window.confirm(
+            `⚠️ ATENCIÓN: Estás vendiendo al costo o por debajo del costo:\n\n${detalle}\n\n¿Deseas continuar con la venta?`
+          );
+          if (!continuar) return;
+        }
+      } catch (e) {
+        console.warn('No se pudo verificar el precio de costo desde inversiones:', e);
       }
 
       const aplicarSaldoAnterior = metodoPago === 'credito' && saldoAnterior > 0 && sumarSaldoAnterior;
@@ -635,6 +717,7 @@ function Ventas() {
       setSaldoAnterior(0);
       setCreditoAnterior(null);
       setSumarSaldoAnterior(true);
+      setAdvertenciaCosto([]);
 
     } catch (err) {
       console.error('❌ Error guardando venta:', err);
@@ -727,6 +810,28 @@ function Ventas() {
               </ul>
             </div>
             <button onClick={() => setAlertasStock([])} className="error-close">
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+        )}
+
+        {/* ===== ADVERTENCIA DE VENTA AL COSTO O POR DEBAJO ===== */}
+        {advertenciaCosto.length > 0 && (
+          <div className="alerta-stock-venta" style={{ borderLeft: '4px solid #dc2626' }}>
+            <i className="fas fa-exclamation-triangle" style={{ color: '#dc2626' }}></i>
+            <div>
+              <strong style={{ color: '#dc2626' }}>⚠️ Vendiendo al costo o por debajo del costo</strong>
+              <ul>
+                {advertenciaCosto.map((item, i) => (
+                  <li key={i}>
+                    {item.nombre}: venta C${item.precioVenta.toFixed(2)} vs costo C${item.costo.toFixed(2)}
+                    {item.diferencia < 0 && ` (pérdida C$${Math.abs(item.diferencia).toFixed(2)}/u)`}
+                    {item.diferencia === 0 && ' (al costo)'}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <button onClick={() => setAdvertenciaCosto([])} className="error-close">
               <i className="fas fa-times"></i>
             </button>
           </div>
